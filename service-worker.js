@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.0.7-murderwing";
+const CACHE = "kt-rule-finder-v2.0.9-horizontal-recognition-images";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -15,6 +15,7 @@ const APP_SHELL = [
   "./data/angels_of_death.js",
   "./data/wrecka_krew.js",
   "./data/murderwing.js",
+  "./data/legionary.js",
   "./assets/plague_marines/bombardier.webp",
   "./assets/plague_marines/caster.webp",
   "./assets/plague_marines/champion.webp",

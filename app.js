@@ -25,9 +25,10 @@ function loadData(){
     pm: window.KT_PLAGUE_MARINES,
     aod: window.KT_ANGELS_OF_DEATH,
     wk: window.KT_WRECKA_KREW,
-    mw: window.KT_MURDERWING
+    mw: window.KT_MURDERWING,
+    leg: window.KT_LEGIONARY
   };
-  if (!TEAMS.pm || !TEAMS.aod || !TEAMS.wk || !TEAMS.mw) {
+  if (!TEAMS.pm || !TEAMS.aod || !TEAMS.wk || !TEAMS.mw || !TEAMS.leg) {
     throw new Error("Team data scripts did not load.");
   }
   KW = Object.fromEntries(KEYWORDS.map(x=>[x[0],{id:x[0],name:x[1],en:x[2],text:x[3]}]));
