@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.1.3.3-murderwing-image-mapping-fix";
+const CACHE = "kt-rule-finder-v2.1.3.4-legionary-image-mapping-fix";
 const APP_SHELL = [
   "./",
   "./index.html",
