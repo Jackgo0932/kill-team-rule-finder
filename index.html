@@ -1,0 +1,130 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kill Team 規則速查</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#111315">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="KT 速查">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<style>
+:root{--bg:#111315;--panel:#1b1e21;--panel2:#23272b;--line:#343a40;--text:#f3f1ec;--muted:#a5abb1;--accent:#e65c2b;--cream:#f3efe7;--green:#a7d4ad}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(#0f1113,#15181b);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+.app{max-width:920px;margin:auto;padding:18px 14px 92px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.brand{display:flex;gap:10px;align-items:center}.bar{width:12px;height:36px;background:var(--accent);border-radius:2px}.brand h1{font-size:20px;margin:0}.brand small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.team{font-size:13px;border:1px solid var(--line);border-radius:999px;padding:8px 11px;background:var(--panel)}
+.sticky{position:sticky;top:0;z-index:4;padding:8px 0 9px;background:linear-gradient(180deg,#111315 75%,transparent)}
+.search{display:flex;align-items:center;gap:10px;background:var(--cream);color:#151719;border-radius:14px;padding:0 14px;box-shadow:0 12px 28px rgba(0,0,0,.28)}
+.search input{border:0;outline:0;background:transparent;width:100%;font-size:17px;padding:15px 0}.search .icon{font-size:22px;color:#555}
+.tabs{display:flex;gap:7px;overflow:auto;padding:3px 0 12px}.tab{border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:8px 12px;border-radius:999px;white-space:nowrap}.tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.count{font-size:12px;color:var(--muted);margin:2px 2px 9px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 8px 18px rgba(0,0,0,.14)}
+.card h3{margin:0 0 5px;font-size:16px}.meta{font-size:12px;color:var(--muted);margin-bottom:8px}.body{font-size:14px;line-height:1.55;color:#e0e1df}
+.weapon{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}.weapon-head{display:flex;justify-content:space-between;gap:8px}.weapon-name{font-weight:800}.stats{color:var(--green);font-size:12px;white-space:nowrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.chip{border:1px solid #454d55;background:#2b3137;color:#eee;border-radius:999px;padding:5px 9px;font-size:12px}.chip.open{border-color:var(--accent);background:#4b2a1f}
+.inline{width:100%;margin-top:7px;padding:9px 10px;border-left:3px solid var(--accent);background:#171a1d;border-radius:8px;font-size:13px;line-height:1.5}
+.star{float:right;border:0;background:none;color:#747b82;font-size:19px}.star.on{color:#f2b84b}
+.empty{text-align:center;color:var(--muted);padding:42px 10px}.bottom{position:fixed;left:0;right:0;bottom:0;background:rgba(15,17,19,.94);backdrop-filter:blur(12px);border-top:1px solid var(--line)}
+.navs{max-width:920px;margin:auto;display:grid;grid-template-columns:repeat(3,1fr);padding:8px 14px calc(8px + env(safe-area-inset-bottom))}
+.nav{background:none;border:0;color:var(--muted);padding:7px}.nav.on{color:#fff}.nav b{display:block;font-size:14px}.nav span{font-size:11px}
+@media(max-width:640px){.grid{grid-template-columns:1fr}.team{display:none}.app{padding-left:11px;padding-right:11px}}
+
+.install-btn{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:999px;padding:8px 11px;font-size:13px;cursor:pointer}
+.install-btn:hover{border-color:var(--accent)}
+.install-note{display:none;margin:8px 0 2px;padding:10px 12px;border:1px solid var(--line);background:#171a1d;border-radius:10px;color:var(--muted);font-size:12px;line-height:1.45}
+.install-note.show{display:block}
+@media(max-width:640px){.install-btn{padding:7px 10px;font-size:12px}}
+
+</style></head>
+<body><div class="app">
+<div class="top"><div class="brand"><div class="bar"></div><div><h1>Kill Team 規則速查</h1><small>離線 Web prototype</small></div></div><div style="display:flex;gap:8px;align-items:center"><button id="installBtn" class="install-btn" style="display:none">安裝到手機</button><div class="team">瘟疫戰士</div></div></div><div id="installNote" class="install-note"></div>
+<div class="sticky"><div class="search"><span class="icon">⌕</span><input id="q" placeholder="搜尋：震盪、掩護、瘟疫連枷…"></div></div>
+<div class="tabs" id="tabs"></div><div id="content"></div>
+</div>
+<div class="bottom"><div class="navs">
+<button class="nav on" data-view="all"><b>查規則</b><span>搜尋全部</span></button>
+<button class="nav" data-view="team"><b>隊伍</b><span>瘟疫戰士</span></button>
+<button class="nav" data-view="fav"><b>收藏</b><span>常用規則</span></button>
+</div></div>
+<script>
+const DATA={"keywords": [["shock", "震盪", "Shock", "第一次在近戰序列中以關鍵成功出擊時，棄掉對手一枚尚未結算的普通成功；若沒有普通成功，則棄掉一枚關鍵成功。"], ["severe", "嚴重", "Severe", "若沒有保留任何關鍵成功，可把一枚普通成功改為關鍵成功。"], ["brutal", "殘暴", "Brutal", "近戰中，對手只能使用關鍵成功格擋此武器的成功。"], ["balanced", "平衡", "Balanced", "擲攻擊骰後，可重擲 1 枚攻擊骰。"], ["ceaseless", "無休", "Ceaseless", "擲攻擊骰後，可重擲所有結果為 1 的攻擊骰。"], ["relentless", "毫不留情", "Relentless", "擲攻擊骰後，可重擲任意數量的攻擊骰。"], ["torrent", "洪流", "Torrent", "選擇一個有效主要目標後，可再選擇指定距離內、且對射手而言也是有效目標的其他特工，分別進行射擊結算。"], ["blast", "爆炸", "Blast", "對主要目標完成射擊後，對規則指定範圍內的其他特工分別進行射擊結算。"], ["poison", "劇毒", "Poison", "當此武器以成功造成傷害時，目標若尚未有己方劇毒指示物，就獲得一枚；中毒特工每次被激活時受到 1 點傷害。"], ["stun", "暈眩", "Stun", "依遠程或近戰版本，在保留或結算關鍵成功時對目標施加額外限制。"], ["range", "範圍", "Range", "此遠程武器只能選擇指定距離內的有效目標。"], ["silent", "安靜", "Silent", "此遠程武器可在使用者擁有隱匿命令時進行射擊。"]], "quick": [["cover", "掩護", "如果一名特工的控制範圍內存在阻礙地形，該特工擁有掩護；但若另一名特工位於該特工 2\" 內，則不能擁有掩護。"], ["target", "有效目標", "交戰命令：可見即可成為有效目標。隱匿命令：必須可見且沒有掩護，才是有效目標。"], ["counteract", "反應", "當你的所有特工都已待機、而對手仍有就緒特工時，可選擇一名已待機且擁有交戰命令的己方特工，免費執行一個 1AP 行動。每名特工每個轉折點一次；若移動，最多 2\"。"], ["injured", "受創", "耐傷低於起始耐傷一半時為受創：移動屬性 -2\"，武器命中屬性惡化 1。"], ["melee", "近戰格擋", "普通成功只能格擋普通成功；關鍵成功可以格擋普通或關鍵成功。兩個普通成功不能格擋一個關鍵成功。"], ["coversave", "掩護豁免", "若目標擁有掩護，防禦方可以不擲其中 1 枚防禦骰，直接把它保留為普通成功。"]], "team": {"name": "瘟疫戰士", "rules": [["astartes", "阿斯塔特斯", "每名瘟疫戰士在激活時可以射擊兩次或近戰兩次；若射擊兩次，至少其中一次必須使用爆彈手槍、爆彈槍或 PSYCHIC 武器，且同一件 PSYCHIC 遠程武器不能射擊兩次。"], ["resilient", "惱人韌性", "每當一枚攻擊骰將造成 3 點或更多傷害時，擲 1D6；4+ 時，該枚攻擊骰造成的傷害減少 1。每枚造成傷害的攻擊骰分別擲。"], ["toxic", "Toxic", "若敵方特工在該行動開始時已持有你的劇毒指示物，具有 Toxic 的武器傷害值獲得 +1/+1。"]], "operatives": [{"id": "champion", "name": "瘟疫戰士冠軍", "role": "隊長", "weapons": [["爆彈手槍", "4", "3+", "3/4", ["poison", "severe"]], ["瘟疫刀", "5", "3+", "3/4", ["severe", "poison"]]], "abilities": [["祖父的祝福", "7\" 內一名已中毒的敵方特工失去耐傷時，冠軍可恢復等量耐傷；每個轉折點最多恢復 3 點。"]]}, {"id": "fighter", "name": "瘟疫戰士鬥士", "role": "近戰", "weapons": [["爆彈手槍", "4", "3+", "3/4", ["poison", "severe"]], ["瘟疫連枷", "5", "3+", "4/5", ["brutal", "severe", "shock", "poison"]]], "abilities": []}, {"id": "heavy", "name": "重武器手", "role": "遠程", "weapons": [["瘟疫噴吐器", "5", "2+", "3/3", ["range", "severe", "torrent", "poison"]]], "abilities": []}, {"id": "caster", "name": "惡性瘟疫術士", "role": "靈能", "weapons": [["熵能", "4", "3+", "3/7", ["severe", "poison"]], ["瘟疫之風", "6", "3+", "2/3", ["severe", "torrent", "poison"]], ["瘟疫法杖", "4", "3+", "3/4", ["severe", "shock", "stun", "poison"]]], "abilities": []}]}};
+const KW=Object.fromEntries(DATA.keywords.map(x=>[x[0],{id:x[0],name:x[1],en:x[2],text:x[3]}]));
+const S={tab:"全部",view:"all",q:"",open:new Set(),fav:new Set(JSON.parse(localStorage.getItem("ktFav")||"[]"))};
+const tabs=["全部","核心","武器規則","陣營規則","特工"];
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const match=(o,q)=>!q||JSON.stringify(o).toLowerCase().includes(q.toLowerCase().trim());
+function star(id){return `<button class="star ${S.fav.has(id)?"on":""}" onclick="fav('${id}')">★</button>`}
+function chip(id){const k=KW[id];if(!k)return"";const o=S.open.has(id);return `<button class="chip ${o?"open":""}" onclick="openRule('${id}')">${esc(k.name)} · ${esc(k.en)}</button>${o?`<div class="inline"><b>${esc(k.name)}</b>：${esc(k.text)}</div>`:""}`}
+function opCard(op){return `<div class="card">${star("op:"+op.id)}<h3>${esc(op.name)}</h3><div class="meta">${esc(op.role)} · ${esc(DATA.team.name)}</div>${op.abilities.map(a=>`<div class="body"><b>${esc(a[0])}</b> — ${esc(a[1])}</div>`).join("")}${op.weapons.map(w=>`<div class="weapon"><div class="weapon-head"><span class="weapon-name">${esc(w[0])}</span><span class="stats">ATK ${w[1]} · HIT ${w[2]} · DMG ${w[3]}</span></div><div class="chips">${w[4].map(chip).join("")}</div></div>`).join("")}</div>`}
+function items(){
+ let a=[];
+ DATA.quick.forEach(x=>a.push({kind:"核心",id:"q:"+x[0],s:x,html:`<div class="card">${star("q:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">核心規則</div><div class="body">${esc(x[2])}</div></div>`}));
+ DATA.keywords.forEach(x=>a.push({kind:"武器規則",id:"k:"+x[0],s:x,html:`<div class="card">${star("k:"+x[0])}<h3>${esc(x[1])} <span class="meta">${esc(x[2])}</span></h3><div class="body">${esc(x[3])}</div></div>`}));
+ DATA.team.rules.forEach(x=>a.push({kind:"陣營規則",id:"r:"+x[0],s:x,html:`<div class="card">${star("r:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">瘟疫戰士 · 陣營規則</div><div class="body">${esc(x[2])}</div></div>`}));
+ DATA.team.operatives.forEach(o=>a.push({kind:"特工",id:"op:"+o.id,s:o,html:opCard(o)}));
+ return a;
+}
+function render(){
+ document.querySelector("#tabs").innerHTML=tabs.map(t=>`<button class="tab ${S.tab===t?"on":""}" onclick="tab('${t}')">${t}</button>`).join("");
+ let a=items();
+ if(S.view==="team")a=a.filter(x=>["陣營規則","特工"].includes(x.kind));
+ if(S.view==="fav")a=a.filter(x=>S.fav.has(x.id));
+ if(S.tab!=="全部")a=a.filter(x=>x.kind===S.tab);
+ a=a.filter(x=>match(x.s,S.q));
+ document.querySelector("#content").innerHTML=a.length?`<div class="count">${a.length} 筆結果</div><div class="grid">${a.map(x=>x.html).join("")}</div>`:`<div class="empty">找不到符合的規則</div>`;
+}
+function tab(t){S.tab=t;render()} function openRule(id){S.open.has(id)?S.open.delete(id):S.open.add(id);render()}
+function fav(id){S.fav.has(id)?S.fav.delete(id):S.fav.add(id);localStorage.setItem("ktFav",JSON.stringify([...S.fav]));render()}
+document.querySelector("#q").addEventListener("input",e=>{S.q=e.target.value;render()});
+document.querySelectorAll(".nav").forEach(b=>b.onclick=()=>{document.querySelectorAll(".nav").forEach(x=>x.classList.remove("on"));b.classList.add("on");S.view=b.dataset.view;S.tab="全部";render()});
+render();
+
+let deferredPrompt = null;
+const installBtn = document.getElementById("installBtn");
+const installNote = document.getElementById("installNote");
+
+function showInstallNote(text){
+  installNote.textContent = text;
+  installNote.classList.add("show");
+}
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js").catch(console.error);
+  });
+}
+
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = "inline-block";
+});
+
+installBtn.addEventListener("click", async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    installBtn.style.display = "none";
+  } else {
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    if (isIOS) {
+      showInstallNote("iPhone / iPad：請用 Safari 開啟 → 分享 →「加入主畫面」。");
+    } else {
+      showInstallNote("若瀏覽器沒有顯示安裝提示，請從瀏覽器選單選擇「安裝應用程式」或「加到主畫面」。");
+    }
+  }
+});
+
+window.addEventListener("appinstalled", () => {
+  installBtn.style.display = "none";
+  showInstallNote("已安裝。之後可直接從手機主畫面開啟，離線也能使用。");
+});
+
+// iOS does not fire beforeinstallprompt, so keep a manual hint available.
+if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !window.matchMedia("(display-mode: standalone)").matches) {
+  installBtn.style.display = "inline-block";
+}
+
+</script></body></html>
