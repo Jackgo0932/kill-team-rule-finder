@@ -26,9 +26,11 @@ function loadData(){
     aod: window.KT_ANGELS_OF_DEATH,
     wk: window.KT_WRECKA_KREW,
     mw: window.KT_MURDERWING,
-    leg: window.KT_LEGIONARY
+    leg: window.KT_LEGIONARY,
+    dw: window.KT_DEATHWATCH,
+    ci: window.KT_CELESTIAN_INSIDIANTS
   };
-  if (!TEAMS.pm || !TEAMS.aod || !TEAMS.wk || !TEAMS.mw || !TEAMS.leg) {
+  if (!TEAMS.pm || !TEAMS.aod || !TEAMS.wk || !TEAMS.mw || !TEAMS.leg || !TEAMS.dw || !TEAMS.ci) {
     throw new Error("Team data scripts did not load.");
   }
   KW = Object.fromEntries(KEYWORDS.map(x=>[x[0],{id:x[0],name:x[1],en:x[2],text:x[3]}]));
@@ -52,6 +54,7 @@ function star(id){
 
 const ruleId=r=>Array.isArray(r)?r[0]:r;
 const ruleLabel=r=>Array.isArray(r)?r[1]:(KW[ruleId(r)]?.name||"");
+const ruleEn=r=>Array.isArray(r)&&r[2]?r[2]:(KW[ruleId(r)]?.en||"");
 function chip(rule,instance){
   const id=ruleId(rule),k=KW[id];
   if(!k)return "";

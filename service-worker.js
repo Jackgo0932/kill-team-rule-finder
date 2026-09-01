@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.0.9-horizontal-recognition-images";
+const CACHE = "kt-rule-finder-v2.1.1-celestian-insidiants";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -16,6 +16,8 @@ const APP_SHELL = [
   "./data/wrecka_krew.js",
   "./data/murderwing.js",
   "./data/legionary.js",
+  "./data/deathwatch.js",
+  "./data/celestian_insidiants.js",
   "./assets/plague_marines/bombardier.webp",
   "./assets/plague_marines/caster.webp",
   "./assets/plague_marines/champion.webp",
@@ -48,6 +50,25 @@ const APP_SHELL = [
   "./assets/murderwing/shrieker.webp",
   "./assets/murderwing/raptor.webp",
   "./assets/murderwing/curseclaw.webp",
+  "./assets/deathwatch/watch-sergeant.webp",
+  "./assets/deathwatch/aegis.webp",
+  "./assets/deathwatch/blademaster.webp",
+  "./assets/deathwatch/bombard.webp",
+  "./assets/deathwatch/breacher.webp",
+  "./assets/deathwatch/demolisher.webp",
+  "./assets/deathwatch/disruptor.webp",
+  "./assets/deathwatch/gunner.webp",
+  "./assets/deathwatch/headtaker.webp",
+  "./assets/deathwatch/horde-slayer.webp",
+  "./assets/deathwatch/marksman.webp",
+  "./assets/celestian_insidiants/superior.webp",
+  "./assets/celestian_insidiants/abjuror.webp",
+  "./assets/celestian_insidiants/censor.webp",
+  "./assets/celestian_insidiants/cremator.webp",
+  "./assets/celestian_insidiants/denuncia.webp",
+  "./assets/celestian_insidiants/mortisanctus.webp",
+  "./assets/celestian_insidiants/reliquarius.webp",
+  "./assets/celestian_insidiants/warrior.webp",
 ];
 
 self.addEventListener("install", event => {
