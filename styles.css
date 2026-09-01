@@ -1,0 +1,159 @@
+:root{--bg:#111315;--panel:#1b1e21;--panel2:#23272b;--line:#343a40;--text:#f3f1ec;--muted:#a5abb1;--accent:#e65c2b;--cream:#f3efe7;--green:#a7d4ad}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(#0f1113,#15181b);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+.app{max-width:920px;margin:auto;padding:18px 14px 92px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.brand{display:flex;gap:10px;align-items:center}.bar{width:12px;height:36px;background:var(--accent);border-radius:2px}.brand h1{font-size:20px;margin:0}.brand small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.team{font-size:13px;border:1px solid var(--line);border-radius:999px;padding:8px 11px;background:var(--panel)}
+.sticky{position:sticky;top:0;z-index:4;padding:8px 0 9px;background:linear-gradient(180deg,#111315 75%,transparent)}
+.search{display:flex;align-items:center;gap:10px;background:var(--cream);color:#151719;border-radius:14px;padding:0 14px;box-shadow:0 12px 28px rgba(0,0,0,.28)}
+.search input{border:0;outline:0;background:transparent;width:100%;font-size:17px;padding:15px 0}.search .icon{font-size:22px;color:#555}
+.tabs{display:flex;gap:7px;overflow:auto;padding:3px 0 12px}.tab{border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:8px 12px;border-radius:999px;white-space:nowrap}.tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.count{font-size:12px;color:var(--muted);margin:2px 2px 9px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 8px 18px rgba(0,0,0,.14)}
+.card h3{margin:0 0 5px;font-size:16px}.meta{font-size:12px;color:var(--muted);margin-bottom:8px}.body{font-size:14px;line-height:1.55;color:#e0e1df}
+.weapon{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}.weapon-head{display:flex;justify-content:space-between;gap:8px}.weapon-name{font-weight:800}.stats{color:var(--green);font-size:12px;white-space:nowrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.chip{border:1px solid #454d55;background:#2b3137;color:#eee;border-radius:999px;padding:5px 9px;font-size:12px}.chip.open{border-color:var(--accent);background:#4b2a1f}
+.inline{width:100%;margin-top:7px;padding:9px 10px;border-left:3px solid var(--accent);background:#171a1d;border-radius:8px;font-size:13px;line-height:1.5}
+.star{float:right;border:0;background:none;color:#747b82;font-size:19px}.star.on{color:#f2b84b}
+.empty{text-align:center;color:var(--muted);padding:42px 10px}.bottom{position:fixed;left:0;right:0;bottom:0;background:rgba(15,17,19,.94);backdrop-filter:blur(12px);border-top:1px solid var(--line)}
+.navs{max-width:920px;margin:auto;display:grid;grid-template-columns:repeat(3,1fr);padding:8px 14px calc(8px + env(safe-area-inset-bottom))}
+.nav{background:none;border:0;color:var(--muted);padding:7px}.nav.on{color:#fff}.nav b{display:block;font-size:14px}.nav span{font-size:11px}
+@media(max-width:640px){.grid{grid-template-columns:1fr}.team{display:none}.app{padding-left:11px;padding-right:11px}}
+
+.install-btn{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:999px;padding:8px 11px;font-size:13px;cursor:pointer}
+.install-btn:hover{border-color:var(--accent)}
+.install-note{display:none;margin:8px 0 2px;padding:10px 12px;border:1px solid var(--line);background:#171a1d;border-radius:10px;color:var(--muted);font-size:12px;line-height:1.45}
+.install-note.show{display:block}
+@media(max-width:640px){.install-btn{padding:7px 10px;font-size:12px}}
+
+
+/* --- Operative model gallery --- */
+.team-hero{margin:4px 0 14px;padding:16px;border:1px solid var(--line);border-radius:16px;background:
+linear-gradient(110deg,rgba(230,92,43,.18),transparent 42%),linear-gradient(180deg,var(--panel2),var(--panel))}
+.team-hero .eyebrow{font-size:11px;letter-spacing:.14em;color:var(--accent);font-weight:900}
+.team-hero h2{margin:5px 0 3px;font-size:24px}.team-hero p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}
+.operative-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.op-tile{position:relative;overflow:hidden;min-height:230px;border:1px solid var(--line);border-radius:16px;background:#ece9e1;cursor:pointer;padding:0;text-align:left;box-shadow:0 8px 18px rgba(0,0,0,.18)}
+.op-tile:active{transform:scale(.99)}
+.op-photo{height:172px;background-color:#ebe8df;background-image:var(--model-image);background-repeat:no-repeat;background-size:235% auto;background-position:var(--model-pos);filter:saturate(.96) contrast(1.02)}
+.op-tile .fade{position:absolute;left:0;right:0;top:105px;height:70px;background:linear-gradient(transparent,rgba(20,22,24,.92))}
+.op-label{position:absolute;left:0;right:0;bottom:0;padding:11px 12px 12px;background:#181b1e;color:white}
+.op-label strong{display:block;font-size:15px;line-height:1.2}.op-label span{display:block;margin-top:3px;font-size:11px;color:#abb1b7}
+.detail-back{border:0;background:none;color:var(--muted);padding:3px 0 10px;cursor:pointer;font-size:13px}
+.detail-back:hover{color:#fff}
+.op-detail-head{overflow:hidden;position:relative;height:260px;border-radius:17px;border:1px solid var(--line);background:#ece9e1;margin-bottom:11px}
+.op-detail-photo{height:100%;background-image:var(--model-image);background-repeat:no-repeat;background-size:170% auto;background-position:var(--model-pos)}
+.op-detail-gradient{position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(16,18,20,.12) 55%,#171a1d 98%)}
+.op-detail-title{position:absolute;left:15px;right:15px;bottom:14px}.op-detail-title .role{font-size:11px;color:#ff9a72;font-weight:900;letter-spacing:.12em}.op-detail-title h2{margin:3px 0 0;font-size:23px}
+.image-source{font-size:10px;color:#757c83;margin:7px 2px 0}
+@media(max-width:720px){.operative-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.op-tile{min-height:218px}.op-photo{height:163px}}
+@media(max-width:390px){.operative-gallery{gap:8px}.op-label{padding:9px 9px 10px}.op-label strong{font-size:14px}}
+
+
+/* v1.3: datacard horizontal portrait treatment */
+.op-tile{min-height:176px;background:#171a1d}
+.op-photo{height:102px;background-size:cover!important;background-position:center!important;background-color:#101214}
+.op-tile .fade{top:54px;height:52px}
+.op-label{background:#181b1e;padding:11px 12px 12px}
+.op-detail-head{height:178px;background:#101214}
+.op-detail-photo{background-size:cover!important;background-position:center!important}
+.op-detail-gradient{background:linear-gradient(180deg,transparent 35%,rgba(15,17,19,.15) 55%,#171a1d 100%)}
+@media(max-width:720px){.op-tile{min-height:164px}.op-photo{height:94px}.op-detail-head{height:160px}}
+
+
+/* v1.4 - exact embedded miniature images extracted from the PDF */
+.op-photo{
+  background-size:contain!important;
+  background-position:center bottom!important;
+  background-color:#14171a!important;
+  background-image:
+    radial-gradient(circle at 50% 70%,rgba(230,92,43,.12),transparent 55%),
+    var(--model-image)!important;
+}
+.op-detail-photo{
+  background-size:contain!important;
+  background-position:center bottom!important;
+  background-color:#121416!important;
+  background-image:
+    radial-gradient(circle at 50% 65%,rgba(230,92,43,.14),transparent 58%),
+    var(--model-image)!important;
+}
+
+
+/* v1.5 - keep full index; miniature image sits inside operative title row */
+.team-hero,.operative-gallery,.op-detail-head,.detail-back,.image-source{display:none!important}
+
+.op-title-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-height:58px;
+  margin:-2px -2px 8px 0;
+}
+.op-title-text{
+  min-width:0;
+  flex:1;
+}
+.op-title-text h3{
+  margin:0 0 4px;
+}
+.op-title-mini{
+  flex:0 0 auto;
+  width:126px;
+  height:54px;
+  background-repeat:no-repeat;
+  background-size:contain;
+  background-position:right center;
+}
+@media(max-width:520px){
+  .op-title-mini{width:108px;height:48px}
+}
+
+
+.team-select{color:var(--text);outline:none;cursor:pointer}
+.team-select option{background:#1b1e21;color:#fff}
+.team-accent{color:var(--accent);font-weight:800}
+
+/* v1.8.8 — ranged / melee weapon distinction */
+.weapon-type{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:2.8em;margin-right:7px;padding:2px 7px;border-radius:999px;
+  font-size:11px;font-weight:800;letter-spacing:.04em;vertical-align:1px;
+  border:1px solid rgba(255,255,255,.14)
+}
+.weapon-type.ranged{background:rgba(255,255,255,.08)}
+.weapon-type.melee{background:rgba(255,255,255,.16)}
+.weapon-ranged,.weapon-melee{position:relative}
+
+/* v1.9.0 */
+.operative-meta{display:flex;flex-direction:column;gap:3px}
+.operative-type{font-weight:700}
+.operative-stats{font-variant-numeric:tabular-nums}
+.weapon .inline{margin-top:8px}
+
+/* v1.9.1 — inline glossary terms in prose */
+.term-link{
+  display:inline;
+  padding:0;
+  margin:0;
+  border:0;
+  border-bottom:1px dotted currentColor;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  font-weight:700;
+  line-height:inherit;
+  cursor:pointer;
+}
+.term-link:hover,.term-link.open{border-bottom-style:solid}
+.prose-inline{margin-top:8px}
+.term-source{
+  display:inline-block;
+  margin-right:6px;
+  padding:1px 6px;
+  border-radius:999px;
+  font-size:10px;
+  font-weight:800;
+  opacity:.72;
+  border:1px solid currentColor;
+}
