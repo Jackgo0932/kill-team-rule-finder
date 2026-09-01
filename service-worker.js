@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.1.3.6-kasrkin-image-mapping-fix";
+const CACHE = "kt-rule-finder-v2.1.6.5-unified-flow-step-explanations";
 const APP_SHELL = [
   "./",
   "./index.html",
