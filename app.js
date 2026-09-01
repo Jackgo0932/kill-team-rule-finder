@@ -11,8 +11,8 @@ const S={
   fav:new Set(JSON.parse(localStorage.getItem("ktFav")||"[]"))
 };
 
-const allTabs=["全部","核心","武器規則","陣營規則","戰略計謀","交戰計謀","裝備","特工"];
-const teamTabs=["全部","陣營規則","戰略計謀","交戰計謀","裝備","特工"];
+const allTabs=["全部","核心","武器規則","小隊資訊","陣營規則","戰略計謀","交戰計謀","裝備","特工"];
+const teamTabs=["全部","小隊資訊","陣營規則","戰略計謀","交戰計謀","裝備","特工"];
 const visibleTabs=()=>S.view==="team"?teamTabs:allTabs;
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const match=(o,q)=>!q||JSON.stringify(o).toLowerCase().includes(q.toLowerCase().trim());
@@ -24,9 +24,10 @@ function loadData(){
   TEAMS = {
     pm: window.KT_PLAGUE_MARINES,
     aod: window.KT_ANGELS_OF_DEATH,
-    wk: window.KT_WRECKA_KREW
+    wk: window.KT_WRECKA_KREW,
+    mw: window.KT_MURDERWING
   };
-  if (!TEAMS.pm || !TEAMS.aod || !TEAMS.wk) {
+  if (!TEAMS.pm || !TEAMS.aod || !TEAMS.wk || !TEAMS.mw) {
     throw new Error("Team data scripts did not load.");
   }
   KW = Object.fromEntries(KEYWORDS.map(x=>[x[0],{id:x[0],name:x[1],en:x[2],text:x[3]}]));
@@ -48,17 +49,19 @@ function star(id){
   return `<button class="star ${S.fav.has(fid)?"on":""}" onclick="fav('${id}')">★</button>`;
 }
 
-function chip(id,instance){
-  const k=KW[id];
+const ruleId=r=>Array.isArray(r)?r[0]:r;
+const ruleLabel=r=>Array.isArray(r)?r[1]:(KW[ruleId(r)]?.name||"");
+function chip(rule,instance){
+  const id=ruleId(rule),k=KW[id];
   if(!k)return "";
   const key=S.team+":"+instance,o=S.open.has(key);
-  return `<button class="chip ${o?"open":""}" onclick="openRule('${instance}')">${esc(k.name)} · ${esc(k.en)}</button>`;
+  return `<button class="chip ${o?"open":""}" onclick="openRule('${instance}')">${esc(ruleLabel(rule))} · ${esc(k.en)}</button>`;
 }
-function chipExplain(ids,instances){
-  for(let i=0;i<ids.length;i++){
+function chipExplain(rules,instances){
+  for(let i=0;i<rules.length;i++){
     if(S.open.has(S.team+":"+instances[i])){
-      const k=KW[ids[i]];
-      if(k)return `<div class="inline"><b>${esc(k.name)}</b>：${esc(k.text)}</div>`;
+      const k=KW[ruleId(rules[i])];
+      if(k)return `<div class="inline"><b>${esc(ruleLabel(rules[i]))}</b>：${esc(k.text)}</div>`;
     }
   }
   return "";
@@ -113,8 +116,25 @@ function opCard(op){
         <span class="stats">攻擊 ${w[2]} · 命中 ${w[3]} · 傷害 ${w[4]}</span>
       </div>
       ${(()=>{
-        const instances=w[5].map((id,ki)=>`op:${op.id}:w:${wi}:k:${ki}:${id}`);
-        return `<div class="chips">${w[5].map((id,ki)=>chip(id,instances[ki])).join("")}</div>${chipExplain(w[5],instances)}`;
+        const instances=w[5].map((rule,ki)=>`op:${op.id}:w:${wi}:k:${ki}:${ruleId(rule)}`);
+        const customIds=w[6]||[];
+        const customInstances=customIds.map((id,ki)=>`op:${op.id}:w:${wi}:custom:${ki}:${id}`);
+        const customRules=team().weaponRules||{};
+        const weaponKeywords=team().weaponKeywords||{};
+        const profileRule=id=>customRules[id]||weaponKeywords[id];
+        const profileType=id=>customRules[id]?"陣營專用規則":weaponKeywords[id]?"武器關鍵字":"";
+        const customChips=customIds.map((id,ki)=>{
+          const rule=profileRule(id);
+          if(!rule)return "";
+          const k=S.team+":"+customInstances[ki];
+          return `<button class="chip custom-rule ${S.open.has(k)?"open":""}" onclick="openRule('${customInstances[ki]}')">${esc(rule[0])} · ${esc(rule[1])}</button>`;
+        }).join("");
+        const customExplain=customIds.map((id,ki)=>{
+          const rule=profileRule(id);
+          const k=S.team+":"+customInstances[ki];
+          return rule&&S.open.has(k)?`<div class="inline"><span class="term-source">${esc(profileType(id))}</span><b>${esc(rule[0])} · ${esc(rule[1])}</b>：${esc(rule[2])}</div>`:"";
+        }).join("");
+        return `<div class="chips">${w[5].map((rule,ki)=>chip(rule,instances[ki])).join("")}${customChips}</div>${chipExplain(w[5],instances)}${customExplain}`;
       })()}
     </div>`).join("")}
   </div>`;
@@ -122,6 +142,14 @@ function opCard(op){
 
 function items(){
   const a=[],t=team();
+  if(t.composition) a.push({
+    kind:"小隊資訊",id:"info:composition",s:["小隊組成",t.composition],
+    html:`<div class="card">${star("info:composition")}<h3>小隊組成</h3><div class="meta">${esc(t.name)} · 編成條件</div><div class="body">${esc(t.composition)}</div></div>`
+  });
+  if(t.archetypes) a.push({
+    kind:"小隊資訊",id:"info:archetypes",s:["任務原型",...t.archetypes],
+    html:`<div class="card">${star("info:archetypes")}<h3>任務原型</h3><div class="meta">${esc(t.name)} · Archetypes</div><div class="body">可使用：${t.archetypes.map(esc).join("、")}。原型會在特定任務包（例如 Approved Ops）中使用，實際使用方式依該任務流程決定。</div></div>`
+  });
   QUICK.forEach(x=>a.push({kind:"核心",id:"q:"+x[0],s:x,html:`<div class="card">${star("q:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">核心規則</div><div class="body">${esc(x[2])}</div></div>`}));
   KEYWORDS.forEach(x=>a.push({kind:"武器規則",id:"k:"+x[0],s:x,html:`<div class="card">${star("k:"+x[0])}<h3>${esc(x[1])} <span class="meta">${esc(x[2])}</span></h3><div class="body">${esc(x[3])}</div></div>`}));
   t.rules.forEach(x=>a.push({kind:"陣營規則",id:"r:"+x[0],s:x,html:`<div class="card">${star("r:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">${esc(t.name)} · 陣營規則</div>${markedProse(x[2],`rule:${x[0]}`)}</div>`}));
@@ -142,7 +170,7 @@ function render(){
   document.querySelector("#teamSelect").value=S.team;
   document.querySelector("#navTeamName").textContent=team().name;
   let a=items();
-  if(S.view==="team")a=a.filter(x=>["陣營規則","戰略計謀","交戰計謀","裝備","特工"].includes(x.kind));
+  if(S.view==="team")a=a.filter(x=>["小隊資訊","陣營規則","戰略計謀","交戰計謀","裝備","特工"].includes(x.kind));
   if(S.view==="fav")a=a.filter(x=>S.fav.has(S.team+":"+x.id));
   if(S.tab!=="全部")a=a.filter(x=>x.kind===S.tab);
   a=a.filter(x=>match(x.s,S.q));

@@ -1,6 +1,9 @@
 window.KT_PLAGUE_MARINES = {
   "name": "瘟疫戰士",
   "en": "PLAGUE MARINES",
+  "composition": "1 名瘟疫戰士勇士（Champion），再從擲彈兵、鬥士、重砲手、持徽手、惡瘟投放者、士兵中選擇 5 名。上述 6 種特工每種最多只能編入 1 名。",
+  "archetypes": ["安全保護", "搜索與摧毀"],
+  "weaponKeywords": {"psychic": ["靈能", "PSYCHIC", "武器關鍵字；部分規則會特別引用靈能武器。"]},
   "rules": [
     [
       "poison",
@@ -107,8 +110,8 @@ window.KT_PLAGUE_MARINES = {
           "3+",
           "3/5",
           [
-            "range",
-            "piercing"
+            ["range", "範圍 8\""],
+            ["piercing", "穿刺 1"]
           ]
         ],
         [
@@ -118,10 +121,10 @@ window.KT_PLAGUE_MARINES = {
           "3+",
           "4/5",
           [
-            "range",
+            ["range", "範圍 8\""],
             "hot",
             "lethal5",
-            "piercing"
+            ["piercing", "穿刺 1"]
           ]
         ],
         [
@@ -189,7 +192,7 @@ window.KT_PLAGUE_MARINES = {
           "3+",
           "3/4",
           [
-            "range"
+            ["range", "範圍 8\""]
           ]
         ],
         [
@@ -227,7 +230,7 @@ window.KT_PLAGUE_MARINES = {
           "3+",
           "3/4",
           [
-            "range"
+            ["range", "範圍 8\""]
           ]
         ],
         [
@@ -237,10 +240,10 @@ window.KT_PLAGUE_MARINES = {
           "2+",
           "3/3",
           [
-            "range",
+            ["range", "範圍 7\""],
             "saturate",
             "severe",
-            "torrent",
+            ["torrent", "洪流 2\""],
             "poison"
           ]
         ],
@@ -269,7 +272,7 @@ window.KT_PLAGUE_MARINES = {
           "3+",
           "3/4",
           [
-            "range"
+            ["range", "範圍 8\""]
           ]
         ],
         [
@@ -309,10 +312,12 @@ window.KT_PLAGUE_MARINES = {
           "3+",
           "3/7",
           [
+            ["range", "範圍 7\""],
             "saturate",
             "severe",
             "poison"
-          ]
+          ],
+          ["psychic"]
         ],
         [
           "瘟疫之風",
@@ -323,9 +328,10 @@ window.KT_PLAGUE_MARINES = {
           [
             "saturate",
             "severe",
-            "torrent",
+            ["torrent", "洪流 1\""],
             "poison"
-          ]
+          ],
+          ["psychic"]
         ],
         [
           "腐化法杖",
@@ -338,7 +344,8 @@ window.KT_PLAGUE_MARINES = {
             "shock",
             "stun",
             "poison"
-          ]
+          ],
+          ["psychic"]
         ]
       ],
       "abilities": [

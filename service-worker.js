@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.0.1-mobile-update";
+const CACHE = "kt-rule-finder-v2.0.7-murderwing";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -14,6 +14,7 @@ const APP_SHELL = [
   "./data/plague_marines.js",
   "./data/angels_of_death.js",
   "./data/wrecka_krew.js",
+  "./data/murderwing.js",
   "./assets/plague_marines/bombardier.webp",
   "./assets/plague_marines/caster.webp",
   "./assets/plague_marines/champion.webp",
@@ -29,7 +30,7 @@ const APP_SHELL = [
   "./assets/angels_of_death/heavy-gunner.webp",
   "./assets/angels_of_death/intercessor-gunner.webp",
   "./assets/angels_of_death/intercessor-sergeant.webp",
-  "./assets/angels_of_death/intercessor-warrior.webp"
+  "./assets/angels_of_death/intercessor-warrior.webp",
   "./assets/wrecka_krew/bomb-squig.webp",
   "./assets/wrecka_krew/boss-nob.webp",
   "./assets/wrecka_krew/demolisha.webp",
@@ -37,6 +38,15 @@ const APP_SHELL = [
   "./assets/wrecka_krew/gunner.webp",
   "./assets/wrecka_krew/krusha.webp",
   "./assets/wrecka_krew/rokkiteer.webp",
+  "./assets/murderwing/chaos-lord.webp",
+  "./assets/murderwing/warp-talon.webp",
+  "./assets/murderwing/skysear.webp",
+  "./assets/murderwing/depredator.webp",
+  "./assets/murderwing/huntmaster.webp",
+  "./assets/murderwing/champion.webp",
+  "./assets/murderwing/shrieker.webp",
+  "./assets/murderwing/raptor.webp",
+  "./assets/murderwing/curseclaw.webp",
 ];
 
 self.addEventListener("install", event => {
