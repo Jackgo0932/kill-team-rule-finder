@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.1.3-kasrkin";
+const CACHE = "kt-rule-finder-v2.1.3.1-deathwatch-image-mapping-fix";
 const APP_SHELL = [
   "./",
   "./index.html",
