@@ -201,7 +201,18 @@ function setupPWA(){
   });
 
   if("serviceWorker" in navigator){
-    window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(console.error));
+    window.addEventListener("load",async()=>{
+      try{
+        const reg=await navigator.serviceWorker.register("./service-worker.js");
+        await reg.update();
+        let refreshing=false;
+        navigator.serviceWorker.addEventListener("controllerchange",()=>{
+          if(refreshing)return;
+          refreshing=true;
+          location.reload();
+        });
+      }catch(err){console.error(err)}
+    });
   }
 }
 

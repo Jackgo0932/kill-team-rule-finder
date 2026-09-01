@@ -157,3 +157,23 @@ linear-gradient(110deg,rgba(230,92,43,.18),transparent 42%),linear-gradient(180d
   opacity:.72;
   border:1px solid currentColor;
 }
+
+/* v2.0.1 — mobile team selector */
+@media(max-width:640px){
+  .top{align-items:flex-start}
+  .brand{min-width:0;flex:1}
+  .brand h1{font-size:18px}
+  .team-select{
+    display:block!important;
+    max-width:128px;
+    min-width:108px;
+    padding:8px 28px 8px 10px;
+    flex:0 0 auto;
+  }
+}
+@media(max-width:390px){
+  .brand h1{font-size:16px}
+  .brand small{font-size:10px}
+  .bar{height:32px}
+  .team-select{max-width:118px;min-width:100px;font-size:12px}
+}

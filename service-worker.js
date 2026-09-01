@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.0.0-wrecka-krew";
+const CACHE = "kt-rule-finder-v2.0.1-mobile-update";
 const APP_SHELL = [
   "./",
   "./index.html",
