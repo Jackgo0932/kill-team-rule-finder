@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.1.1-celestian-insidiants";
+const CACHE = "kt-rule-finder-v2.1.3-kasrkin";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -18,6 +18,8 @@ const APP_SHELL = [
   "./data/legionary.js",
   "./data/deathwatch.js",
   "./data/celestian_insidiants.js",
+  "./data/canoptek_circle.js",
+  "./data/kasrkin.js",
   "./assets/plague_marines/bombardier.webp",
   "./assets/plague_marines/caster.webp",
   "./assets/plague_marines/champion.webp",
@@ -69,6 +71,19 @@ const APP_SHELL = [
   "./assets/celestian_insidiants/mortisanctus.webp",
   "./assets/celestian_insidiants/reliquarius.webp",
   "./assets/celestian_insidiants/warrior.webp",
+  "./assets/canoptek_circle/geomancer.webp",
+  "./assets/canoptek_circle/accelerator.webp",
+  "./assets/canoptek_circle/reanimator.webp",
+  "./assets/canoptek_circle/warrior.webp",
+  "./assets/canoptek_circle/tomb-crawler.webp",
+  "./assets/kasrkin/sergeant.webp",
+  "./assets/kasrkin/combat-medic.webp",
+  "./assets/kasrkin/demo-trooper.webp",
+  "./assets/kasrkin/gunner.webp",
+  "./assets/kasrkin/recon-trooper.webp",
+  "./assets/kasrkin/sharpshooter.webp",
+  "./assets/kasrkin/trooper.webp",
+  "./assets/kasrkin/vox-trooper.webp",
 ];
 
 self.addEventListener("install", event => {

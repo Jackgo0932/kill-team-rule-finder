@@ -28,9 +28,11 @@ function loadData(){
     mw: window.KT_MURDERWING,
     leg: window.KT_LEGIONARY,
     dw: window.KT_DEATHWATCH,
-    ci: window.KT_CELESTIAN_INSIDIANTS
+    ci: window.KT_CELESTIAN_INSIDIANTS,
+    cc: window.KT_CANOPTEK_CIRCLE,
+    ks: window.KT_KASRKIN
   };
-  if (!TEAMS.pm || !TEAMS.aod || !TEAMS.wk || !TEAMS.mw || !TEAMS.leg || !TEAMS.dw || !TEAMS.ci) {
+  if (!TEAMS.pm || !TEAMS.aod || !TEAMS.wk || !TEAMS.mw || !TEAMS.leg || !TEAMS.dw || !TEAMS.ci || !TEAMS.cc || !TEAMS.ks) {
     throw new Error("Team data scripts did not load.");
   }
   KW = Object.fromEntries(KEYWORDS.map(x=>[x[0],{id:x[0],name:x[1],en:x[2],text:x[3]}]));
