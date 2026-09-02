@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.1.6.5-unified-flow-step-explanations";
+const CACHE = "kt-rule-finder-v2.1.8-tac-ops";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -11,6 +11,8 @@ const APP_SHELL = [
   "./VERSION.txt",
   "./data/core_rules.js",
   "./data/weapon_rules.js",
+  "./data/universal_equipment.js",
+  "./data/tac_ops.js",
   "./data/plague_marines.js",
   "./data/angels_of_death.js",
   "./data/wrecka_krew.js",

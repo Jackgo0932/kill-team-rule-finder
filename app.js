@@ -1,4 +1,4 @@
-let KEYWORDS=[], QUICK=[], TEAMS={};
+let KEYWORDS=[], QUICK=[], TEAMS={}, UNIVERSAL_EQUIPMENT=[], TAC_OPS=[];
 let KW={};
 let TERM_INDEX={};
 
@@ -12,8 +12,8 @@ const S={
   fav:new Set(JSON.parse(localStorage.getItem("ktFav")||"[]"))
 };
 
-const allTabs=["全部","核心","武器規則","小隊資訊","陣營規則","戰略計謀","交戰計謀","裝備","特工"];
-const teamTabs=["全部","小隊資訊","陣營規則","戰略計謀","交戰計謀","裝備","特工"];
+const allTabs=["全部","核心","武器規則","通用裝備","Tac Ops","小隊資訊","陣營規則","戰略計謀","交戰計謀","陣營裝備","特工"];
+const teamTabs=["全部","小隊資訊","陣營規則","戰略計謀","交戰計謀","Tac Ops","通用裝備","陣營裝備","特工"];
 const visibleTabs=()=>S.view==="team"?teamTabs:allTabs;
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const match=(o,q)=>!q||JSON.stringify(o).toLowerCase().includes(q.toLowerCase().trim());
@@ -22,6 +22,9 @@ const team=()=>TEAMS[S.team];
 function loadData(){
   QUICK = window.KT_CORE_RULES || [];
   KEYWORDS = window.KT_WEAPON_RULES || [];
+  UNIVERSAL_EQUIPMENT = window.KT_UNIVERSAL_EQUIPMENT || [];
+  TAC_OPS = window.KT_TAC_OPS || [];
+  if (!window.KT_UNIVERSAL_EQUIPMENT) console.error("Universal equipment data script did not load.");
   TEAMS = {
     pm: window.KT_PLAGUE_MARINES,
     aod: window.KT_ANGELS_OF_DEATH,
@@ -159,13 +162,17 @@ function items(){
   });
   QUICK.forEach(x=>a.push({kind:"核心",id:"q:"+x[0],s:x,html:`<div class="card">${star("q:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">核心規則</div><div class="body">${esc(x[2])}</div></div>`}));
   KEYWORDS.forEach(x=>a.push({kind:"武器規則",id:"k:"+x[0],s:x,html:`<div class="card">${star("k:"+x[0])}<h3>${esc(x[1])} <span class="meta">${esc(x[2])}</span></h3><div class="body">${esc(x[3])}</div></div>`}));
+  const TAC_ARCHETYPES={"pm":["seek","security"],"aod":["seek","security"],"wk":["security","seek"],"mw":["seek","infiltration"],"leg":["seek","infiltration"],"dw":["seek","security"],"ci":["infiltration","security"],"cc":["recon","security"],"ks":["security","seek"]};
+  const allowedTac=S.view==="team"?(TAC_ARCHETYPES[S.team]||[]):["recon","security","seek","infiltration"];
+  TAC_OPS.filter(x=>allowedTac.includes(x[0])).forEach(x=>a.push({kind:"Tac Ops",id:"to:"+x[3],s:x,html:`<div class="card">${star("to:"+x[3])}<h3>${esc(x[4])} <span class="meta">${esc(x[5])}</span></h3><div class="meta">${esc(x[1])} · Tac Op</div><div class="body"><b>揭示：</b>${esc(x[6])}<br><br>${x[7]!=="—"?`<b>規則／行動：</b>${esc(x[7])}<br><br>`:""}<b>得分：</b>${esc(x[8])}</div></div>`}));
+  UNIVERSAL_EQUIPMENT.forEach(x=>a.push({kind:"通用裝備",id:"ue:"+x[0],s:x,html:`<div class="card">${star("ue:"+x[0])}<h3>${esc((x[3]?x[3]+" ":"")+x[1])}</h3><div class="meta">${esc(x[2])} · 通用裝備</div><div class="body">${esc(x[4]).replace(/\n/g,"<br>")}</div></div>`}));
   t.rules.forEach(x=>a.push({kind:"陣營規則",id:"r:"+x[0],s:x,html:`<div class="card">${star("r:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">${esc(t.name)} · 陣營規則</div>${markedProse(x[2],`rule:${x[0]}`)}</div>`}));
   t.ploys.forEach(x=>{
     const kind=x[2]==="交戰計謀"?"交戰計謀":"戰略計謀";
     a.push({kind,id:"p:"+x[0],s:x,html:`<div class="card">${star("p:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">${esc(t.name)} · ${esc(x[2])}</div>${markedProse(x[3],`ploy:${x[0]}`)}</div>`});
   });
   if(t.ploys2) t.ploys2.forEach(x=>a.push({kind:"交戰計謀",id:"p2:"+x[0],s:x,html:`<div class="card">${star("p2:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">${esc(t.name)} · ${esc(x[2])}</div>${markedProse(x[3],`ploy2:${x[0]}`)}</div>`}));
-  t.equipment.forEach(x=>a.push({kind:"裝備",id:"e:"+x[0],s:x,html:`<div class="card">${star("e:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">${esc(t.name)} · 陣營裝備</div>${markedProse(x[2],`equip:${x[0]}`)}</div>`}));
+  t.equipment.forEach(x=>a.push({kind:"陣營裝備",id:"e:"+x[0],s:x,html:`<div class="card">${star("e:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">${esc(t.name)} · 陣營裝備</div>${markedProse(x[2],`equip:${x[0]}`)}</div>`}));
   t.operatives.forEach(o=>a.push({kind:"特工",id:"op:"+o.id,s:o,html:opCard(o)}));
   return a;
 }
@@ -340,7 +347,7 @@ function render(){
   if(!tabs.includes(S.tab)) S.tab="全部";
   document.querySelector("#tabs").innerHTML=tabs.map(t=>`<button class="tab ${S.tab===t?"on":""}" onclick="tab('${t}')">${t}</button>`).join("");
   let a=items();
-  if(S.view==="team")a=a.filter(x=>["小隊資訊","陣營規則","戰略計謀","交戰計謀","裝備","特工"].includes(x.kind));
+  if(S.view==="team")a=a.filter(x=>["小隊資訊","陣營規則","戰略計謀","交戰計謀","Tac Ops","通用裝備","陣營裝備","特工"].includes(x.kind));
   if(S.view==="fav")a=a.filter(x=>S.fav.has(S.team+":"+x.id));
   if(S.tab!=="全部")a=a.filter(x=>x.kind===S.tab);
   a=a.filter(x=>match(x.s,S.q));
