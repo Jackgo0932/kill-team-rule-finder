@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.1.8-tac-ops";
+const CACHE = "kt-rule-finder-v2.1.8.1-tac-ops-commentary";
 const APP_SHELL = [
   "./",
   "./index.html",
