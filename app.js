@@ -1,4 +1,4 @@
-let KEYWORDS=[], QUICK=[], TEAMS={}, UNIVERSAL_EQUIPMENT=[], TAC_OPS=[];
+let KEYWORDS=[], QUICK=[], TEAMS={}, UNIVERSAL_EQUIPMENT=[], TAC_OPS=[], CRIT_OPS=[], KILL_OP=null;
 let KW={};
 let TERM_INDEX={};
 
@@ -7,14 +7,29 @@ const S={
   tab:"全部",
   view:"all",
   q:"",
+  subtab:"全部",
   open:new Set(),
   flowOpen:new Set(),
   fav:new Set(JSON.parse(localStorage.getItem("ktFav")||"[]"))
 };
 
-const allTabs=["全部","核心","武器規則","通用裝備","Tac Ops","小隊資訊","陣營規則","戰略計謀","交戰計謀","陣營裝備","特工"];
-const teamTabs=["全部","小隊資訊","陣營規則","戰略計謀","交戰計謀","Tac Ops","通用裝備","陣營裝備","特工"];
-const visibleTabs=()=>S.view==="team"?teamTabs:allTabs;
+const NAV_GROUPS={
+  all:{
+    "全部":[],
+    "規則":["核心","武器規則"],
+    "任務":["Crit Ops","Kill Op","Tac Ops"],
+    "裝備":["通用裝備","陣營裝備"],
+    "小隊":["小隊資訊","陣營規則","戰略計謀","交戰計謀","特工"]
+  },
+  team:{
+    "全部":[],
+    "規則":["小隊資訊","陣營規則"],
+    "計謀":["戰略計謀","交戰計謀"],
+    "Tac Ops":["Tac Ops"],
+    "裝備":["通用裝備","陣營裝備"],
+    "特工":["特工"]
+  }
+};
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const match=(o,q)=>!q||JSON.stringify(o).toLowerCase().includes(q.toLowerCase().trim());
 const team=()=>TEAMS[S.team];
@@ -24,6 +39,8 @@ function loadData(){
   KEYWORDS = window.KT_WEAPON_RULES || [];
   UNIVERSAL_EQUIPMENT = window.KT_UNIVERSAL_EQUIPMENT || [];
   TAC_OPS = window.KT_TAC_OPS || [];
+  CRIT_OPS = window.KT_CRIT_OPS || [];
+  KILL_OP = window.KT_KILL_OP || null;
   if (!window.KT_UNIVERSAL_EQUIPMENT) console.error("Universal equipment data script did not load.");
   TEAMS = {
     pm: window.KT_PLAGUE_MARINES,
@@ -162,6 +179,11 @@ function items(){
   });
   QUICK.forEach(x=>a.push({kind:"核心",id:"q:"+x[0],s:x,html:`<div class="card">${star("q:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">核心規則</div><div class="body">${esc(x[2])}</div></div>`}));
   KEYWORDS.forEach(x=>a.push({kind:"武器規則",id:"k:"+x[0],s:x,html:`<div class="card">${star("k:"+x[0])}<h3>${esc(x[1])} <span class="meta">${esc(x[2])}</span></h3><div class="body">${esc(x[3])}</div></div>`}));
+  CRIT_OPS.forEach(x=>a.push({kind:"Crit Ops",id:"co:"+x[0],s:x,html:`<div class="card">${star("co:"+x[0])}<h3>${esc(x[2])} <span class="meta">${esc(x[1])}</span></h3><div class="meta">Crit Op${x[3]!=="—"?" · "+esc(x[3]):""}</div><div class="body"><b>規則／行動：</b>${esc(x[4])}<br><br><b>得分：</b>${esc(x[5])}</div></div>`}));
+  if(KILL_OP){
+    const rows=KILL_OP.table.map(r=>`<tr><td>${r[0]}</td>${r.slice(1).map(v=>`<td>${v}</td>`).join("")}</tr>`).join("");
+    a.push({kind:"Kill Op",id:"ko:kill-op",s:KILL_OP,html:`<div class="card">${star("ko:kill-op")}<h3>${esc(KILL_OP.zh)} <span class="meta">${esc(KILL_OP.title)}</span></h3><div class="body">${esc(KILL_OP.body)}<div class="kill-table-wrap"><table class="kill-table"><thead><tr><th>敵方起始特工</th><th>Grade 1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead><tbody>${rows}</tbody></table></div><div class="rule-supplement"><b>規則補充</b><br>${esc(KILL_OP.note)}</div></div></div>`});
+  }
   const TAC_ARCHETYPES={"pm":["seek","security"],"aod":["seek","security"],"wk":["security","seek"],"mw":["seek","infiltration"],"leg":["seek","infiltration"],"dw":["seek","security"],"ci":["infiltration","security"],"cc":["recon","security"],"ks":["security","seek"]};
   const allowedTac=S.view==="team"?(TAC_ARCHETYPES[S.team]||[]):["recon","security","seek","infiltration"];
   TAC_OPS.filter(x=>allowedTac.includes(x[0])).forEach(x=>a.push({kind:"Tac Ops",id:"to:"+x[3],s:x,html:`<div class="card">${star("to:"+x[3])}<h3>${esc(x[4])} <span class="meta">${esc(x[5])}</span></h3><div class="meta">${esc(x[1])} · Tac Op</div><div class="body"><b>揭示：</b>${esc(x[6])}<br><br>${x[7]!=="—"?`<b>規則／行動：</b>${esc(x[7])}<br><br>`:""}<b>得分：</b>${esc(x[8])}${x[9]?`<div class="rule-supplement"><b>規則補充</b><br>${esc(x[9])}</div>`:""}</div></div>`}));
@@ -343,20 +365,30 @@ function render(){
   document.querySelector("#teamSelect").value=S.team;
   document.querySelector("#navTeamName").textContent=team().name;
   if(isFlow){ renderFlow(); return; }
-  const tabs=visibleTabs();
-  if(!tabs.includes(S.tab)) S.tab="全部";
-  document.querySelector("#tabs").innerHTML=tabs.map(t=>`<button class="tab ${S.tab===t?"on":""}" onclick="tab('${t}')">${t}</button>`).join("");
+  const groups=NAV_GROUPS[S.view==="team"?"team":"all"];
+  const tabs=Object.keys(groups);
+  if(!tabs.includes(S.tab)){S.tab="全部";S.subtab="全部";}
+  const subs=groups[S.tab]||[];
+  if(S.subtab!=="全部"&&!subs.includes(S.subtab))S.subtab="全部";
+  document.querySelector("#tabs").innerHTML=
+    `<div class="main-tabs">${tabs.map(t=>`<button class="tab ${S.tab===t?"on":""}" onclick="tab('${t}')">${t}</button>`).join("")}</div>`+
+    (subs.length?`<div class="subtabs">${["全部",...subs].map(t=>`<button class="subtab ${S.subtab===t?"on":""}" onclick="subtab('${t}')">${t}</button>`).join("")}</div>`:"");
   let a=items();
   if(S.view==="team")a=a.filter(x=>["小隊資訊","陣營規則","戰略計謀","交戰計謀","Tac Ops","通用裝備","陣營裝備","特工"].includes(x.kind));
   if(S.view==="fav")a=a.filter(x=>S.fav.has(S.team+":"+x.id));
-  if(S.tab!=="全部")a=a.filter(x=>x.kind===S.tab);
+  if(S.tab!=="全部"){
+    const kinds=groups[S.tab]||[];
+    const active=S.subtab!=="全部"?[S.subtab]:kinds;
+    if(active.length)a=a.filter(x=>active.includes(x.kind));
+  }
   a=a.filter(x=>match(x.s,S.q));
   document.querySelector("#content").innerHTML=a.length
     ? `<div class="count"><span class="team-accent">${esc(team().name)}</span> · ${a.length} 筆結果</div><div class="grid">${a.map(x=>x.html).join("")}</div>`
     : `<div class="empty">找不到符合的規則</div>`;
 }
 
-function tab(t){S.tab=t;render()}
+function tab(t){S.tab=t;S.subtab="全部";S.open.clear();render()}
+function subtab(t){S.subtab=t;S.open.clear();render()}
 function openRule(instance){
   const k=S.team+":"+instance;
   if(S.open.has(k)) S.open.clear();
@@ -371,6 +403,7 @@ function bindUI(){
     S.team=e.target.value;
     localStorage.setItem("ktTeam",S.team);
     S.tab="全部";
+    S.subtab="全部";
     S.open.clear();
     S.flowOpen.clear();
     render();
@@ -380,6 +413,7 @@ function bindUI(){
     b.classList.add("on");
     S.view=b.dataset.view;
     S.tab="全部";
+    S.subtab="全部";
     render();
   });
 }

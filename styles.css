@@ -211,3 +211,15 @@ linear-gradient(110deg,rgba(230,92,43,.18),transparent 42%),linear-gradient(180d
 .flow-inline .term-source{display:block;color:var(--accent);font-size:10px;font-weight:900;letter-spacing:.08em;margin-bottom:3px}
 
 .rule-supplement{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:.94em}.rule-supplement b{font-weight:800}
+
+.kill-table-wrap{overflow-x:auto;margin-top:12px}
+.kill-table{width:100%;border-collapse:collapse;font-size:.88em;white-space:nowrap}
+.kill-table th,.kill-table td{padding:7px 8px;border:1px solid var(--line);text-align:center}
+.kill-table th{font-weight:800}
+
+#tabs{padding-bottom:0}
+.main-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:9px;scrollbar-width:none}
+.main-tabs::-webkit-scrollbar,.subtabs::-webkit-scrollbar{display:none}
+.subtabs{display:flex;gap:7px;overflow-x:auto;padding:0 0 10px;scrollbar-width:none}
+.subtab{flex:0 0 auto;border:1px solid var(--line);background:transparent;border-radius:999px;padding:6px 11px;font-size:.84rem;color:inherit}
+.subtab.on{font-weight:800;background:var(--card)}

@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.1.8.1-tac-ops-commentary";
+const CACHE = "kt-rule-finder-v2.2.0-information-architecture";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -13,6 +13,7 @@ const APP_SHELL = [
   "./data/weapon_rules.js",
   "./data/universal_equipment.js",
   "./data/tac_ops.js",
+  "./data/mission_ops.js",
   "./data/plague_marines.js",
   "./data/angels_of_death.js",
   "./data/wrecka_krew.js",
