@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.2.0-information-architecture";
+const CACHE = "kt-rule-finder-v2.2.0.2-readme-refresh";
 const APP_SHELL = [
   "./",
   "./index.html",

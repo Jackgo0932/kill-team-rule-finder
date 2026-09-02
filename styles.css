@@ -217,9 +217,29 @@ linear-gradient(110deg,rgba(230,92,43,.18),transparent 42%),linear-gradient(180d
 .kill-table th,.kill-table td{padding:7px 8px;border:1px solid var(--line);text-align:center}
 .kill-table th{font-weight:800}
 
-#tabs{padding-bottom:0}
-.main-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:9px;scrollbar-width:none}
+#tabs{padding-bottom:0;display:block}
+.main-tabs,
+.subtabs{
+  position:static;
+  width:100%;
+  display:flex;
+  flex-wrap:nowrap;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}
+.main-tabs{gap:8px;padding-bottom:8px}
+.subtabs{
+  gap:7px;
+  padding:0 0 10px;
+  clear:both;
+}
 .main-tabs::-webkit-scrollbar,.subtabs::-webkit-scrollbar{display:none}
-.subtabs{display:flex;gap:7px;overflow-x:auto;padding:0 0 10px;scrollbar-width:none}
 .subtab{flex:0 0 auto;border:1px solid var(--line);background:transparent;border-radius:999px;padding:6px 11px;font-size:.84rem;color:inherit}
 .subtab.on{font-weight:800;background:var(--card)}
+@media (max-width:640px){
+  #tabs{display:block}
+  .main-tabs{min-height:40px}
+  .subtabs{min-height:38px;margin-top:0}
+}
