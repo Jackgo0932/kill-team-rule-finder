@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.2.0.2-readme-refresh";
+const CACHE = "kt-rule-finder-v2.2.3-approved-ops-zh-terms";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -14,6 +14,7 @@ const APP_SHELL = [
   "./data/universal_equipment.js",
   "./data/tac_ops.js",
   "./data/mission_ops.js",
+  "./data/approved_ops.js",
   "./data/plague_marines.js",
   "./data/angels_of_death.js",
   "./data/wrecka_krew.js",

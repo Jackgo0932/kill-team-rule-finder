@@ -6,7 +6,7 @@
 
 ## 目前版本
 
-**v2.2.0.2 — README 整理**
+**v2.2.3 — Approved Ops 中文術語統一**
 
 網站採純靜態架構，可部署於 GitHub Pages，並支援 PWA／離線快取。
 
@@ -29,17 +29,19 @@
 第一層：
 
 - **全部**
-- **規則**
-- **任務**
+- **核心規則**
+- **Approved Ops 2025**
 - **裝備**
 - **小隊**
 
 第二層依第一層內容顯示：
 
-- 規則 → 核心、武器規則
-- 任務 → Crit Ops、Kill Op、Tac Ops
+- 核心規則 → 核心、武器規則
+- Approved Ops 2025 → 對戰流程、Crit Ops、Kill Op、Tac Ops、地圖
 - 裝備 → 通用裝備、陣營裝備
 - 小隊 → 小隊資訊、陣營規則、戰略計謀、交戰計謀、特工
+
+Approved Ops 2025 被視為一套完整的對戰／任務框架，而不是單純與核心規則平級的「任務」資料。Crit Ops、Kill Op、Tac Ops 因此集中於此分類；實戰用的「流程」頁仍保留為獨立快速入口。
 
 「全部」搜尋仍會跨分類搜尋所有資料。
 
@@ -53,7 +55,7 @@
 - 通用裝備／陣營裝備
 - 特工
 
-**Crit Ops 與 Kill Op 為共通規則，因此不放在小隊頁，統一於「查規則 → 任務」查詢。**
+**Crit Ops 與 Kill Op 為共通規則，因此不放在小隊頁，統一於「查規則 → Approved Ops 2025」查詢。**
 
 Tac Ops 會依目前小隊的 Archetype 自動過濾。
 
@@ -115,6 +117,30 @@ Tac Ops 亦包含部分容易誤判的規則補充與官方更新後的互動說
 資料使用傳統 JavaScript 全域資料檔載入，而不是依賴伺服器 API，因此可直接部署到 GitHub Pages，並配合 Service Worker 離線快取。
 
 ## 近期更新
+
+### v2.2.3
+- Approved Ops 2025 英文殘留術語進行中文化整理。
+- `Killzone` 統一使用官方簡中「杀戮区」轉繁體後的「殺戮區」。
+- `Drop Zone` 沿用官方簡中「降落区」轉繁體後的「降落區」。
+- `Kill Grade` 在目前可取得的官方簡中資料中未找到 Approved Ops 正式譯名，因此暫用「擊殺等級（Kill Grade）」；表格欄位簡化為「等級 1～5」，保留英文原詞方便核對英文卡片。
+- 地圖名稱改以中文殺戮區名稱為主，英文名稱置於括號中供核對。
+- 不把自行翻譯的 Approved Ops 專有詞標示成官方中文譯名。
+
+
+### v2.2.2
+- Approved Ops 2025 新增「對戰流程」速查卡。
+- Approved Ops 2025 新增「地圖」分類。
+- 地圖頁先收錄 Volkus、Bheta-Decima、Tomb World、Gallowdark 與 Non-specific Killzone，各 6 張配置。
+- 依官方 Tournament Companion 的提醒，不自行推測地形精確座標；在取得可靠官方地圖圖面前先提供可用地圖組與數量。
+- 對戰流程與原本獨立「流程」入口並存：前者負責 Approved Ops 規則查詢，後者仍作為實戰流程導覽。
+
+
+### v2.2.1
+- 「查規則」第一層的「規則」改為「核心規則」。
+- 「任務」改為「Approved Ops 2025」，將 Crit Ops、Kill Op、Tac Ops 集中在同一套對戰框架下。
+- 小隊頁維持精簡，不加入共通的 Crit Ops／Kill Op。
+- 「流程」頁維持獨立實戰入口，不與資料分類綁死。
+
 
 ### v2.2.0.2
 - 重新整理 README。

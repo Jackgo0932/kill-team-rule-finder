@@ -243,3 +243,11 @@ linear-gradient(110deg,rgba(230,92,43,.18),transparent 42%),linear-gradient(180d
   .main-tabs{min-height:40px}
   .subtabs{min-height:38px;margin-top:0}
 }
+
+.approved-flow{display:grid;gap:12px}
+.approved-step{display:grid;grid-template-columns:28px 1fr;gap:9px;align-items:start}
+.approved-step-num{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border:1px solid var(--line);border-radius:50%;font-weight:800;font-size:.82rem}
+.approved-step>div>div{margin-top:3px}
+.map-sets{display:grid;gap:8px;margin-top:8px}
+.map-set{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:10px}
+.map-count{white-space:nowrap;font-weight:800}

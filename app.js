@@ -1,4 +1,4 @@
-let KEYWORDS=[], QUICK=[], TEAMS={}, UNIVERSAL_EQUIPMENT=[], TAC_OPS=[], CRIT_OPS=[], KILL_OP=null;
+let KEYWORDS=[], QUICK=[], TEAMS={}, UNIVERSAL_EQUIPMENT=[], TAC_OPS=[], CRIT_OPS=[], KILL_OP=null, APPROVED_OPS={flow:[],maps:[],mapNote:""};
 let KW={};
 let TERM_INDEX={};
 
@@ -16,8 +16,8 @@ const S={
 const NAV_GROUPS={
   all:{
     "全部":[],
-    "規則":["核心","武器規則"],
-    "任務":["Crit Ops","Kill Op","Tac Ops"],
+    "核心規則":["核心","武器規則"],
+    "Approved Ops 2025":["對戰流程","Crit Ops","Kill Op","Tac Ops","地圖"],
     "裝備":["通用裝備","陣營裝備"],
     "小隊":["小隊資訊","陣營規則","戰略計謀","交戰計謀","特工"]
   },
@@ -41,6 +41,7 @@ function loadData(){
   TAC_OPS = window.KT_TAC_OPS || [];
   CRIT_OPS = window.KT_CRIT_OPS || [];
   KILL_OP = window.KT_KILL_OP || null;
+  APPROVED_OPS = window.KT_APPROVED_OPS || APPROVED_OPS;
   if (!window.KT_UNIVERSAL_EQUIPMENT) console.error("Universal equipment data script did not load.");
   TEAMS = {
     pm: window.KT_PLAGUE_MARINES,
@@ -179,10 +180,18 @@ function items(){
   });
   QUICK.forEach(x=>a.push({kind:"核心",id:"q:"+x[0],s:x,html:`<div class="card">${star("q:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">核心規則</div><div class="body">${esc(x[2])}</div></div>`}));
   KEYWORDS.forEach(x=>a.push({kind:"武器規則",id:"k:"+x[0],s:x,html:`<div class="card">${star("k:"+x[0])}<h3>${esc(x[1])} <span class="meta">${esc(x[2])}</span></h3><div class="body">${esc(x[3])}</div></div>`}));
+  if(APPROVED_OPS.flow?.length){
+    const steps=APPROVED_OPS.flow.map((x,i)=>`<div class="approved-step"><span class="approved-step-num">${i+1}</span><div><b>${esc(x[0])}</b><div>${esc(x[1])}</div></div></div>`).join("");
+    a.push({kind:"對戰流程",id:"ao:game-sequence",s:APPROVED_OPS.flow,html:`<div class="card">${star("ao:game-sequence")}<h3>Approved Ops 2025 對戰流程</h3><div class="meta">Game Sequence · 桌邊速查</div><div class="body approved-flow">${steps}</div></div>`});
+  }
+  if(APPROVED_OPS.maps?.length){
+    const maps=APPROVED_OPS.maps.map(x=>`<div class="map-set"><div><b>${esc(x[0])}</b><div class="meta">${esc(x[2])}</div></div><span class="map-count">${x[1]} 張</span></div>`).join("");
+    a.push({kind:"地圖",id:"ao:maps",s:APPROVED_OPS.maps,html:`<div class="card">${star("ao:maps")}<h3>Approved Ops 2025 可用地圖</h3><div class="meta">Recommended Terrain Layouts</div><div class="body"><div class="map-sets">${maps}</div><div class="rule-supplement"><b>地圖說明</b><br>${esc(APPROVED_OPS.mapNote)}</div></div></div>`});
+  }
   CRIT_OPS.forEach(x=>a.push({kind:"Crit Ops",id:"co:"+x[0],s:x,html:`<div class="card">${star("co:"+x[0])}<h3>${esc(x[2])} <span class="meta">${esc(x[1])}</span></h3><div class="meta">Crit Op${x[3]!=="—"?" · "+esc(x[3]):""}</div><div class="body"><b>規則／行動：</b>${esc(x[4])}<br><br><b>得分：</b>${esc(x[5])}</div></div>`}));
   if(KILL_OP){
     const rows=KILL_OP.table.map(r=>`<tr><td>${r[0]}</td>${r.slice(1).map(v=>`<td>${v}</td>`).join("")}</tr>`).join("");
-    a.push({kind:"Kill Op",id:"ko:kill-op",s:KILL_OP,html:`<div class="card">${star("ko:kill-op")}<h3>${esc(KILL_OP.zh)} <span class="meta">${esc(KILL_OP.title)}</span></h3><div class="body">${esc(KILL_OP.body)}<div class="kill-table-wrap"><table class="kill-table"><thead><tr><th>敵方起始特工</th><th>Grade 1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead><tbody>${rows}</tbody></table></div><div class="rule-supplement"><b>規則補充</b><br>${esc(KILL_OP.note)}</div></div></div>`});
+    a.push({kind:"Kill Op",id:"ko:kill-op",s:KILL_OP,html:`<div class="card">${star("ko:kill-op")}<h3>${esc(KILL_OP.zh)} <span class="meta">${esc(KILL_OP.title)}</span></h3><div class="body">${esc(KILL_OP.body)}<div class="kill-table-wrap"><table class="kill-table"><thead><tr><th>敵方起始特工</th><th>等級 1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead><tbody>${rows}</tbody></table></div><div class="rule-supplement"><b>規則補充</b><br>${esc(KILL_OP.note)}</div></div></div>`});
   }
   const TAC_ARCHETYPES={"pm":["seek","security"],"aod":["seek","security"],"wk":["security","seek"],"mw":["seek","infiltration"],"leg":["seek","infiltration"],"dw":["seek","security"],"ci":["infiltration","security"],"cc":["recon","security"],"ks":["security","seek"]};
   const allowedTac=S.view==="team"?(TAC_ARCHETYPES[S.team]||[]):["recon","security","seek","infiltration"];
