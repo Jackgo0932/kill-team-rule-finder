@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.2.3-approved-ops-zh-terms";
+const CACHE = "kt-rule-finder-v2.2.6.3-aod-tactics-weapon-style-rows";
 const APP_SHELL = [
   "./",
   "./index.html",

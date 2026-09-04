@@ -114,6 +114,8 @@ function markedProse(text,scope){
     last=rx.lastIndex;
   }
   out+=esc(src.slice(last));
+  // Preserve authored line breaks in rule prose after escaping/link expansion.
+  out=out.replace(/\n/g,"<br>");
   let explain="";
   for(const ref of refs){
     if(S.open.has(S.team+":"+ref.instance)){
@@ -123,6 +125,14 @@ function markedProse(text,scope){
     }
   }
   return `<div class="body">${out}</div>${explain}`;
+}
+
+
+function ruleOptionGrid(options,scope="rule-option"){
+  return `<div class="rule-option-list">${(options||[]).map((opt,i)=>{
+    const [name,effect]=opt;
+    return `<section class="rule-option-row"><div class="rule-option-name">${esc(name)}</div><div class="rule-option-effect">${markedProse(effect,`${scope}:${i}`)}</div></section>`;
+  }).join("")}</div>`;
 }
 
 function opCard(op){
@@ -197,7 +207,12 @@ function items(){
   const allowedTac=S.view==="team"?(TAC_ARCHETYPES[S.team]||[]):["recon","security","seek","infiltration"];
   TAC_OPS.filter(x=>allowedTac.includes(x[0])).forEach(x=>a.push({kind:"Tac Ops",id:"to:"+x[3],s:x,html:`<div class="card">${star("to:"+x[3])}<h3>${esc(x[4])} <span class="meta">${esc(x[5])}</span></h3><div class="meta">${esc(x[1])} · Tac Op</div><div class="body"><b>揭示：</b>${esc(x[6])}<br><br>${x[7]!=="—"?`<b>規則／行動：</b>${esc(x[7])}<br><br>`:""}<b>得分：</b>${esc(x[8])}${x[9]?`<div class="rule-supplement"><b>規則補充</b><br>${esc(x[9])}</div>`:""}</div></div>`}));
   UNIVERSAL_EQUIPMENT.forEach(x=>a.push({kind:"通用裝備",id:"ue:"+x[0],s:x,html:`<div class="card">${star("ue:"+x[0])}<h3>${esc((x[3]?x[3]+" ":"")+x[1])}</h3><div class="meta">${esc(x[2])} · 通用裝備</div><div class="body">${esc(x[4]).replace(/\n/g,"<br>")}</div></div>`}));
-  t.rules.forEach(x=>a.push({kind:"陣營規則",id:"r:"+x[0],s:x,html:`<div class="card">${star("r:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">${esc(t.name)} · 陣營規則</div>${markedProse(x[2],`rule:${x[0]}`)}</div>`}));
+  t.rules.forEach(x=>{
+    const body=(x[0]==="chapter-tactics" && t.chapterTactics)
+      ? `<div class="body"><div class="chapter-tactics-intro">選擇殺戮小隊時，為己方死亡天使特工選擇一個首要和次要戰團戰術在戰鬥中生效；多次選擇相同戰團戰術不會疊加。</div>${ruleOptionGrid(t.chapterTactics,"chapter-tactics")}</div>`
+      : markedProse(x[2],`rule:${x[0]}`);
+    a.push({kind:"陣營規則",id:"r:"+x[0],s:x,html:`<div class="card">${star("r:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">${esc(t.name)} · 陣營規則</div>${body}</div>`});
+  });
   t.ploys.forEach(x=>{
     const kind=x[2]==="交戰計謀"?"交戰計謀":"戰略計謀";
     a.push({kind,id:"p:"+x[0],s:x,html:`<div class="card">${star("p:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">${esc(t.name)} · ${esc(x[2])}</div>${markedProse(x[3],`ploy:${x[0]}`)}</div>`});
