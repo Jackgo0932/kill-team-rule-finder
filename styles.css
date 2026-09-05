@@ -284,3 +284,18 @@ linear-gradient(110deg,rgba(230,92,43,.18),transparent 42%),linear-gradient(180d
 .rule-option-row .rule-option-name{font-weight:800;font-size:1.05em;margin-bottom:.35rem}
 .rule-option-row .rule-option-effect{min-width:0}
 .rule-option-row .rule-option-effect>.body{margin:0}
+
+/* v2.2.6.6 — utility grenades: weapon-like separate columns */
+.grenade-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem;margin-top:.75rem}
+.grenade-column{min-width:0;border:1px solid rgba(127,127,127,.28);border-radius:.7rem;padding:.7rem}
+.grenade-head{display:flex;align-items:baseline;justify-content:space-between;gap:.5rem;margin-bottom:.45rem}
+.grenade-head b{font-size:1.05em}
+.grenade-head span{font-size:.88em;opacity:.75;white-space:nowrap}
+.grenade-column>.body{margin:0;line-height:1.48}
+@media(max-width:620px){.grenade-columns{grid-template-columns:1fr}}
+
+/* v2.2.6.7 — selectable options use the same full-width stacked pattern as weapons */
+.grenade-columns,.choice-option-list{display:flex!important;flex-direction:column;gap:.55rem;margin-top:.75rem}
+.grenade-column,.choice-option-row{width:100%;box-sizing:border-box;min-width:0;border:1px solid rgba(127,127,127,.28);border-radius:.7rem;padding:.7rem}
+.choice-option-title{font-weight:800;font-size:1.05em;margin-bottom:.35rem}
+.choice-option-row>.body{margin:0}

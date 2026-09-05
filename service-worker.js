@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.2.6.3-aod-tactics-weapon-style-rows";
+const CACHE = "kt-rule-finder-v2.2.6.9-smoke-piercing-and-choice-fix";
 const APP_SHELL = [
   "./",
   "./index.html",

@@ -135,6 +135,27 @@ function ruleOptionGrid(options,scope="rule-option"){
   }).join("")}</div>`;
 }
 
+function utilityGrenadeColumns(){
+  const opts=window.KT_UTILITY_GRENADE_OPTIONS||[];
+  return `<div class="grenade-columns">${opts.map((g,i)=>`
+    <section class="grenade-column">
+      <div class="grenade-head"><b>${esc(g[0])}</b><span>${esc(g[1])}</span></div>
+      ${markedProse(g[2],`utility-grenade:${i}`)}
+    </section>`).join("")}</div>`;
+}
+
+function choiceOptionList(options,scope="choice"){
+  return `<div class="choice-option-list">${(options||[]).map((o,i)=>`
+    <section class="choice-option-row">
+      <div class="choice-option-title">${esc(o[0])}</div>
+      ${markedProse(o[1],`${scope}:${i}`)}
+    </section>`).join("")}</div>`;
+}
+function choiceOptionsFor(teamId,kind,id){
+  const db=window.KT_CHOICE_OPTIONS||{};
+  return db[`${teamId}:${kind}:${id}`]||db[`all:${kind}:${id}`]||null;
+}
+
 function opCard(op){
   return `<div class="card">${star("op:"+op.id)}
     <div class="op-title-row">
@@ -206,7 +227,7 @@ function items(){
   const TAC_ARCHETYPES={"pm":["seek","security"],"aod":["seek","security"],"wk":["security","seek"],"mw":["seek","infiltration"],"leg":["seek","infiltration"],"dw":["seek","security"],"ci":["infiltration","security"],"cc":["recon","security"],"ks":["security","seek"]};
   const allowedTac=S.view==="team"?(TAC_ARCHETYPES[S.team]||[]):["recon","security","seek","infiltration"];
   TAC_OPS.filter(x=>allowedTac.includes(x[0])).forEach(x=>a.push({kind:"Tac Ops",id:"to:"+x[3],s:x,html:`<div class="card">${star("to:"+x[3])}<h3>${esc(x[4])} <span class="meta">${esc(x[5])}</span></h3><div class="meta">${esc(x[1])} · Tac Op</div><div class="body"><b>揭示：</b>${esc(x[6])}<br><br>${x[7]!=="—"?`<b>規則／行動：</b>${esc(x[7])}<br><br>`:""}<b>得分：</b>${esc(x[8])}${x[9]?`<div class="rule-supplement"><b>規則補充</b><br>${esc(x[9])}</div>`:""}</div></div>`}));
-  UNIVERSAL_EQUIPMENT.forEach(x=>a.push({kind:"通用裝備",id:"ue:"+x[0],s:x,html:`<div class="card">${star("ue:"+x[0])}<h3>${esc((x[3]?x[3]+" ":"")+x[1])}</h3><div class="meta">${esc(x[2])} · 通用裝備</div><div class="body">${esc(x[4]).replace(/\n/g,"<br>")}</div></div>`}));
+  UNIVERSAL_EQUIPMENT.forEach(x=>a.push({kind:"通用裝備",id:"ue:"+x[0],s:x,html:`<div class="card">${star("ue:"+x[0])}<h3>${esc((x[3]?x[3]+" ":"")+x[1])}</h3><div class="meta">${esc(x[2])} · 通用裝備</div><div class="body">${esc(x[4]).replace(/\n/g,"<br>")}</div>${x[0]==="utility-grenades"?utilityGrenadeColumns():""}${x[0]==="explosive-grenades"?choiceOptionList((window.KT_CHOICE_OPTIONS||{})["all:equipment:explosive-grenades"],"explosive-grenades"):""}</div>`}));
   t.rules.forEach(x=>{
     const body=(x[0]==="chapter-tactics" && t.chapterTactics)
       ? `<div class="body"><div class="chapter-tactics-intro">選擇殺戮小隊時，為己方死亡天使特工選擇一個首要和次要戰團戰術在戰鬥中生效；多次選擇相同戰團戰術不會疊加。</div>${ruleOptionGrid(t.chapterTactics,"chapter-tactics")}</div>`
@@ -217,7 +238,7 @@ function items(){
     const kind=x[2]==="交戰計謀"?"交戰計謀":"戰略計謀";
     a.push({kind,id:"p:"+x[0],s:x,html:`<div class="card">${star("p:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">${esc(t.name)} · ${esc(x[2])}</div>${markedProse(x[3],`ploy:${x[0]}`)}</div>`});
   });
-  if(t.ploys2) t.ploys2.forEach(x=>a.push({kind:"交戰計謀",id:"p2:"+x[0],s:x,html:`<div class="card">${star("p2:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">${esc(t.name)} · ${esc(x[2])}</div>${markedProse(x[3],`ploy2:${x[0]}`)}</div>`}));
+  if(t.ploys2) t.ploys2.forEach(x=>{const opts=choiceOptionsFor(S.team,"ploy2",x[0]);a.push({kind:"交戰計謀",id:"p2:"+x[0],s:x,html:`<div class="card">${star("p2:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">${esc(t.name)} · ${esc(x[2])}</div>${opts?`<div class="body">在一名己方瘟疫戰士特工的激活或反應期間、其執行一次行動之前或之後使用。選擇一個效果：</div>${choiceOptionList(opts,`ploy2-choice:${x[0]}`)}`:markedProse(x[3],`ploy2:${x[0]}`)}</div>`})});
   t.equipment.forEach(x=>a.push({kind:"陣營裝備",id:"e:"+x[0],s:x,html:`<div class="card">${star("e:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">${esc(t.name)} · 陣營裝備</div>${markedProse(x[2],`equip:${x[0]}`)}</div>`}));
   t.operatives.forEach(o=>a.push({kind:"特工",id:"op:"+o.id,s:o,html:opCard(o)}));
   return a;
