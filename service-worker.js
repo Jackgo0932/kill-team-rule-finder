@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.2.6.9-smoke-piercing-and-choice-fix";
+const CACHE = "kt-rule-finder-v2.2.7.3-english-term-counterparts";
 const APP_SHELL = [
   "./",
   "./index.html",

@@ -209,7 +209,7 @@ function items(){
     kind:"小隊資訊",id:"info:archetypes",s:["任務原型",...t.archetypes],
     html:`<div class="card">${star("info:archetypes")}<h3>任務原型</h3><div class="meta">${esc(t.name)} · Archetypes</div><div class="body">可使用：${t.archetypes.map(esc).join("、")}。原型會在特定任務包（例如 Approved Ops）中使用，實際使用方式依該任務流程決定。</div></div>`
   });
-  QUICK.forEach(x=>a.push({kind:"核心",id:"q:"+x[0],s:x,html:`<div class="card">${star("q:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">核心規則</div><div class="body">${esc(x[2])}</div></div>`}));
+  QUICK.forEach(x=>a.push({kind:"核心",id:"q:"+x[0],s:x,html:`<div class="card">${star("q:"+x[0])}<h3>${esc(x[1])}${x[3]?` <span class="meta term-en">${esc(x[3])}</span>`:""}</h3><div class="meta">核心規則</div><div class="body">${esc(x[2]).replace(/\n/g,"<br>")}</div></div>`}));
   KEYWORDS.forEach(x=>a.push({kind:"武器規則",id:"k:"+x[0],s:x,html:`<div class="card">${star("k:"+x[0])}<h3>${esc(x[1])} <span class="meta">${esc(x[2])}</span></h3><div class="body">${esc(x[3])}</div></div>`}));
   if(APPROVED_OPS.flow?.length){
     const steps=APPROVED_OPS.flow.map((x,i)=>`<div class="approved-step"><span class="approved-step-num">${i+1}</span><div><b>${esc(x[0])}</b><div>${esc(x[1])}</div></div></div>`).join("");
@@ -307,7 +307,7 @@ function flowStep(n,title,bodyFactory){
       explain=`<div class="inline flow-inline flow-step-explain"><span class="term-source">流程關鍵字</span><b>${esc(t[0])}</b>：${esc(t[1])}</div>`;
     }else{
       const r=CORE_BY_ID()[ref.id];
-      explain=`<div class="inline flow-inline flow-step-explain"><span class="term-source">核心規則</span><b>${esc(r[1])}</b>：${esc(r[2])}</div>`;
+      explain=`<div class="inline flow-inline flow-step-explain"><span class="term-source">核心規則</span><b>${esc(r[1])}</b>${r[3]?` <span class="meta term-en">${esc(r[3])}</span>`:""}：${esc(r[2])}</div>`;
     }
     break;
   }

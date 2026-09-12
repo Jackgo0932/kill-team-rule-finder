@@ -299,3 +299,6 @@ linear-gradient(110deg,rgba(230,92,43,.18),transparent 42%),linear-gradient(180d
 .grenade-column,.choice-option-row{width:100%;box-sizing:border-box;min-width:0;border:1px solid rgba(127,127,127,.28);border-radius:.7rem;padding:.7rem}
 .choice-option-title{font-weight:800;font-size:1.05em;margin-bottom:.35rem}
 .choice-option-row>.body{margin:0}
+
+/* v2.2.7.3 — English terminology beside Chinese titles */
+.term-en{font-weight:400;white-space:normal}
