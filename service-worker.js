@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.2.7.7-escaped-parameter-english-fix";
+const CACHE = "kt-rule-finder-v2.2.8.4-ravener-image-edge-and-poison-term-fix";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -24,6 +24,13 @@ const APP_SHELL = [
   "./data/celestian_insidiants.js",
   "./data/canoptek_circle.js",
   "./data/kasrkin.js",
+  "./data/raveners.js",
+  "./assets/raveners/prime.webp",
+  "./assets/raveners/felltalon.webp",
+  "./assets/raveners/tremorscythe.webp",
+  "./assets/raveners/venomspitter.webp",
+  "./assets/raveners/warrior.webp",
+  "./assets/raveners/wrecker.webp",
   "./assets/plague_marines/bombardier.webp",
   "./assets/plague_marines/caster.webp",
   "./assets/plague_marines/champion.webp",

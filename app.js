@@ -52,9 +52,10 @@ function loadData(){
     dw: window.KT_DEATHWATCH,
     ci: window.KT_CELESTIAN_INSIDIANTS,
     cc: window.KT_CANOPTEK_CIRCLE,
-    ks: window.KT_KASRKIN
+    ks: window.KT_KASRKIN,
+    rav: window.KT_RAVENERS
   };
-  if (!TEAMS.pm || !TEAMS.aod || !TEAMS.wk || !TEAMS.mw || !TEAMS.leg || !TEAMS.dw || !TEAMS.ci || !TEAMS.cc || !TEAMS.ks) {
+  if (!TEAMS.pm || !TEAMS.aod || !TEAMS.wk || !TEAMS.mw || !TEAMS.leg || !TEAMS.dw || !TEAMS.ci || !TEAMS.cc || !TEAMS.ks || !TEAMS.rav) {
     throw new Error("Team data scripts did not load.");
   }
   KW = Object.fromEntries(KEYWORDS.map(x=>[x[0],{id:x[0],name:x[1],en:x[2],text:x[3]}]));
@@ -226,7 +227,7 @@ function items(){
     const rows=KILL_OP.table.map(r=>`<tr><td>${r[0]}</td>${r.slice(1).map(v=>`<td>${v}</td>`).join("")}</tr>`).join("");
     a.push({kind:"Kill Op",id:"ko:kill-op",s:KILL_OP,html:`<div class="card">${star("ko:kill-op")}<h3>${esc(KILL_OP.zh)} <span class="meta">${esc(KILL_OP.title)}</span></h3><div class="body">${esc(KILL_OP.body)}<div class="kill-table-wrap"><table class="kill-table"><thead><tr><th>敵方起始特工</th><th>等級 1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead><tbody>${rows}</tbody></table></div><div class="rule-supplement"><b>規則補充</b><br>${esc(KILL_OP.note)}</div></div></div>`});
   }
-  const TAC_ARCHETYPES={"pm":["seek","security"],"aod":["seek","security"],"wk":["security","seek"],"mw":["seek","infiltration"],"leg":["seek","infiltration"],"dw":["seek","security"],"ci":["infiltration","security"],"cc":["recon","security"],"ks":["security","seek"]};
+  const TAC_ARCHETYPES={"pm":["seek","security"],"aod":["seek","security"],"wk":["security","seek"],"mw":["seek","infiltration"],"leg":["seek","infiltration"],"dw":["seek","security"],"ci":["infiltration","security"],"cc":["recon","security"],"ks":["security","seek"],"rav":["infiltration","seek"]};
   const allowedTac=S.view==="team"?(TAC_ARCHETYPES[S.team]||[]):["recon","security","seek","infiltration"];
   TAC_OPS.filter(x=>allowedTac.includes(x[0])).forEach(x=>a.push({kind:"Tac Ops",id:"to:"+x[3],s:x,html:`<div class="card">${star("to:"+x[3])}<h3>${esc(x[4])} <span class="meta">${esc(x[5])}</span></h3><div class="meta">${esc(x[1])} · Tac Op</div><div class="body"><b>揭示：</b>${esc(x[6])}<br><br>${x[7]!=="—"?`<b>規則／行動：</b>${esc(x[7])}<br><br>`:""}<b>得分：</b>${esc(x[8])}${x[9]?`<div class="rule-supplement"><b>規則補充</b><br>${esc(x[9])}</div>`:""}</div></div>`}));
   UNIVERSAL_EQUIPMENT.forEach(x=>a.push({kind:"通用裝備",id:"ue:"+x[0],s:x,html:`<div class="card">${star("ue:"+x[0])}<h3>${esc((x[3]?x[3]+" ":"")+x[1])}</h3><div class="meta">${esc(x[2])} · 通用裝備</div><div class="body">${esc(x[4]).replace(/\n/g,"<br>")}</div>${x[0]==="utility-grenades"?utilityGrenadeColumns():""}${x[0]==="explosive-grenades"?choiceOptionList((window.KT_CHOICE_OPTIONS||{})["all:equipment:explosive-grenades"],"explosive-grenades"):""}</div>`}));
