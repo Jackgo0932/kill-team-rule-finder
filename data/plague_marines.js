@@ -111,7 +111,7 @@ window.KT_PLAGUE_MARINES = {
           "3/5",
           [
             ["range", "範圍 8\""],
-            ["piercing", "穿刺 1"]
+            ["piercing", "穿刺 1", "Piercing 1"]
           ]
         ],
         [
@@ -124,7 +124,7 @@ window.KT_PLAGUE_MARINES = {
             ["range", "範圍 8\""],
             "hot",
             "lethal5",
-            ["piercing", "穿刺 1"]
+            ["piercing", "穿刺 1", "Piercing 1"]
           ]
         ],
         [

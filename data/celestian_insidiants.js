@@ -31,9 +31,9 @@ window.KT_CELESTIAN_INSIDIANTS = {
   ],
   "operatives":[
     {"id":"superior","name":"潔天使隱伏者長執","role":"隊長","image":"assets/celestian_insidiants/superior.webp","stats":"APL 3 · 移動 6\" · 豁免 3+ · 耐傷 10","weapons":[
-      ["獄火手槍","遠程",4,"3+","4/2",[["range","範圍 3\""],["devastating","毀滅 3"],["piercing","穿刺 2"]]],
+      ["獄火手槍","遠程",4,"3+","4/2",[["range","範圍 3\""],["devastating", "毀滅 3", "Devastating 3"],["piercing", "穿刺 2", "Piercing 2"]]],
       ["聖物爆矢手槍","遠程",4,"3+","3/5",[["range","範圍 8\""],"lethal5"]],
-      ["聖物降罪者擲樁器","遠程",4,"3+","2/2",[["devastating","毀滅 2"],"lethal5",["piercing-crits","關鍵穿刺 1"],"silent"],["anti-psyker"]],
+      ["聖物降罪者擲樁器","遠程",4,"3+","2/2",[["devastating", "毀滅 2", "Devastating 2"],"lethal5",["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"],"silent"],["anti-psyker"]],
       ["虛無之槌","近戰",4,"3+","4/4",["shock"],["anti-psyker"]]
     ],"abilities":[
       ["聖潔榜樣","每個轉折點限一次：若這名特工處於聖勉狀態，你可以以 0CP 使用 1 個交戰計謀，但指定的潔天使隱伏者特工必須是它；若指揮重擲用於它的攻擊或防禦骰，也包含在內。"],
@@ -70,7 +70,7 @@ window.KT_CELESTIAN_INSIDIANTS = {
     ]},
     {"id":"reliquarius","name":"潔天使隱伏者司聖者","role":"司聖者","image":"assets/celestian_insidiants/reliquarius.webp","stats":"APL 2 · 移動 6\" · 豁免 3+ · 耐傷 9","weapons":[
       ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
-      ["降罪者擲樁器","遠程",4,"3+","2/2",[["devastating","毀滅 1"],["piercing-crits","關鍵穿刺 1"],"silent"],["anti-psyker"]],
+      ["降罪者擲樁器","遠程",4,"3+","2/2",[["devastating", "毀滅 1", "Devastating 1"],["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"],"silent"],["anti-psyker"]],
       ["槍托","近戰",3,"3+","2/3",[]]
     ],"abilities":[
       ["虛無聖像持有者","判斷標識控制權時，若至少 1 名爭奪該標識的敵方特工位於這名特工 3\" 內，將爭奪該標識的敵方特工 APL 總和視為 -1。這不是 APL 修正。"],
@@ -78,7 +78,7 @@ window.KT_CELESTIAN_INSIDIANTS = {
     ]},
     {"id":"warrior","name":"潔天使隱伏者戰士","role":"戰士","image":"assets/celestian_insidiants/warrior.webp","stats":"APL 2 · 移動 6\" · 豁免 3+ · 耐傷 9","weapons":[
       ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
-      ["降罪者擲樁器","遠程",4,"3+","2/2",[["devastating","毀滅 1"],["piercing-crits","關鍵穿刺 1"],"silent"],["anti-psyker"]],
+      ["降罪者擲樁器","遠程",4,"3+","2/2",[["devastating", "毀滅 1", "Devastating 1"],["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"],"silent"],["anti-psyker"]],
       ["虛無之槌","近戰",4,"3+","4/4",["shock"],["anti-psyker"]]
     ],"abilities":[["聖勉打擊","當這名特工處於聖勉狀態時，其資料卡武器的關鍵傷害 +1。"]]}
   ]

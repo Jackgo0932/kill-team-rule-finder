@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.2.7.3-english-term-counterparts";
+const CACHE = "kt-rule-finder-v2.2.7.5-all-team-weapon-rule-values-audit";
 const APP_SHELL = [
   "./",
   "./index.html",

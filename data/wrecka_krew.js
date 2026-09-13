@@ -119,8 +119,8 @@ window.KT_WRECKA_KREW = {
           "5+",
           "4/5",
           [
-            "range",
-            "blast"
+            ["range", "範圍 8\"", "Range 8\""],
+            ["blast", "爆炸 1\"", "Blast 1\""]
           ]
         ],
         [
@@ -130,8 +130,8 @@ window.KT_WRECKA_KREW = {
           "4+",
           "4/5",
           [
-            "range",
-            "blast",
+            ["range", "範圍 8\"", "Range 8\""],
+            ["blast", "爆炸 1\"", "Blast 1\""],
             "ceaseless"
           ]
         ],
@@ -142,8 +142,8 @@ window.KT_WRECKA_KREW = {
           "5+",
           "4/5",
           [
-            "range",
-            "blast"
+            ["range", "範圍 8\"", "Range 8\""],
+            ["blast", "爆炸 1\"", "Blast 1\""]
           ],
           ["salvo"]
         ],
@@ -199,8 +199,8 @@ window.KT_WRECKA_KREW = {
           "4+",
           "4/5",
           [
-            "blast",
-            "limited"
+            ["blast", "爆炸 1\"", "Blast 1\""],
+            ["limited", "有限 1", "Limited 1"]
           ],
           ["explosive"]
         ],
@@ -247,7 +247,7 @@ window.KT_WRECKA_KREW = {
           "*",
           [
             "lethal5",
-            "limited"
+            ["limited", "有限 1", "Limited 1"]
           ],
           ["detonate"]
         ]
@@ -329,7 +329,7 @@ window.KT_WRECKA_KREW = {
           "4+",
           "4/5",
           [
-            "blast",
+            ["blast", "爆炸 1\"", "Blast 1\""],
             "heavy-dash"
           ]
         ],
@@ -340,7 +340,7 @@ window.KT_WRECKA_KREW = {
           "5+",
           "4/5",
           [
-            "blast"
+            ["blast", "爆炸 1\"", "Blast 1\""]
           ]
         ],
         [
@@ -377,7 +377,7 @@ window.KT_WRECKA_KREW = {
           "5+",
           "-",
           [
-            "limited",
+            ["limited", "有限 1", "Limited 1"],
             "heavy-reposition"
           ],
           ["pulsa"]
@@ -389,7 +389,7 @@ window.KT_WRECKA_KREW = {
           "5+",
           "4/5",
           [
-            "blast"
+            ["blast", "爆炸 1\"", "Blast 1\""]
           ]
         ],
         [
@@ -399,8 +399,8 @@ window.KT_WRECKA_KREW = {
           "5+",
           "4/5",
           [
-            "blast",
-            "limited",
+            ["blast", "爆炸 2\"", "Blast 2\""],
+            ["limited", "有限 1", "Limited 1"],
             "relentless",
             "heavy-reposition"
           ]

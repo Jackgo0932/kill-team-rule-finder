@@ -126,8 +126,8 @@ window.KT_LEGIONARY = {
       "image": "assets/legionary/aspiring-champion.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 15",
       "weapons": [
-        ["等離子手槍（標準）","遠程",4,"3+","3/5",[["range","範圍 8\""],["piercing","穿刺 1"]]],
-        ["等離子手槍（過載）","遠程",4,"3+","4/5",[["range","範圍 8\""],"hot","lethal5",["piercing","穿刺 1"]]],
+        ["等離子手槍（標準）","遠程",4,"3+","3/5",[["range","範圍 8\""],["piercing", "穿刺 1", "Piercing 1"]]],
+        ["等離子手槍（過載）","遠程",4,"3+","4/5",[["range","範圍 8\""],"hot","lethal5",["piercing", "穿刺 1", "Piercing 1"]]],
         ["腐化爆矢手槍","遠程",4,"3+","3/5",[["range","範圍 8\""],"rending"]],
         ["動力拳套","近戰",5,"4+","5/7",["brutal"]],
         ["動力槌","近戰",5,"3+","4/6",["shock"]],
@@ -145,8 +145,8 @@ window.KT_LEGIONARY = {
       "image": "assets/legionary/chosen.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 15",
       "weapons": [
-        ["等離子手槍（標準）","遠程",4,"3+","3/5",[["range","範圍 8\""],["piercing","穿刺 1"]]],
-        ["等離子手槍（過載）","遠程",4,"3+","4/5",[["range","範圍 8\""],"hot","lethal5",["piercing","穿刺 1"]]],
+        ["等離子手槍（標準）","遠程",4,"3+","3/5",[["range","範圍 8\""],["piercing", "穿刺 1", "Piercing 1"]]],
+        ["等離子手槍（過載）","遠程",4,"3+","4/5",[["range","範圍 8\""],"hot","lethal5",["piercing", "穿刺 1", "Piercing 1"]]],
         ["腐化爆矢手槍","遠程",4,"3+","3/5",[["range","範圍 8\""],"rending"]],
         ["惡魔之刃","近戰",5,"3+","4/7",["lethal5"]]
       ],
@@ -207,9 +207,9 @@ window.KT_LEGIONARY = {
       "weapons": [
         ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
         ["火焰噴射器","遠程",4,"2+","3/3",[["range","範圍 8\""],"saturate",["torrent","洪流 2\""]]],
-        ["熱熔槍","遠程",4,"3+","6/3",[["range","範圍 6\""],["devastating","毀滅 4"],["piercing","穿刺 2"]]],
-        ["等離子槍（標準）","遠程",4,"3+","4/6",[["piercing","穿刺 1"]]],
-        ["等離子槍（過載）","遠程",4,"3+","5/6",["hot","lethal5",["piercing","穿刺 1"]]],
+        ["熱熔槍","遠程",4,"3+","6/3",[["range","範圍 6\""],["devastating", "毀滅 4", "Devastating 4"],["piercing", "穿刺 2", "Piercing 2"]]],
+        ["等離子槍（標準）","遠程",4,"3+","4/6",[["piercing", "穿刺 1", "Piercing 1"]]],
+        ["等離子槍（過載）","遠程",4,"3+","5/6",["hot","lethal5",["piercing", "穿刺 1", "Piercing 1"]]],
         ["雙拳","近戰",4,"3+","3/4",[]]
       ],
       "abilities": []
@@ -222,10 +222,10 @@ window.KT_LEGIONARY = {
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
         ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
-        ["重型爆矢槍（集中）","遠程",5,"3+","4/5",["heavy-reposition",["piercing-crits","關鍵穿刺 1"]]],
-        ["重型爆矢槍（掃射）","遠程",4,"3+","4/5",["heavy-reposition",["piercing-crits","關鍵穿刺 1"],["torrent","洪流 1\""]]],
+        ["重型爆矢槍（集中）","遠程",5,"3+","4/5",["heavy-reposition",["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]]],
+        ["重型爆矢槍（掃射）","遠程",4,"3+","4/5",["heavy-reposition",["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"],["torrent","洪流 1\""]]],
         ["導彈發射器（破片）","遠程",4,"3+","3/5",[["blast","爆炸 2\""],"heavy-reposition"]],
-        ["導彈發射器（穿甲）","遠程",4,"3+","5/7",["heavy-reposition",["piercing","穿刺 1"]]],
+        ["導彈發射器（穿甲）","遠程",4,"3+","5/7",["heavy-reposition",["piercing", "穿刺 1", "Piercing 1"]]],
         ["收割者機砲（集中）","遠程",5,"3+","3/4",["ceaseless","heavy-reposition","punishing"]],
         ["收割者機砲（掃射）","遠程",4,"3+","3/4",["ceaseless","heavy-reposition","punishing",["torrent","洪流 2\""]]],
         ["雙拳","近戰",4,"3+","3/4",[]]

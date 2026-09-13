@@ -30,8 +30,8 @@ window.KT_DEATHWATCH = {
   ],
   "operatives":[
     {"id":"watch-sergeant","name":"死亡守望守望軍士","role":"隊長","image":"assets/deathwatch/watch-sergeant.webp","stats":"APL 3 · 移動 6\" · 豁免 3+ · 耐傷 15","weapons":[
-      ["等離子手槍（標準）","遠程",4,"3+","3/5",[["range","範圍 8\""],["piercing","穿刺 1"]]],
-      ["等離子手槍（過載）","遠程",4,"3+","4/5",[["range","範圍 8\""],"hot","lethal5",["piercing","穿刺 1"]]],
+      ["等離子手槍（標準）","遠程",4,"3+","3/5",[["range","範圍 8\""],["piercing", "穿刺 1", "Piercing 1"]]],
+      ["等離子手槍（過載）","遠程",4,"3+","4/5",[["range","範圍 8\""],"hot","lethal5",["piercing", "穿刺 1", "Piercing 1"]]],
       ["動力武器","近戰",5,"3+","4/6",["lethal5"]]
     ],"abilities":[
       ["適應性軍火庫","你可以額外選擇 1 個裝備選項。"],
@@ -42,21 +42,21 @@ window.KT_DEATHWATCH = {
       ["動力槌和風暴盾","近戰",5,"3+","4/6",["shock"],["shield"]]
     ],"abilities":[["風暴盾","每當有特工對這名特工射擊時，將穿刺 X 的 X 降低 1；因此穿刺 1 會被忽略。"]]},
     {"id":"blademaster","name":"死亡守望劍術大師老兵","role":"劍術大師","image":"assets/deathwatch/blademaster.webp","stats":"APL 3 · 移動 6\" · 豁免 3+ · 耐傷 15","weapons":[
-      ["特種爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""],["piercing","穿刺 1"]]],
+      ["特種爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""],["piercing", "穿刺 1", "Piercing 1"]]],
       ["異形相位劍（決鬥）","近戰",5,"3+","4/6",["brutal","lethal5"]],
       ["異形相位劍（相位橫掃）","近戰",4,"3+","4/6",["brutal","lethal5"],["phase-sweep"]]
     ],"abilities":[["適應性劍術","忽略對這名特工異形相位劍命中屬性的任何變化。每當它進行近戰或反擊時，可以在正常順序前先結算 1 枚己方成功；若如此，該成功必須用於格擋。"]]},
     {"id":"bombard","name":"死亡守望轟擊手老兵","role":"轟擊手","image":"assets/deathwatch/bombard.webp","stats":"APL 3 · 移動 5\" · 豁免 3+ · 耐傷 18","weapons":[
       ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
-      ["破片砲（彈頭）","遠程",4,"3+","5/7",[["piercing","穿刺 1"]]],
+      ["破片砲（彈頭）","遠程",4,"3+","5/7",[["piercing", "穿刺 1", "Piercing 1"]]],
       ["破片砲（彈片）","遠程",5,"3+","4/5",[["torrent","洪流 2\""]]],
       ["雙拳","近戰",4,"3+","3/4",[]]
     ],"abilities":[]},
     {"id":"breacher","name":"死亡守望突破手老兵","role":"突破手","image":"assets/deathwatch/breacher.webp","stats":"APL 3 · 移動 5\" · 豁免 3+ · 耐傷 18","weapons":[
       ["下掛榴彈發射器（破片）","遠程",4,"3+","2/4",[["blast","爆炸 2\""]]],
-      ["下掛榴彈發射器（穿甲）","遠程",4,"3+","4/5",[["piercing","穿刺 1"]]],
+      ["下掛榴彈發射器（穿甲）","遠程",4,"3+","4/5",[["piercing", "穿刺 1", "Piercing 1"]]],
       ["地獄風暴爆矢步槍","遠程",4,"3+","4/5",[["torrent","洪流 1\""]]],
-      ["熱熔炸彈","遠程",4,"3+","5/3",[["range","範圍 3\""],["devastating","毀滅 3"],["heavy","重型（僅限轉移）","Heavy (Reposition only)"],["limited","有限 1"],["piercing","穿刺 2"]]],
+      ["熱熔炸彈","遠程",4,"3+","5/3",[["range","範圍 3\""],["devastating", "毀滅 3", "Devastating 3"],["heavy","重型（僅限轉移）","Heavy (Reposition only)"],["limited", "有限 1", "Limited 1"],["piercing", "穿刺 2", "Piercing 2"]]],
       ["雙拳","近戰",4,"3+","3/4",[]]
     ],"abilities":[]},
     {"id":"demolisher","name":"死亡守望粉碎者老兵","role":"粉碎者","image":"assets/deathwatch/demolisher.webp","stats":"APL 3 · 移動 6\" · 豁免 3+ · 耐傷 15","weapons":[
@@ -75,12 +75,12 @@ window.KT_DEATHWATCH = {
     ]},
     {"id":"gunner","name":"死亡守望砲手老兵","role":"砲手","image":"assets/deathwatch/gunner.webp","stats":"APL 3 · 移動 6\" · 豁免 3+ · 耐傷 15","weapons":[
       ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
-      ["重型等離子焚化槍（標準）","遠程",5,"3+","4/6",[["piercing","穿刺 1"]]],
-      ["重型等離子焚化槍（過載）","遠程",5,"3+","5/6",["hot","lethal5",["piercing","穿刺 1"]]],
+      ["重型等離子焚化槍（標準）","遠程",5,"3+","4/6",[["piercing", "穿刺 1", "Piercing 1"]]],
+      ["重型等離子焚化槍（過載）","遠程",5,"3+","5/6",["hot","lethal5",["piercing", "穿刺 1", "Piercing 1"]]],
       ["雙拳","近戰",4,"3+","3/4",[]]
     ],"abilities":[]},
     {"id":"headtaker","name":"死亡守望奪首者老兵","role":"奪首者","image":"assets/deathwatch/headtaker.webp","stats":"APL 3 · 移動 7\" · 豁免 3+ · 耐傷 13","weapons":[
-      ["特種爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""],["piercing","穿刺 1"]]],
+      ["特種爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""],["piercing", "穿刺 1", "Piercing 1"]]],
       ["戰鬥匕首","近戰",5,"3+","4/5",[]]
     ],"abilities":[
       ["重力傘和抓鉤發射器","攀爬時，垂直距離視為 2\"，不論實際垂直移動多少；跳落時忽略垂直距離。"],
@@ -89,13 +89,13 @@ window.KT_DEATHWATCH = {
     {"id":"horde-slayer","name":"死亡守望獸群屠戮者老兵","role":"獸群屠戮者","image":"assets/deathwatch/horde-slayer.webp","stats":"APL 3 · 移動 5\" · 豁免 3+ · 耐傷 18","weapons":[
       ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
       ["地獄火重型爆矢槍（火焰）","遠程",5,"2+","3/3",[["range","範圍 8\""],"saturate",["torrent","洪流 2\""]]],
-      ["地獄火重型爆矢槍（爆矢點射）","遠程",5,"3+","4/5",[["piercing-crits","關鍵穿刺 1"]]],
-      ["地獄火重型爆矢槍（爆矢掃射）","遠程",4,"3+","4/5",[["piercing-crits","關鍵穿刺 1"],["torrent","洪流 1\""]]],
+      ["地獄火重型爆矢槍（爆矢點射）","遠程",5,"3+","4/5",[["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]]],
+      ["地獄火重型爆矢槍（爆矢掃射）","遠程",4,"3+","4/5",[["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"],["torrent","洪流 1\""]]],
       ["雙拳","近戰",4,"3+","3/4",[]]
     ],"abilities":[]},
     {"id":"marksman","name":"死亡守望神射手老兵","role":"神射手","image":"assets/deathwatch/marksman.webp","stats":"APL 3 · 移動 6\" · 豁免 3+ · 耐傷 15","weapons":[
       ["追獵者爆矢步槍（機動）","遠程",4,"3+","3/4",[]],
-      ["追獵者爆矢步槍（重型）","遠程",4,"2+","3/5",[["heavy","重型（僅限衝刺）","Heavy (Dash only)"],"lethal5",["piercing-crits","關鍵穿刺 1"]]],
+      ["追獵者爆矢步槍（重型）","遠程",4,"2+","3/5",[["heavy","重型（僅限衝刺）","Heavy (Dash only)"],"lethal5",["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]]],
       ["雙拳","近戰",4,"3+","3/4",[]]
     ],"abilities":[
       ["機警神射手","這名特工可以不受殺戮區限制，在激活期間執行戒備行動。使用近距離戰鬥規則時，每個轉折點一次：它在戒備時免費射擊後，可以立即免費再次執行戒備；若如此，該轉折點不能進行反應，也不能藉反應進行兩次戒備。"]

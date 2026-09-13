@@ -83,7 +83,7 @@ function chip(rule,instance){
   const id=ruleId(rule),k=KW[id];
   if(!k)return "";
   const key=S.team+":"+instance,o=S.open.has(key);
-  return `<button class="chip ${o?"open":""}" onclick="openRule('${instance}')">${esc(ruleLabel(rule))} · ${esc(k.en)}</button>`;
+  return `<button class="chip ${o?"open":""}" onclick="openRule('${instance}')">${esc(ruleLabel(rule))} · ${esc(ruleEn(rule))}</button>`;
 }
 function chipExplain(rules,instances){
   for(let i=0;i<rules.length;i++){

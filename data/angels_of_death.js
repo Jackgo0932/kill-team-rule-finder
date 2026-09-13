@@ -113,7 +113,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3/5",
           [
             ["range", "範圍 8\""],
-            ["piercing", "穿刺 1"]
+            ["piercing", "穿刺 1", "Piercing 1"]
           ]
         ],
         [
@@ -126,7 +126,7 @@ window.KT_ANGELS_OF_DEATH = {
             ["range", "範圍 8\""],
             "hot",
             "lethal5",
-            ["piercing", "穿刺 1"]
+            ["piercing", "穿刺 1", "Piercing 1"]
           ]
         ],
         [
@@ -178,7 +178,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3/4",
           [
             ["range", "範圍 8\""],
-            ["piercing-crits", "關鍵穿刺 1"]
+            ["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]
           ]
         ],
         [
@@ -189,7 +189,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3/5",
           [
             ["range", "範圍 8\""],
-            ["piercing", "穿刺 1"]
+            ["piercing", "穿刺 1", "Piercing 1"]
           ]
         ],
         [
@@ -202,7 +202,7 @@ window.KT_ANGELS_OF_DEATH = {
             ["range", "範圍 8\""],
             "hot",
             "lethal5",
-            ["piercing", "穿刺 1"]
+            ["piercing", "穿刺 1", "Piercing 1"]
           ]
         ],
         [
@@ -280,7 +280,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "3/4",
           [
-            ["piercing-crits", "關鍵穿刺 1"]
+            ["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]
           ]
         ],
         [
@@ -292,7 +292,7 @@ window.KT_ANGELS_OF_DEATH = {
           [
             "heavy",
             "lethal5",
-            ["piercing-crits", "關鍵穿刺 1"]
+            ["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]
           ]
         ],
         [
@@ -369,7 +369,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3/4",
           [
             ["range", "範圍 8\""],
-            ["piercing-crits", "關鍵穿刺 1"]
+            ["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]
           ]
         ],
         [
@@ -403,7 +403,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3/4",
           [
             ["range", "範圍 8\""],
-            ["piercing-crits", "關鍵穿刺 1"]
+            ["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]
           ]
         ],
         [
@@ -441,7 +441,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "4/5",
           [
-            ["piercing-crits", "關鍵穿刺 1"]
+            ["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]
           ]
         ],
         [
@@ -451,8 +451,8 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "4/5",
           [
-            "piercing-crits",
-            ["torrent", "洪流 1\""]
+            ["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"],
+            ["torrent", "洪流 1\"", "Torrent 1\""]
           ]
         ],
         [
@@ -500,7 +500,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "4/5",
           [
-            ["piercing", "穿刺 1"]
+            ["piercing", "穿刺 1", "Piercing 1"]
           ]
         ],
         [
@@ -510,7 +510,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "3/4",
           [
-            ["piercing-crits", "關鍵穿刺 1"]
+            ["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]
           ]
         ],
         [
@@ -522,7 +522,7 @@ window.KT_ANGELS_OF_DEATH = {
           [
             "heavy",
             "lethal5",
-            ["piercing-crits", "關鍵穿刺 1"]
+            ["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]
           ]
         ],
         [
@@ -568,7 +568,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "3/4",
           [
-            ["piercing-crits", "關鍵穿刺 1"]
+            ["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]
           ]
         ],
         [
@@ -580,7 +580,7 @@ window.KT_ANGELS_OF_DEATH = {
           [
             "heavy",
             "lethal5",
-            ["piercing-crits", "關鍵穿刺 1"]
+            ["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]
           ]
         ],
         [
@@ -651,8 +651,8 @@ window.KT_ANGELS_OF_DEATH = {
           "2+",
           "3/3",
           [
-            ["devastating", "毀滅 3"],
-            ["piercing", "穿刺 1"],
+            ["devastating", "毀滅 3", "Devastating 3"],
+            ["piercing", "穿刺 1", "Piercing 1"],
             "silent",
             "heavy-dash"
           ]
