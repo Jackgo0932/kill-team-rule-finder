@@ -126,9 +126,9 @@ window.KT_LEGIONARY = {
       "image": "assets/legionary/aspiring-champion.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 15",
       "weapons": [
-        ["等離子手槍（標準）","遠程",4,"3+","3/5",[["range","範圍 8\""],["piercing", "穿刺 1", "Piercing 1"]]],
-        ["等離子手槍（過載）","遠程",4,"3+","4/5",[["range","範圍 8\""],"hot","lethal5",["piercing", "穿刺 1", "Piercing 1"]]],
-        ["腐化爆矢手槍","遠程",4,"3+","3/5",[["range","範圍 8\""],"rending"]],
+        ["等離子手槍（標準）","遠程",4,"3+","3/5",[["range", "範圍 8\"", "Range 8\""],["piercing", "穿刺 1", "Piercing 1"]]],
+        ["等離子手槍（過載）","遠程",4,"3+","4/5",[["range", "範圍 8\"", "Range 8\""],"hot","lethal5",["piercing", "穿刺 1", "Piercing 1"]]],
+        ["腐化爆矢手槍","遠程",4,"3+","3/5",[["range", "範圍 8\"", "Range 8\""],"rending"]],
         ["動力拳套","近戰",5,"4+","5/7",["brutal"]],
         ["動力槌","近戰",5,"3+","4/6",["shock"]],
         ["動力武器","近戰",5,"3+","4/6",["lethal5"]],
@@ -145,9 +145,9 @@ window.KT_LEGIONARY = {
       "image": "assets/legionary/chosen.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 15",
       "weapons": [
-        ["等離子手槍（標準）","遠程",4,"3+","3/5",[["range","範圍 8\""],["piercing", "穿刺 1", "Piercing 1"]]],
-        ["等離子手槍（過載）","遠程",4,"3+","4/5",[["range","範圍 8\""],"hot","lethal5",["piercing", "穿刺 1", "Piercing 1"]]],
-        ["腐化爆矢手槍","遠程",4,"3+","3/5",[["range","範圍 8\""],"rending"]],
+        ["等離子手槍（標準）","遠程",4,"3+","3/5",[["range", "範圍 8\"", "Range 8\""],["piercing", "穿刺 1", "Piercing 1"]]],
+        ["等離子手槍（過載）","遠程",4,"3+","4/5",[["range", "範圍 8\"", "Range 8\""],"hot","lethal5",["piercing", "穿刺 1", "Piercing 1"]]],
+        ["腐化爆矢手槍","遠程",4,"3+","3/5",[["range", "範圍 8\"", "Range 8\""],"rending"]],
         ["惡魔之刃","近戰",5,"3+","4/7",["lethal5"]]
       ],
       "abilities": [
@@ -162,7 +162,7 @@ window.KT_LEGIONARY = {
       "image": "assets/legionary/anointed.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
-        ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
+        ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
         ["惡魔之爪","近戰",5,"3+","4/5",["rending"]]
       ],
       "abilities": [
@@ -177,8 +177,8 @@ window.KT_LEGIONARY = {
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weaponKeywords": {},
       "weapons": [
-        ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
-        ["火焰衝擊","遠程",4,"3+","3/4",[["blast","爆炸 2\""],["devastating","1\" 毀滅 1"],"saturate"],["psychic"]],
+        ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
+        ["火焰衝擊","遠程",4,"3+","3/4",[["blast", "爆炸 2\"", "Blast 2\""],["devastating", "1\" 毀滅 1", "Devastating 1"],"saturate"],["psychic"]],
         ["靈魂虹吸","遠程",5,"3+","3/3",["saturate"],["psychic","siphon-life"]],
         ["邪惡匕首","近戰",5,"3+","3/4",["rending"],["psychic","siphon-life"]]
       ],
@@ -191,7 +191,7 @@ window.KT_LEGIONARY = {
       "image": "assets/legionary/butcher.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
-        ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
+        ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
         ["雙手鏈鋸斧","近戰",5,"4+","5/7",["brutal"]]
       ],
       "abilities": [
@@ -205,9 +205,9 @@ window.KT_LEGIONARY = {
       "image": "assets/legionary/gunner.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
-        ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
-        ["火焰噴射器","遠程",4,"2+","3/3",[["range","範圍 8\""],"saturate",["torrent","洪流 2\""]]],
-        ["熱熔槍","遠程",4,"3+","6/3",[["range","範圍 6\""],["devastating", "毀滅 4", "Devastating 4"],["piercing", "穿刺 2", "Piercing 2"]]],
+        ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
+        ["火焰噴射器","遠程",4,"2+","3/3",[["range", "範圍 8\"", "Range 8\""],"saturate",["torrent", "洪流 2\"", "Torrent 2\""]]],
+        ["熱熔槍","遠程",4,"3+","6/3",[["range", "範圍 6\"", "Range 6\""],["devastating", "毀滅 4", "Devastating 4"],["piercing", "穿刺 2", "Piercing 2"]]],
         ["等離子槍（標準）","遠程",4,"3+","4/6",[["piercing", "穿刺 1", "Piercing 1"]]],
         ["等離子槍（過載）","遠程",4,"3+","5/6",["hot","lethal5",["piercing", "穿刺 1", "Piercing 1"]]],
         ["雙拳","近戰",4,"3+","3/4",[]]
@@ -221,13 +221,13 @@ window.KT_LEGIONARY = {
       "image": "assets/legionary/heavy-gunner.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
-        ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
+        ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
         ["重型爆矢槍（集中）","遠程",5,"3+","4/5",["heavy-reposition",["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]]],
-        ["重型爆矢槍（掃射）","遠程",4,"3+","4/5",["heavy-reposition",["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"],["torrent","洪流 1\""]]],
-        ["導彈發射器（破片）","遠程",4,"3+","3/5",[["blast","爆炸 2\""],"heavy-reposition"]],
+        ["重型爆矢槍（掃射）","遠程",4,"3+","4/5",["heavy-reposition",["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"],["torrent", "洪流 1\"", "Torrent 1\""]]],
+        ["導彈發射器（破片）","遠程",4,"3+","3/5",[["blast", "爆炸 2\"", "Blast 2\""],"heavy-reposition"]],
         ["導彈發射器（穿甲）","遠程",4,"3+","5/7",["heavy-reposition",["piercing", "穿刺 1", "Piercing 1"]]],
         ["收割者機砲（集中）","遠程",5,"3+","3/4",["ceaseless","heavy-reposition","punishing"]],
-        ["收割者機砲（掃射）","遠程",4,"3+","3/4",["ceaseless","heavy-reposition","punishing",["torrent","洪流 2\""]]],
+        ["收割者機砲（掃射）","遠程",4,"3+","3/4",["ceaseless","heavy-reposition","punishing",["torrent", "洪流 2\"", "Torrent 2\""]]],
         ["雙拳","近戰",4,"3+","3/4",[]]
       ],
       "abilities": []
@@ -239,7 +239,7 @@ window.KT_LEGIONARY = {
       "image": "assets/legionary/icon-bearer.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
-        ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
+        ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
         ["爆矢槍","遠程",4,"3+","3/4",[]],
         ["鏈鋸劍","近戰",5,"3+","4/5",[]],
         ["雙拳","近戰",4,"3+","3/4",[]]
@@ -256,7 +256,7 @@ window.KT_LEGIONARY = {
       "image": "assets/legionary/shrivetalon.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
-        ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
+        ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
         ["剝皮刀","近戰",5,"3+","3/5",["lethal5"]]
       ],
       "abilities": [
@@ -272,7 +272,7 @@ window.KT_LEGIONARY = {
       "image": "assets/legionary/warrior.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
-        ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
+        ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
         ["爆矢槍","遠程",4,"3+","3/4",[]],
         ["鏈鋸劍","近戰",5,"3+","4/5",[]],
         ["雙拳","近戰",4,"3+","3/4",[]]

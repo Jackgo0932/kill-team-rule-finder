@@ -110,7 +110,7 @@ window.KT_PLAGUE_MARINES = {
           "3+",
           "3/5",
           [
-            ["range", "範圍 8\""],
+            ["range", "範圍 8\"", "Range 8\""],
             ["piercing", "穿刺 1", "Piercing 1"]
           ]
         ],
@@ -121,7 +121,7 @@ window.KT_PLAGUE_MARINES = {
           "3+",
           "4/5",
           [
-            ["range", "範圍 8\""],
+            ["range", "範圍 8\"", "Range 8\""],
             "hot",
             "lethal5",
             ["piercing", "穿刺 1", "Piercing 1"]
@@ -192,7 +192,7 @@ window.KT_PLAGUE_MARINES = {
           "3+",
           "3/4",
           [
-            ["range", "範圍 8\""]
+            ["range", "範圍 8\"", "Range 8\""]
           ]
         ],
         [
@@ -230,7 +230,7 @@ window.KT_PLAGUE_MARINES = {
           "3+",
           "3/4",
           [
-            ["range", "範圍 8\""]
+            ["range", "範圍 8\"", "Range 8\""]
           ]
         ],
         [
@@ -240,10 +240,10 @@ window.KT_PLAGUE_MARINES = {
           "2+",
           "3/3",
           [
-            ["range", "範圍 7\""],
+            ["range", "範圍 7\"", "Range 7\""],
             "saturate",
             "severe",
-            ["torrent", "洪流 2\""],
+            ["torrent", "洪流 2\"", "Torrent 2\""],
             "poison"
           ]
         ],
@@ -272,7 +272,7 @@ window.KT_PLAGUE_MARINES = {
           "3+",
           "3/4",
           [
-            ["range", "範圍 8\""]
+            ["range", "範圍 8\"", "Range 8\""]
           ]
         ],
         [
@@ -312,7 +312,7 @@ window.KT_PLAGUE_MARINES = {
           "3+",
           "3/7",
           [
-            ["range", "範圍 7\""],
+            ["range", "範圍 7\"", "Range 7\""],
             "saturate",
             "severe",
             "poison"
@@ -328,7 +328,7 @@ window.KT_PLAGUE_MARINES = {
           [
             "saturate",
             "severe",
-            ["torrent", "洪流 1\""],
+            ["torrent", "洪流 1\"", "Torrent 1\""],
             "poison"
           ],
           ["psychic"]

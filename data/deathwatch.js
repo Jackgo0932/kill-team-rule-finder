@@ -30,37 +30,37 @@ window.KT_DEATHWATCH = {
   ],
   "operatives":[
     {"id":"watch-sergeant","name":"死亡守望守望軍士","role":"隊長","image":"assets/deathwatch/watch-sergeant.webp","stats":"APL 3 · 移動 6\" · 豁免 3+ · 耐傷 15","weapons":[
-      ["等離子手槍（標準）","遠程",4,"3+","3/5",[["range","範圍 8\""],["piercing", "穿刺 1", "Piercing 1"]]],
-      ["等離子手槍（過載）","遠程",4,"3+","4/5",[["range","範圍 8\""],"hot","lethal5",["piercing", "穿刺 1", "Piercing 1"]]],
+      ["等離子手槍（標準）","遠程",4,"3+","3/5",[["range", "範圍 8\"", "Range 8\""],["piercing", "穿刺 1", "Piercing 1"]]],
+      ["等離子手槍（過載）","遠程",4,"3+","4/5",[["range", "範圍 8\"", "Range 8\""],"hot","lethal5",["piercing", "穿刺 1", "Piercing 1"]]],
       ["動力武器","近戰",5,"3+","4/6",["lethal5"]]
     ],"abilities":[
       ["適應性軍火庫","你可以額外選擇 1 個裝備選項。"],
       ["戰略指揮","若這名特工位於殺戮區，每場戰鬥可以各一次：以 0CP 使用 1 個死亡守望戰略計謀；以 0CP 使用 1 個死亡守望交戰計謀。"]
     ]},
     {"id":"aegis","name":"死亡守望庇護者老兵","role":"庇護者","image":"assets/deathwatch/aegis.webp","stats":"APL 3 · 移動 6\" · 豁免 2+ · 耐傷 15","weapons":[
-      ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
+      ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
       ["動力槌和風暴盾","近戰",5,"3+","4/6",["shock"],["shield"]]
     ],"abilities":[["風暴盾","每當有特工對這名特工射擊時，將穿刺 X 的 X 降低 1；因此穿刺 1 會被忽略。"]]},
     {"id":"blademaster","name":"死亡守望劍術大師老兵","role":"劍術大師","image":"assets/deathwatch/blademaster.webp","stats":"APL 3 · 移動 6\" · 豁免 3+ · 耐傷 15","weapons":[
-      ["特種爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""],["piercing", "穿刺 1", "Piercing 1"]]],
+      ["特種爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""],["piercing", "穿刺 1", "Piercing 1"]]],
       ["異形相位劍（決鬥）","近戰",5,"3+","4/6",["brutal","lethal5"]],
       ["異形相位劍（相位橫掃）","近戰",4,"3+","4/6",["brutal","lethal5"],["phase-sweep"]]
     ],"abilities":[["適應性劍術","忽略對這名特工異形相位劍命中屬性的任何變化。每當它進行近戰或反擊時，可以在正常順序前先結算 1 枚己方成功；若如此，該成功必須用於格擋。"]]},
     {"id":"bombard","name":"死亡守望轟擊手老兵","role":"轟擊手","image":"assets/deathwatch/bombard.webp","stats":"APL 3 · 移動 5\" · 豁免 3+ · 耐傷 18","weapons":[
-      ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
+      ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
       ["破片砲（彈頭）","遠程",4,"3+","5/7",[["piercing", "穿刺 1", "Piercing 1"]]],
-      ["破片砲（彈片）","遠程",5,"3+","4/5",[["torrent","洪流 2\""]]],
+      ["破片砲（彈片）","遠程",5,"3+","4/5",[["torrent", "洪流 2\"", "Torrent 2\""]]],
       ["雙拳","近戰",4,"3+","3/4",[]]
     ],"abilities":[]},
     {"id":"breacher","name":"死亡守望突破手老兵","role":"突破手","image":"assets/deathwatch/breacher.webp","stats":"APL 3 · 移動 5\" · 豁免 3+ · 耐傷 18","weapons":[
-      ["下掛榴彈發射器（破片）","遠程",4,"3+","2/4",[["blast","爆炸 2\""]]],
+      ["下掛榴彈發射器（破片）","遠程",4,"3+","2/4",[["blast", "爆炸 2\"", "Blast 2\""]]],
       ["下掛榴彈發射器（穿甲）","遠程",4,"3+","4/5",[["piercing", "穿刺 1", "Piercing 1"]]],
-      ["地獄風暴爆矢步槍","遠程",4,"3+","4/5",[["torrent","洪流 1\""]]],
-      ["熱熔炸彈","遠程",4,"3+","5/3",[["range","範圍 3\""],["devastating", "毀滅 3", "Devastating 3"],["heavy","重型（僅限轉移）","Heavy (Reposition only)"],["limited", "有限 1", "Limited 1"],["piercing", "穿刺 2", "Piercing 2"]]],
+      ["地獄風暴爆矢步槍","遠程",4,"3+","4/5",[["torrent", "洪流 1\"", "Torrent 1\""]]],
+      ["熱熔炸彈","遠程",4,"3+","5/3",[["range", "範圍 3\"", "Range 3\""],["devastating", "毀滅 3", "Devastating 3"],["heavy","重型（僅限轉移）","Heavy (Reposition only)"],["limited", "有限 1", "Limited 1"],["piercing", "穿刺 2", "Piercing 2"]]],
       ["雙拳","近戰",4,"3+","3/4",[]]
     ],"abilities":[]},
     {"id":"demolisher","name":"死亡守望粉碎者老兵","role":"粉碎者","image":"assets/deathwatch/demolisher.webp","stats":"APL 3 · 移動 6\" · 豁免 3+ · 耐傷 15","weapons":[
-      ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
+      ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
       ["重型雷霆錘","近戰",5,"4+","6/7",["shock","stun"]]
     ],"abilities":[
       ["殘暴突襲","每當這名特工進行近戰時，重型雷霆錘擁有[[brutal|殘暴]]。每當它執行衝鋒行動時，重型雷霆錘直到該次激活／反應結束擁有[[ceaseless|無休]]。"],
@@ -74,23 +74,23 @@ window.KT_DEATHWATCH = {
       ["鳥卜儀三角定位","若這名特工不在敵方控制範圍內，且射擊行動的目標（若有主要目標則為主要目標）對它可見，「先進鳥卜掃描」交戰計謀花費 0CP。執行射擊的不必是這名特工；該次激活／反應中之後的射擊也必須符合相同條件，否則計謀不影響那些後續射擊。"]
     ]},
     {"id":"gunner","name":"死亡守望砲手老兵","role":"砲手","image":"assets/deathwatch/gunner.webp","stats":"APL 3 · 移動 6\" · 豁免 3+ · 耐傷 15","weapons":[
-      ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
+      ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
       ["重型等離子焚化槍（標準）","遠程",5,"3+","4/6",[["piercing", "穿刺 1", "Piercing 1"]]],
       ["重型等離子焚化槍（過載）","遠程",5,"3+","5/6",["hot","lethal5",["piercing", "穿刺 1", "Piercing 1"]]],
       ["雙拳","近戰",4,"3+","3/4",[]]
     ],"abilities":[]},
     {"id":"headtaker","name":"死亡守望奪首者老兵","role":"奪首者","image":"assets/deathwatch/headtaker.webp","stats":"APL 3 · 移動 7\" · 豁免 3+ · 耐傷 13","weapons":[
-      ["特種爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""],["piercing", "穿刺 1", "Piercing 1"]]],
+      ["特種爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""],["piercing", "穿刺 1", "Piercing 1"]]],
       ["戰鬥匕首","近戰",5,"3+","4/5",[]]
     ],"abilities":[
       ["重力傘和抓鉤發射器","攀爬時，垂直距離視為 2\"，不論實際垂直移動多少；跳落時忽略垂直距離。"],
       ["隱秘奪首者","這名特工擁有隱匿命令時也能執行衝鋒。每當它與在該次激活／反應開始時對它不可見的特工近戰，該流程中你第一次出擊時，可以立即再將另一枚己方成功結算為出擊，先於對手。"]
     ]},
     {"id":"horde-slayer","name":"死亡守望獸群屠戮者老兵","role":"獸群屠戮者","image":"assets/deathwatch/horde-slayer.webp","stats":"APL 3 · 移動 5\" · 豁免 3+ · 耐傷 18","weapons":[
-      ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
-      ["地獄火重型爆矢槍（火焰）","遠程",5,"2+","3/3",[["range","範圍 8\""],"saturate",["torrent","洪流 2\""]]],
+      ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
+      ["地獄火重型爆矢槍（火焰）","遠程",5,"2+","3/3",[["range", "範圍 8\"", "Range 8\""],"saturate",["torrent", "洪流 2\"", "Torrent 2\""]]],
       ["地獄火重型爆矢槍（爆矢點射）","遠程",5,"3+","4/5",[["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]]],
-      ["地獄火重型爆矢槍（爆矢掃射）","遠程",4,"3+","4/5",[["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"],["torrent","洪流 1\""]]],
+      ["地獄火重型爆矢槍（爆矢掃射）","遠程",4,"3+","4/5",[["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"],["torrent", "洪流 1\"", "Torrent 1\""]]],
       ["雙拳","近戰",4,"3+","3/4",[]]
     ],"abilities":[]},
     {"id":"marksman","name":"死亡守望神射手老兵","role":"神射手","image":"assets/deathwatch/marksman.webp","stats":"APL 3 · 移動 6\" · 豁免 3+ · 耐傷 15","weapons":[

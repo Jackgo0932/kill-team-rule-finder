@@ -100,9 +100,9 @@ window.KT_MURDERWING = {
       "image": "assets/murderwing/chaos-lord.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 15",
       "weapons": [
-        ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
-        ["等離子手槍（標準）","遠程",4,"3+","3/5",[["range","範圍 8\""],["piercing", "穿刺 1", "Piercing 1"]]],
-        ["等離子手槍（過載）","遠程",4,"3+","4/5",[["range","範圍 8\""],"hot","lethal5",["piercing", "穿刺 1", "Piercing 1"]]],
+        ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
+        ["等離子手槍（標準）","遠程",4,"3+","3/5",[["range", "範圍 8\"", "Range 8\""],["piercing", "穿刺 1", "Piercing 1"]]],
+        ["等離子手槍（過載）","遠程",4,"3+","4/5",[["range", "範圍 8\"", "Range 8\""],"hot","lethal5",["piercing", "穿刺 1", "Piercing 1"]]],
         ["閃電爪","近戰",5,"3+","4/5",["lethal5","rending"]],
         ["動力拳","近戰",4,"3+","5/7",["brutal","shock"]],
         ["動力武器","近戰",5,"3+","4/6",["lethal5"]],
@@ -120,9 +120,9 @@ window.KT_MURDERWING = {
       "image": "assets/murderwing/champion.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
-        ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
-        ["等離子手槍（標準）","遠程",4,"3+","3/5",[["range","範圍 8\""],["piercing", "穿刺 1", "Piercing 1"]]],
-        ["等離子手槍（過載）","遠程",4,"3+","4/5",[["range","範圍 8\""],"hot","lethal5",["piercing", "穿刺 1", "Piercing 1"]]],
+        ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
+        ["等離子手槍（標準）","遠程",4,"3+","3/5",[["range", "範圍 8\"", "Range 8\""],["piercing", "穿刺 1", "Piercing 1"]]],
+        ["等離子手槍（過載）","遠程",4,"3+","4/5",[["range", "範圍 8\"", "Range 8\""],"hot","lethal5",["piercing", "穿刺 1", "Piercing 1"]]],
         ["動力拳","近戰",4,"3+","5/7",["brutal","shock"]],
         ["動力武器","近戰",5,"3+","4/6",["lethal5"]]
       ],
@@ -138,7 +138,7 @@ window.KT_MURDERWING = {
       "image": "assets/murderwing/curseclaw.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
-        ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
+        ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
         ["變異利爪","近戰",5,"3+","4/5",["rending"]]
       ],
       "abilities": [
@@ -153,7 +153,7 @@ window.KT_MURDERWING = {
       "image": "assets/murderwing/depredator.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
-        ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
+        ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
         ["鏈鋸巨斧","近戰",5,"4+","5/7",["brutal"]]
       ],
       "abilities": [
@@ -168,7 +168,7 @@ window.KT_MURDERWING = {
       "image": "assets/murderwing/huntmaster.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
-        ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
+        ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
         ["動力武器","近戰",5,"3+","4/6",["lethal5"]]
       ],
       "abilities": [
@@ -183,9 +183,9 @@ window.KT_MURDERWING = {
       "image": "assets/murderwing/raptor.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
-        ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
-        ["等離子手槍（標準）","遠程",4,"3+","3/5",[["range","範圍 8\""],["piercing", "穿刺 1", "Piercing 1"]]],
-        ["等離子手槍（過載）","遠程",4,"3+","4/5",[["range","範圍 8\""],"hot","lethal5",["piercing", "穿刺 1", "Piercing 1"]]],
+        ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
+        ["等離子手槍（標準）","遠程",4,"3+","3/5",[["range", "範圍 8\"", "Range 8\""],["piercing", "穿刺 1", "Piercing 1"]]],
+        ["等離子手槍（過載）","遠程",4,"3+","4/5",[["range", "範圍 8\"", "Range 8\""],"hot","lethal5",["piercing", "穿刺 1", "Piercing 1"]]],
         ["鏈鋸劍","近戰",5,"3+","4/5",[]]
       ],
       "abilities": [
@@ -199,7 +199,7 @@ window.KT_MURDERWING = {
       "image": "assets/murderwing/shrieker.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
-        ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
+        ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
         ["鏈鋸劍","近戰",5,"3+","4/5",[]]
       ],
       "abilities": [
@@ -214,9 +214,9 @@ window.KT_MURDERWING = {
       "image": "assets/murderwing/skysear.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
-        ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
-        ["火焰噴射器","遠程",4,"2+","3/3",[["range","範圍 8\""],"saturate",["torrent","洪流 2\""]]],
-        ["熱熔槍","遠程",4,"3+","6/3",[["range","範圍 6\""],["devastating", "毀滅 4", "Devastating 4"],["piercing", "穿刺 2", "Piercing 2"]]],
+        ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
+        ["火焰噴射器","遠程",4,"2+","3/3",[["range", "範圍 8\"", "Range 8\""],"saturate",["torrent", "洪流 2\"", "Torrent 2\""]]],
+        ["熱熔槍","遠程",4,"3+","6/3",[["range", "範圍 6\"", "Range 6\""],["devastating", "毀滅 4", "Devastating 4"],["piercing", "穿刺 2", "Piercing 2"]]],
         ["等離子槍（標準）","遠程",4,"3+","4/6",[["piercing", "穿刺 1", "Piercing 1"]]],
         ["等離子槍（過載）","遠程",4,"3+","5/6",["hot","lethal5",["piercing", "穿刺 1", "Piercing 1"]]],
         ["雙拳","近戰",4,"3+","3/4",[]]

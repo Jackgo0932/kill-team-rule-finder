@@ -89,7 +89,9 @@ function chipExplain(rules,instances){
   for(let i=0;i<rules.length;i++){
     if(S.open.has(S.team+":"+instances[i])){
       const k=KW[ruleId(rules[i])];
-      if(k)return `<div class="inline"><b>${esc(ruleLabel(rules[i]))}</b>：${esc(k.text)}</div>`;
+      // Chip 顯示該武器的實際值；展開說明則維持通用規則模板（x），
+      // 避免出現「範圍 8\"：……x 距離內」這種混合顯示。
+      if(k)return `<div class="inline"><b>${esc(k.name)}</b>${k.en?` <span class="meta term-en">${esc(k.en)}</span>`:""}：${esc(k.text)}</div>`;
     }
   }
   return "";

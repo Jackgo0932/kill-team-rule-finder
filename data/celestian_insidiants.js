@@ -31,8 +31,8 @@ window.KT_CELESTIAN_INSIDIANTS = {
   ],
   "operatives":[
     {"id":"superior","name":"潔天使隱伏者長執","role":"隊長","image":"assets/celestian_insidiants/superior.webp","stats":"APL 3 · 移動 6\" · 豁免 3+ · 耐傷 10","weapons":[
-      ["獄火手槍","遠程",4,"3+","4/2",[["range","範圍 3\""],["devastating", "毀滅 3", "Devastating 3"],["piercing", "穿刺 2", "Piercing 2"]]],
-      ["聖物爆矢手槍","遠程",4,"3+","3/5",[["range","範圍 8\""],"lethal5"]],
+      ["獄火手槍","遠程",4,"3+","4/2",[["range", "範圍 3\"", "Range 3\""],["devastating", "毀滅 3", "Devastating 3"],["piercing", "穿刺 2", "Piercing 2"]]],
+      ["聖物爆矢手槍","遠程",4,"3+","3/5",[["range", "範圍 8\"", "Range 8\""],"lethal5"]],
       ["聖物降罪者擲樁器","遠程",4,"3+","2/2",[["devastating", "毀滅 2", "Devastating 2"],"lethal5",["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"],"silent"],["anti-psyker"]],
       ["虛無之槌","近戰",4,"3+","4/4",["shock"],["anti-psyker"]]
     ],"abilities":[
@@ -51,12 +51,12 @@ window.KT_CELESTIAN_INSIDIANTS = {
       ["虛無儀式 1AP","虛無範圍 +1\"，最高 5\"。不能在敵方控制範圍內執行，每個轉折點最多一次。"]
     ]},
     {"id":"cremator","name":"潔天使隱伏者焰滅者","role":"焰滅者","image":"assets/celestian_insidiants/cremator.webp","stats":"APL 2 · 移動 6\" · 豁免 3+ · 耐傷 9","weapons":[
-      ["噴火手槍（標準）","遠程",4,"2+","3/3",[["range","範圍 6\""],"saturate",["torrent","洪流 1\""]]],
-      ["噴火手槍（噴湧）","遠程",4,"2+","3/3",[["range","範圍 4\""],"saturate","seek-light",["torrent","洪流 0\""]]],
+      ["噴火手槍（標準）","遠程",4,"2+","3/3",[["range", "範圍 6\"", "Range 6\""],"saturate",["torrent", "洪流 1\"", "Torrent 1\""]]],
+      ["噴火手槍（噴湧）","遠程",4,"2+","3/3",[["range", "範圍 4\"", "Range 4\""],"saturate","seek-light",["torrent", "洪流 0\"", "Torrent 0\""]]],
       ["虛無之槌","近戰",4,"3+","4/4",["shock"],["anti-psyker"]]
     ],"abilities":[["聖勉燼火","每個轉折點限一次：這名特工以任一噴火手槍配置對敵方造成傷害但未使其殘廢時，可選擇這名特工 6\" 內 1 名己方潔天使隱伏者特工，使其處於聖勉狀態。洪流 0\" 不能選次要目標，但仍視為具有洪流規則。"]]},
     {"id":"denuncia","name":"潔天使隱伏者揭諭者","role":"揭諭者","image":"assets/celestian_insidiants/denuncia.webp","stats":"APL 2 · 移動 6\" · 豁免 3+ · 耐傷 9","weapons":[
-      ["譴罪之聲","遠程",5,"3+","1/1",[["range","範圍 6\""],"seek","stun"]],
+      ["譴罪之聲","遠程",5,"3+","1/1",[["range", "範圍 6\"", "Range 6\""],"seek","stun"]],
       ["宣判之杖","近戰",4,"3+","3/3",["shock"]]
     ],"abilities":[
       ["譴罪祛穢","每當這名特工處於聖勉狀態，若「猜疑並殲滅」選擇的敵方特工或標識對它可見或位於其 6\" 內，該計謀花費 0CP。"],
@@ -69,7 +69,7 @@ window.KT_CELESTIAN_INSIDIANTS = {
       ["橫刀招架","每當這名特工進行近戰或反擊時，可以在正常順序前先結算 1 枚成功；若如此，該成功必須用於格擋。"]
     ]},
     {"id":"reliquarius","name":"潔天使隱伏者司聖者","role":"司聖者","image":"assets/celestian_insidiants/reliquarius.webp","stats":"APL 2 · 移動 6\" · 豁免 3+ · 耐傷 9","weapons":[
-      ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
+      ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
       ["降罪者擲樁器","遠程",4,"3+","2/2",[["devastating", "毀滅 1", "Devastating 1"],["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"],"silent"],["anti-psyker"]],
       ["槍托","近戰",3,"3+","2/3",[]]
     ],"abilities":[
@@ -77,7 +77,7 @@ window.KT_CELESTIAN_INSIDIANTS = {
       ["熱忱信徒","每當這名特工激活結束時，若它處於聖勉狀態且控制 1 個目標標識或己方任務標識，選擇對它可見且位於 6\" 內的 1 名己方潔天使隱伏者特工，使其處於聖勉狀態。"]
     ]},
     {"id":"warrior","name":"潔天使隱伏者戰士","role":"戰士","image":"assets/celestian_insidiants/warrior.webp","stats":"APL 2 · 移動 6\" · 豁免 3+ · 耐傷 9","weapons":[
-      ["爆矢手槍","遠程",4,"3+","3/4",[["range","範圍 8\""]]],
+      ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
       ["降罪者擲樁器","遠程",4,"3+","2/2",[["devastating", "毀滅 1", "Devastating 1"],["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"],"silent"],["anti-psyker"]],
       ["虛無之槌","近戰",4,"3+","4/4",["shock"],["anti-psyker"]]
     ],"abilities":[["聖勉打擊","當這名特工處於聖勉狀態時，其資料卡武器的關鍵傷害 +1。"]]}

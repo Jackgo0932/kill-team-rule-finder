@@ -112,7 +112,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "3/5",
           [
-            ["range", "範圍 8\""],
+            ["range", "範圍 8\"", "Range 8\""],
             ["piercing", "穿刺 1", "Piercing 1"]
           ]
         ],
@@ -123,7 +123,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "4/5",
           [
-            ["range", "範圍 8\""],
+            ["range", "範圍 8\"", "Range 8\""],
             "hot",
             "lethal5",
             ["piercing", "穿刺 1", "Piercing 1"]
@@ -165,9 +165,9 @@ window.KT_ANGELS_OF_DEATH = {
           "2+",
           "3/3",
           [
-            ["range", "範圍 6\""],
+            ["range", "範圍 6\"", "Range 6\""],
             "saturate",
-            ["torrent", "洪流 1\""]
+            ["torrent", "洪流 1\"", "Torrent 1\""]
           ]
         ],
         [
@@ -177,7 +177,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "3/4",
           [
-            ["range", "範圍 8\""],
+            ["range", "範圍 8\"", "Range 8\""],
             ["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]
           ]
         ],
@@ -188,7 +188,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "3/5",
           [
-            ["range", "範圍 8\""],
+            ["range", "範圍 8\"", "Range 8\""],
             ["piercing", "穿刺 1", "Piercing 1"]
           ]
         ],
@@ -199,7 +199,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "4/5",
           [
-            ["range", "範圍 8\""],
+            ["range", "範圍 8\"", "Range 8\""],
             "hot",
             "lethal5",
             ["piercing", "穿刺 1", "Piercing 1"]
@@ -270,7 +270,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "3/4",
           [
-            ["torrent", "洪流 1\""]
+            ["torrent", "洪流 1\"", "Torrent 1\""]
           ]
         ],
         [
@@ -368,7 +368,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "3/4",
           [
-            ["range", "範圍 8\""],
+            ["range", "範圍 8\"", "Range 8\""],
             ["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]
           ]
         ],
@@ -402,7 +402,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "3/4",
           [
-            ["range", "範圍 8\""],
+            ["range", "範圍 8\"", "Range 8\""],
             ["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]
           ]
         ],
@@ -431,7 +431,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "3/4",
           [
-            ["range", "範圍 8\""]
+            ["range", "範圍 8\"", "Range 8\""]
           ]
         ],
         [
@@ -480,7 +480,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "3/4",
           [
-            ["torrent", "洪流 1\""]
+            ["torrent", "洪流 1\"", "Torrent 1\""]
           ]
         ],
         [
@@ -490,7 +490,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "2/4",
           [
-            ["blast", "爆炸 2\""]
+            ["blast", "爆炸 2\"", "Blast 2\""]
           ]
         ],
         [
@@ -558,7 +558,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "3/4",
           [
-            ["torrent", "洪流 1\""]
+            ["torrent", "洪流 1\"", "Torrent 1\""]
           ]
         ],
         [
@@ -616,7 +616,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "3/4",
           [
-            ["range", "範圍 8\""]
+            ["range", "範圍 8\"", "Range 8\""]
           ]
         ],
         [
@@ -639,7 +639,7 @@ window.KT_ANGELS_OF_DEATH = {
           "2+",
           "2/4",
           [
-            ["blast", "爆炸 1\""],
+            ["blast", "爆炸 1\"", "Blast 1\""],
             "silent",
             "heavy-dash"
           ]
