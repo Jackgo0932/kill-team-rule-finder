@@ -80,11 +80,13 @@ function star(id){
 const ruleId=r=>Array.isArray(r)?r[0]:r;
 const ruleLabel=r=>Array.isArray(r)?r[1]:(KW[ruleId(r)]?.name||"");
 const ruleEn=r=>Array.isArray(r)&&r[2]?r[2]:(KW[ruleId(r)]?.en||"");
+const isFactionWeaponRule=id=>Boolean((team().weaponRules||{})[id]||(team().factionWeaponRuleIds||[]).includes(id));
+const factionRuleStar=id=>isFactionWeaponRule(id)?`<span class="faction-rule-star" aria-label="陣營專用規則">*</span>`:"";
 function chip(rule,instance){
   const id=ruleId(rule),k=KW[id];
   if(!k)return "";
   const key=S.team+":"+instance,o=S.open.has(key);
-  return `<button class="chip ${o?"open":""}" onclick="openRule('${instance}')">${esc(ruleLabel(rule))} · ${esc(ruleEn(rule))}</button>`;
+  return `<button class="chip ${o?"open":""}" onclick="openRule('${instance}')">${factionRuleStar(id)}${esc(ruleLabel(rule))} · ${esc(ruleEn(rule))}</button>`;
 }
 function chipExplain(rules,instances){
   for(let i=0;i<rules.length;i++){
@@ -171,8 +173,8 @@ function opCard(op){
       </div>
       <div class="op-title-mini" style="background-image:url('${op.image}')"></div>
     </div>
-    ${op.abilities.map((a,ai)=>`<div class="ability"><b>${esc(a[0])}</b>${markedProse(a[1],`ability:${op.id}:${ai}`)}</div>`).join("")}
-    ${op.weapons.map((w,wi)=>`<div class="weapon weapon-${w[1]==="近戰"?"melee":"ranged"}">
+    ${(op.abilities||[]).map((a,ai)=>`<div class="ability"><b>${esc(a[0])}</b>${markedProse(a[1],`ability:${op.id}:${ai}`)}</div>`).join("")}
+    ${(op.weapons||[]).map((w,wi)=>`<div class="weapon weapon-${w[1]==="近戰"?"melee":"ranged"}">
       <div class="weapon-head">
         <span class="weapon-name"><span class="weapon-type ${w[1]==="近戰"?"melee":"ranged"}">${esc(w[1])}</span>${esc(w[0])}</span>
         <span class="stats">攻擊 ${w[2]} · 命中 ${w[3]} · 傷害 ${w[4]}</span>
@@ -189,7 +191,7 @@ function opCard(op){
           const rule=profileRule(id);
           if(!rule)return "";
           const k=S.team+":"+customInstances[ki];
-          return `<button class="chip custom-rule ${S.open.has(k)?"open":""}" onclick="openRule('${customInstances[ki]}')">${esc(rule[0])} · ${esc(rule[1])}</button>`;
+          return `<button class="chip custom-rule ${S.open.has(k)?"open":""}" onclick="openRule('${customInstances[ki]}')">${factionRuleStar(id)}${esc(rule[0])} · ${esc(rule[1])}</button>`;
         }).join("");
         const customExplain=customIds.map((id,ki)=>{
           const rule=profileRule(id);

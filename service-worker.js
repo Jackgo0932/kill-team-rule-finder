@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.2.8.4-ravener-image-edge-and-poison-term-fix";
+const CACHE = "kt-rule-finder-v2.2.8.7-faction-weapon-rule-star-audit";
 const APP_SHELL = [
   "./",
   "./index.html",

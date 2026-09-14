@@ -4,6 +4,7 @@ window.KT_PLAGUE_MARINES = {
   "composition": "1 名瘟疫戰士勇士（Champion），再從擲彈兵、鬥士、重砲手、持徽手、惡瘟投放者、士兵中選擇 5 名。上述 6 種特工每種最多只能編入 1 名。",
   "archetypes": ["安全保護", "搜索與摧毀"],
   "weaponKeywords": {"psychic": ["靈能", "PSYCHIC", "武器關鍵字；部分規則會特別引用靈能武器。"]},
+  "factionWeaponRuleIds": ["poison", "toxic"],
   "rules": [
     [
       "poison",

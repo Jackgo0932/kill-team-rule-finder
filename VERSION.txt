@@ -1,1 +1,1 @@
-2.2.8.4-ravener-image-edge-and-poison-term-fix
+2.2.8.7-faction-weapon-rule-star-audit

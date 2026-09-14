@@ -302,3 +302,10 @@ linear-gradient(110deg,rgba(230,92,43,.18),transparent 42%),linear-gradient(180d
 
 /* v2.2.7.3 — English terminology beside Chinese titles */
 .term-en{font-weight:400;white-space:normal}
+
+/* v2.2.8.6 — faction-specific weapon rule marker */
+.faction-rule-star{
+  color:#e86f20;
+  font-weight:900;
+  margin-right:.18rem;
+}
