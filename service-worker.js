@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.2.8.7-faction-weapon-rule-star-audit";
+const CACHE = "kt-rule-finder-v2.2.9.6-wrecka-glyphs-prebattle-choice";
 const APP_SHELL = [
   "./",
   "./index.html",

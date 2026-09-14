@@ -21,21 +21,51 @@
     </div>
     <div style="display:flex;gap:8px;align-items:center">
       <button id="installBtn" class="install-btn" style="display:none">安裝到手機</button>
-      <select id="teamSelect" class="team team-select" aria-label="選擇隊伍">
-        <option value="pm">瘟疫戰士</option>
-        <option value="aod">死亡天使</option>
-            <option value="wk">破壞專隊</option>
-        <option value="mw">屠戮之翼</option>
-        <option value="leg">軍團</option>
-        <option value="dw">死亡守望</option>
-        <option value="ci">潔天使隱伏者</option>
-        <option value="cc">冥工之環</option>
-        <option value="ks">卡舍津</option>
-        <option value="rav">蛇蟲</option>
-      </select>
     </div>
   </div>
   <div id="installNote" class="install-note"></div>
+
+  <div class="matchup" aria-label="對戰小隊">
+    <div class="matchup-pickers">
+      <label class="matchup-team">
+        <span>我方小隊</span>
+        <select id="myTeamSelect" class="team team-select" aria-label="選擇我方小隊">
+          <option value="pm">瘟疫戰士</option>
+          <option value="aod">死亡天使</option>
+          <option value="wk">破壞專隊</option>
+          <option value="mw">屠戮之翼</option>
+          <option value="leg">軍團</option>
+          <option value="dw">死亡守望</option>
+          <option value="ci">潔天使隱伏者</option>
+          <option value="cc">冥工之環</option>
+          <option value="ks">卡舍津</option>
+          <option value="rav">蛇蟲</option>
+        </select>
+      </label>
+      <button id="swapTeams" class="swap-teams" type="button" aria-label="交換我方與敵方小隊" title="交換雙方">⇄</button>
+      <label class="matchup-team">
+        <span>敵方小隊</span>
+        <select id="enemyTeamSelect" class="team team-select" aria-label="選擇敵方小隊">
+          <option value="pm">瘟疫戰士</option>
+          <option value="aod">死亡天使</option>
+          <option value="wk">破壞專隊</option>
+          <option value="mw">屠戮之翼</option>
+          <option value="leg">軍團</option>
+          <option value="dw">死亡守望</option>
+          <option value="ci">潔天使隱伏者</option>
+          <option value="cc">冥工之環</option>
+          <option value="ks">卡舍津</option>
+          <option value="rav">蛇蟲</option>
+        </select>
+      </label>
+    </div>
+    <div class="matchup-switch" id="sideSwitch">
+      <button type="button" data-side="my"><span class="side-label">我方</span><b id="myTeamName">瘟疫戰士</b></button>
+      <button type="button" data-side="enemy"><span class="side-label">敵方</span><b id="enemyTeamName">死亡天使</b></button>
+    </div>
+    <div id="equipmentTracker" class="equipment-tracker"></div>
+    <div id="equipmentLimitNote" class="equipment-limit-note" role="status"></div>
+  </div>
 
   <div class="sticky">
     <div class="search">

@@ -27,3 +27,36 @@ window.KT_CHOICE_OPTIONS = {
     ["移除指示物","移除該特工身上的 1 枚中子碎片、毒素或恐懼試劑指示物。"]
   ]
 };
+
+
+window.KT_WEAPON_PROFILES = {
+  "universal-ap-grenade": {
+    name: "穿甲手雷",
+    en: "Krak Grenade",
+    type: "遠程",
+    atk: "4",
+    hit: "4+",
+    dmg: "4/5",
+    rules: [
+      ["range", "範圍 6\"", "Range 6\""],
+      ["piercing", "穿刺 1", "Piercing 1"],
+      "saturate"
+    ]
+  },
+  "pm-plague-grenade": {
+    name: "疫病手雷",
+    en: "Plague Grenade",
+    type: "遠程",
+    atk: "4",
+    hit: "4+",
+    dmg: "2/4",
+    rules: [
+      ["range", "範圍 6\"", "Range 6\""],
+      ["blast", "爆炸 2\"", "Blast 2\""],
+      "saturate",
+      "severe",
+      "poison",
+      "toxic"
+    ]
+  }
+};

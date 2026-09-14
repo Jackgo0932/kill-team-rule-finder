@@ -175,7 +175,7 @@ window.KT_PLAGUE_MARINES = {
       "abilities": [
         [
           "擲彈兵",
-          "該特工可以使用穿甲和疫病手雷；使用這些裝備時不計入其他使用限制。每當使用穿甲或疫病手雷時，該武器的命中屬性提升 1，並且疫病手雷擁有「[[toxic|劇毒]]」武器規則。"
+          "該特工可以使用[[wp:universal-ap-grenade|穿甲手雷]]和[[wp:pm-plague-grenade|疫病手雷]]；使用這些裝備時不計入其他使用限制。每當使用[[wp:universal-ap-grenade|穿甲手雷]]或[[wp:pm-plague-grenade|疫病手雷]]時，該武器的命中屬性提升 1，並且[[wp:pm-plague-grenade|疫病手雷]]擁有「[[toxic|劇毒]]」武器規則。"
         ]
       ]
     },

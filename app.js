@@ -2,16 +2,210 @@ let KEYWORDS=[], QUICK=[], TEAMS={}, UNIVERSAL_EQUIPMENT=[], TAC_OPS=[], CRIT_OP
 let KW={};
 let TERM_INDEX={};
 
+const LEGACY_TEAM=localStorage.getItem("ktTeam")||"pm";
+const SAVED_MY_TEAM=localStorage.getItem("ktMyTeam")||LEGACY_TEAM;
+const SAVED_ENEMY_TEAM=localStorage.getItem("ktEnemyTeam")||(SAVED_MY_TEAM==="aod"?"pm":"aod");
+const SAVED_SIDE=localStorage.getItem("ktSide")==="enemy"?"enemy":"my";
+
 const S={
-  team:localStorage.getItem("ktTeam")||"pm",
+  myTeam:SAVED_MY_TEAM,
+  enemyTeam:SAVED_ENEMY_TEAM,
+  side:SAVED_SIDE,
+  team:SAVED_SIDE==="enemy"?SAVED_ENEMY_TEAM:SAVED_MY_TEAM,
   tab:"全部",
   view:"all",
   q:"",
   subtab:"全部",
   open:new Set(),
   flowOpen:new Set(),
-  fav:new Set(JSON.parse(localStorage.getItem("ktFav")||"[]"))
+  fav:new Set(JSON.parse(localStorage.getItem("ktFav")||"[]")),
+  equipmentSelections:JSON.parse(localStorage.getItem("ktEquipmentSelections")||'{"my":{},"enemy":{}}'),
+  equipmentOptionSelections:JSON.parse(localStorage.getItem("ktEquipmentOptionSelections")||'{"my":{},"enemy":{}}')
 };
+
+
+function equipmentBucket(side=S.side,teamId=(side==="enemy"?S.enemyTeam:S.myTeam)){
+  if(!S.equipmentSelections[side]) S.equipmentSelections[side]={};
+  if(!Array.isArray(S.equipmentSelections[side][teamId])) S.equipmentSelections[side][teamId]=[];
+  return S.equipmentSelections[side][teamId];
+}
+function saveEquipmentSelections(){
+  localStorage.setItem("ktEquipmentSelections",JSON.stringify(S.equipmentSelections));
+}
+function equipmentKey(kind,id){return `${kind}:${id}`}
+function isEquipmentSelected(kind,id){
+  return equipmentBucket().includes(equipmentKey(kind,id));
+}
+function toggleEquipment(kind,id){
+  const key=equipmentKey(kind,id),bucket=equipmentBucket();
+  const at=bucket.indexOf(key);
+  if(at>=0){
+    bucket.splice(at,1);
+    const optionStore=equipmentOptionStore();
+    delete optionStore[key];
+    saveEquipmentOptionSelections();
+  }
+  else{
+    bucket.push(key);
+  }
+  saveEquipmentSelections();
+  render();
+}
+function equipmentSelectButton(kind,id){
+  const selected=isEquipmentSelected(kind,id);
+  return `<button class="equipment-pick ${selected?"on":""}" onclick="toggleEquipment('${kind}','${id}')" aria-pressed="${selected?"true":"false"}">${selected?"✓ 已選":"＋ 選擇"}</button>`;
+}
+function equipmentNameByKey(teamId,key){
+  const [kind,id]=key.split(":");
+  if(kind==="ue"){
+    const x=UNIVERSAL_EQUIPMENT.find(x=>x[0]===id);
+    return x?x[1]:id;
+  }
+  const t=TEAMS[teamId];
+  const x=(t?.equipment||[]).find(x=>x[0]===id);
+  return x?x[1]:id;
+}
+function equipmentSummary(side){
+  const teamId=side==="enemy"?S.enemyTeam:S.myTeam;
+  const bucket=equipmentBucket(side,teamId);
+  const items=bucket.map(key=>`<button class="equipment-summary-chip" onclick="removeEquipment('${side}','${teamId}','${key}')">${esc(equipmentNameByKey(teamId,key))}${equipmentOptionSummary(side,teamId,key)}<span>×</span></button>`).join("");
+  return `<div class="equipment-summary ${S.side===side?"active":""}">
+    <div class="equipment-summary-head"><b>${side==="my"?"我方":"敵方"}裝備</b><span>已選 ${bucket.length}</span></div>
+    <div class="equipment-summary-items">${items||`<span class="equipment-summary-empty">尚未選擇</span>`}</div>
+  </div>`;
+}
+function removeEquipment(side,teamId,key){
+  const bucket=equipmentBucket(side,teamId);
+  const at=bucket.indexOf(key);
+  if(at>=0) bucket.splice(at,1);
+  const optionStore=equipmentOptionStore(side,teamId);
+  delete optionStore[key];
+  saveEquipmentSelections();
+  saveEquipmentOptionSelections();
+  render();
+}
+
+
+function equipmentOptionStore(side=S.side,teamId=(side==="enemy"?S.enemyTeam:S.myTeam)){
+  if(!S.equipmentOptionSelections[side]) S.equipmentOptionSelections[side]={};
+  if(!S.equipmentOptionSelections[side][teamId]) S.equipmentOptionSelections[side][teamId]={};
+  return S.equipmentOptionSelections[side][teamId];
+}
+function saveEquipmentOptionSelections(){
+  localStorage.setItem("ktEquipmentOptionSelections",JSON.stringify(S.equipmentOptionSelections));
+}
+function equipmentOptionKey(kind,id){return `${kind}:${id}`}
+function selectedEquipmentOptions(kind,id){
+  const store=equipmentOptionStore();
+  const key=equipmentOptionKey(kind,id);
+  const raw=store[key];
+  // v2.2.9.3 used an array. Migrate it in place to { option: quantity }.
+  if(Array.isArray(raw)){
+    const counts={};
+    raw.forEach(option=>counts[option]=(counts[option]||0)+1);
+    store[key]=counts;
+    saveEquipmentOptionSelections();
+  }else if(!raw || typeof raw!=="object"){
+    store[key]={};
+  }
+  return store[key];
+}
+function equipmentOptionTotal(counts){
+  return Object.values(counts||{}).reduce((sum,n)=>sum+(Number(n)||0),0);
+}
+function changeEquipmentOption(kind,id,option,delta,maxTotal=2){
+  const counts=selectedEquipmentOptions(kind,id);
+  const current=Number(counts[option]||0);
+  const total=equipmentOptionTotal(counts);
+  if(delta>0 && total>=maxTotal){
+    const note=document.querySelector("#equipmentLimitNote");
+    if(note){
+      note.textContent=`這項裝備合計最多選擇 ${maxTotal} 個。`;
+      note.classList.add("show");
+      setTimeout(()=>note.classList.remove("show"),2200);
+    }
+    return;
+  }
+  const next=Math.max(0,current+delta);
+  if(next) counts[option]=next;
+  else delete counts[option];
+  saveEquipmentOptionSelections();
+  render();
+}
+function equipmentOptionPicker(kind,id,options,maxTotal=2){
+  const counts=selectedEquipmentOptions(kind,id);
+  const total=equipmentOptionTotal(counts);
+  if(maxTotal===1){
+    return `<div class="equipment-option-picker">
+      <div class="equipment-option-picker-head"><b>裝備內選擇</b><span>${total}/1</span></div>
+      <div class="equipment-option-single-list">${options.map(option=>{
+        const selected=Number(counts[option]||0)>0;
+        return `<button class="equipment-option-single ${selected?"on":""}" onclick="setSingleEquipmentOption('${kind}','${id}','${option}')">${selected?"✓ ":""}${esc(option)}</button>`;
+      }).join("")}</div>
+    </div>`;
+  }
+  return `<div class="equipment-option-picker">
+    <div class="equipment-option-picker-head"><b>裝備內選擇</b><span>${total}/${maxTotal}</span></div>
+    <div class="equipment-option-qty-list">${options.map(option=>{
+      const qty=Number(counts[option]||0);
+      return `<div class="equipment-option-qty">
+        <span>${esc(option)}</span>
+        <div class="equipment-option-stepper">
+          <button onclick="changeEquipmentOption('${kind}','${id}','${option}',-1,${maxTotal})" ${qty<=0?"disabled":""}>−</button>
+          <b>${qty}</b>
+          <button onclick="changeEquipmentOption('${kind}','${id}','${option}',1,${maxTotal})" ${total>=maxTotal?"disabled":""}>＋</button>
+        </div>
+      </div>`;
+    }).join("")}</div>
+  </div>`;
+}
+function setSingleEquipmentOption(kind,id,option){
+  const counts=selectedEquipmentOptions(kind,id);
+  const already=Number(counts[option]||0)>0;
+  Object.keys(counts).forEach(k=>delete counts[k]);
+  if(!already) counts[option]=1;
+  saveEquipmentOptionSelections();
+  render();
+}
+function equipmentOptionSummary(side,teamId,key){
+  const store=equipmentOptionStore(side,teamId);
+  let selected=store[key];
+  if(Array.isArray(selected)){
+    const counts={};
+    selected.forEach(option=>counts[option]=(counts[option]||0)+1);
+    selected=store[key]=counts;
+    saveEquipmentOptionSelections();
+  }
+  if(!selected || typeof selected!=="object") return "";
+  const labels=Object.entries(selected).filter(([,qty])=>Number(qty)>0).map(([option,qty])=>Number(qty)>1?`${option} ×${qty}`:option);
+  return labels.length?` <small>(${labels.map(esc).join("＋")})</small>`:"";
+}
+
+
+const EQUIPMENT_SELECTION_CONFIG={
+  "ue:utility-grenades":{
+    maxTotal:2,
+    options:["煙霧手雷","震盪手雷"]
+  },
+  "ue:explosive-grenades":{
+    maxTotal:2,
+    options:["破片手雷","穿甲手雷"]
+  },
+  "wk:e:glyphs":{
+    maxTotal:1,
+    options:["WAAAGH!","毀滅"]
+  }
+};
+function equipmentSelectionConfig(kind,id){
+  const genericKey=equipmentOptionKey(kind,id);
+  const teamKey=`${S.team}:${genericKey}`;
+  return EQUIPMENT_SELECTION_CONFIG[teamKey]||EQUIPMENT_SELECTION_CONFIG[genericKey]||null;
+}
+function equipmentSelectionBlock(kind,id){
+  if(!isEquipmentSelected(kind,id)) return "";
+  const cfg=equipmentSelectionConfig(kind,id);
+  return cfg?equipmentOptionPicker(kind,id,cfg.options,cfg.maxTotal):"";
+}
 
 const NAV_GROUPS={
   all:{
@@ -102,19 +296,28 @@ function chipExplain(rules,instances){
 
 function markedProse(text,scope){
   const src=String(text??"");
-  const rx=/\[\[([a-z0-9-]+)\|([^\]]+)\]\]/g;
+  const rx=/\[\[((?:wp:)?[a-z0-9-]+)\|([^\]]+)\]\]/g;
   let out="",last=0,n=0,m;
   const refs=[];
   while((m=rx.exec(src))){
     out+=esc(src.slice(last,m.index));
-    const id=m[1],label=m[2],k=KW[id];
-    if(k){
-      const instance=`term:${scope}:${n++}:${id}`;
-      const open=S.open.has(S.team+":"+instance);
-      out+=`<button class="term-link ${open?"open":""}" onclick="openRule('${instance}')">${esc(label)}</button>`;
-      refs.push({id,instance});
+    const rawId=m[1],label=m[2];
+    if(rawId.startsWith("wp:")){
+      const id=rawId.slice(3),profile=(window.KT_WEAPON_PROFILES||{})[id];
+      if(profile){
+        const instance=`weapon-profile:${scope}:${n++}:${id}`;
+        const open=S.open.has(S.team+":"+instance);
+        out+=`<button class="term-link weapon-profile-link ${open?"open":""}" onclick="openRule('${instance}')">${esc(label)}</button>`;
+        refs.push({kind:"weapon-profile",id,instance});
+      }else out+=esc(label);
     }else{
-      out+=esc(label);
+      const id=rawId,k=KW[id];
+      if(k){
+        const instance=`term:${scope}:${n++}:${id}`;
+        const open=S.open.has(S.team+":"+instance);
+        out+=`<button class="term-link ${open?"open":""}" onclick="openRule('${instance}')">${esc(label)}</button>`;
+        refs.push({kind:"weapon-rule",id,instance});
+      }else out+=esc(label);
     }
     last=rx.lastIndex;
   }
@@ -123,11 +326,26 @@ function markedProse(text,scope){
   out=out.replace(/\n/g,"<br>");
   let explain="";
   for(const ref of refs){
-    if(S.open.has(S.team+":"+ref.instance)){
+    if(!S.open.has(S.team+":"+ref.instance))continue;
+    if(ref.kind==="weapon-profile"){
+      const p=(window.KT_WEAPON_PROFILES||{})[ref.id];
+      if(p){
+        const instances=(p.rules||[]).map((rule,ki)=>`wp:${ref.id}:k:${ki}:${ruleId(rule)}`);
+        explain=`<div class="inline prose-inline weapon-profile-inline">
+          <div class="term-source">武器資料</div>
+          <div class="weapon-head">
+            <span class="weapon-name">${esc(p.name)}${p.en?` <span class="meta term-en">${esc(p.en)}</span>`:""}</span>
+            <span class="stats">攻擊 ${esc(p.atk)} · 命中 ${esc(p.hit)} · 傷害 ${esc(p.dmg)}</span>
+          </div>
+          <div class="chips">${(p.rules||[]).map((rule,ki)=>chip(rule,instances[ki])).join("")}</div>
+          ${chipExplain(p.rules||[],instances)}
+        </div>`;
+      }
+    }else{
       const k=KW[ref.id];
-      explain=`<div class="inline prose-inline"><div class="term-source">武器規則</div><b>${esc(k.name)}</b>：${esc(k.text)}</div>`;
-      break;
+      if(k)explain=`<div class="inline prose-inline"><div class="term-source">武器規則</div><b>${esc(k.name)}</b>：${esc(k.text)}</div>`;
     }
+    break;
   }
   return `<div class="body">${out}</div>${explain}`;
 }
@@ -232,7 +450,7 @@ function items(){
   const TAC_ARCHETYPES={"pm":["seek","security"],"aod":["seek","security"],"wk":["security","seek"],"mw":["seek","infiltration"],"leg":["seek","infiltration"],"dw":["seek","security"],"ci":["infiltration","security"],"cc":["recon","security"],"ks":["security","seek"],"rav":["infiltration","seek"]};
   const allowedTac=S.view==="team"?(TAC_ARCHETYPES[S.team]||[]):["recon","security","seek","infiltration"];
   TAC_OPS.filter(x=>allowedTac.includes(x[0])).forEach(x=>a.push({kind:"Tac Ops",id:"to:"+x[3],s:x,html:`<div class="card">${star("to:"+x[3])}<h3>${esc(x[4])} <span class="meta">${esc(x[5])}</span></h3><div class="meta">${esc(x[1])} · Tac Op</div><div class="body"><b>揭示：</b>${esc(x[6])}<br><br>${x[7]!=="—"?`<b>規則／行動：</b>${esc(x[7])}<br><br>`:""}<b>得分：</b>${esc(x[8])}${x[9]?`<div class="rule-supplement"><b>規則補充</b><br>${esc(x[9])}</div>`:""}</div></div>`}));
-  UNIVERSAL_EQUIPMENT.forEach(x=>a.push({kind:"通用裝備",id:"ue:"+x[0],s:x,html:`<div class="card">${star("ue:"+x[0])}<h3>${esc((x[3]?x[3]+" ":"")+x[1])}</h3><div class="meta">${esc(x[2])} · 通用裝備</div><div class="body">${esc(x[4]).replace(/\n/g,"<br>")}</div>${x[0]==="utility-grenades"?utilityGrenadeColumns():""}${x[0]==="explosive-grenades"?choiceOptionList((window.KT_CHOICE_OPTIONS||{})["all:equipment:explosive-grenades"],"explosive-grenades"):""}</div>`}));
+  UNIVERSAL_EQUIPMENT.forEach(x=>a.push({kind:"通用裝備",id:"ue:"+x[0],s:x,html:`<div class="card equipment-card">${star("ue:"+x[0])}<div class="equipment-card-head"><h3>${esc((x[3]?x[3]+" ":"")+x[1])}</h3>${equipmentSelectButton("ue",x[0])}</div><div class="meta">${esc(x[2])} · 通用裝備</div>${equipmentSelectionBlock("ue",x[0])}<div class="body">${esc(x[4]).replace(/\n/g,"<br>")}</div>${x[0]==="utility-grenades"?utilityGrenadeColumns():""}${x[0]==="explosive-grenades"?choiceOptionList((window.KT_CHOICE_OPTIONS||{})["all:equipment:explosive-grenades"],"explosive-grenades"):""}</div>`}));
   t.rules.forEach(x=>{
     const body=(x[0]==="chapter-tactics" && t.chapterTactics)
       ? `<div class="body"><div class="chapter-tactics-intro">選擇殺戮小隊時，為己方死亡天使特工選擇一個首要和次要戰團戰術在戰鬥中生效；多次選擇相同戰團戰術不會疊加。</div>${ruleOptionGrid(t.chapterTactics,"chapter-tactics")}</div>`
@@ -244,7 +462,27 @@ function items(){
     a.push({kind,id:"p:"+x[0],s:x,html:`<div class="card">${star("p:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">${esc(t.name)} · ${esc(x[2])}</div>${markedProse(x[3],`ploy:${x[0]}`)}</div>`});
   });
   if(t.ploys2) t.ploys2.forEach(x=>{const opts=choiceOptionsFor(S.team,"ploy2",x[0]);a.push({kind:"交戰計謀",id:"p2:"+x[0],s:x,html:`<div class="card">${star("p2:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">${esc(t.name)} · ${esc(x[2])}</div>${opts?`<div class="body">在一名己方瘟疫戰士特工的激活或反應期間、其執行一次行動之前或之後使用。選擇一個效果：</div>${choiceOptionList(opts,`ploy2-choice:${x[0]}`)}`:markedProse(x[3],`ploy2:${x[0]}`)}</div>`})});
-  t.equipment.forEach(x=>a.push({kind:"陣營裝備",id:"e:"+x[0],s:x,html:`<div class="card">${star("e:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">${esc(t.name)} · 陣營裝備</div>${markedProse(x[2],`equip:${x[0]}`)}</div>`}));
+  t.equipment.forEach(x=>{
+    let content=markedProse(x[2],`equip:${x[0]}`);
+    // 像「疫病手雷」這種裝備本身就是一個完整武器資料，
+    // 直接用武器卡呈現，不再把攻擊／命中／傷害寫成一段敘述。
+    if(S.team==="pm" && x[0]==="grenades"){
+      const p=(window.KT_WEAPON_PROFILES||{})["pm-plague-grenade"];
+      if(p){
+        const instances=(p.rules||[]).map((rule,ki)=>`equipwp:${x[0]}:k:${ki}:${ruleId(rule)}`);
+        content=`<div class="weapon equipment-weapon weapon-ranged">
+          <div class="weapon-head">
+            <span class="weapon-name"><span class="weapon-type ranged">${esc(p.type||"遠程")}</span>${esc(p.name)}${p.en?` <span class="meta term-en">${esc(p.en)}</span>`:""}</span>
+            <span class="stats">攻擊 ${esc(p.atk)} · 命中 ${esc(p.hit)} · 傷害 ${esc(p.dmg)}</span>
+          </div>
+          <div class="chips">${(p.rules||[]).map((rule,ki)=>chip(rule,instances[ki])).join("")}</div>
+          ${chipExplain(p.rules||[],instances)}
+          <div class="equipment-weapon-note">整場戰鬥不能使用超過兩次。</div>
+        </div>`;
+      }
+    }
+    a.push({kind:"陣營裝備",id:"e:"+x[0],s:x,html:`<div class="card equipment-card">${star("e:"+x[0])}<div class="equipment-card-head"><h3>${esc(x[1])}</h3>${equipmentSelectButton("e",x[0])}</div><div class="meta">${esc(t.name)} · 陣營裝備</div>${equipmentSelectionBlock("e",x[0])}${content}</div>`});
+  });
   t.operatives.forEach(o=>a.push({kind:"特工",id:"op:"+o.id,s:o,html:opCard(o)}));
   return a;
 }
@@ -412,7 +650,12 @@ function render(){
   const isFlow=S.view==="flow";
   document.querySelector(".sticky").classList.toggle("flow-hidden",isFlow);
   document.querySelector("#tabs").classList.toggle("flow-hidden",isFlow);
-  document.querySelector("#teamSelect").value=S.team;
+  document.querySelector("#myTeamSelect").value=S.myTeam;
+  document.querySelector("#enemyTeamSelect").value=S.enemyTeam;
+  document.querySelector("#myTeamName").textContent=TEAMS[S.myTeam].name;
+  document.querySelector("#enemyTeamName").textContent=TEAMS[S.enemyTeam].name;
+  document.querySelectorAll("#sideSwitch button").forEach(b=>b.classList.toggle("on",b.dataset.side===S.side));
+  document.querySelector("#equipmentTracker").innerHTML=equipmentSummary("my")+equipmentSummary("enemy");
   document.querySelector("#navTeamName").textContent=team().name;
   if(isFlow){ renderFlow(); return; }
   const groups=NAV_GROUPS[S.view==="team"?"team":"all"];
@@ -441,19 +684,65 @@ function tab(t){S.tab=t;S.subtab="全部";S.open.clear();render()}
 function subtab(t){S.subtab=t;S.open.clear();render()}
 function openRule(instance){
   const k=S.team+":"+instance;
+
+  // 武器資料卡內再點「範圍／穿刺／爆炸…」時，必須保留外層武器資料卡開啟。
+  // 這是兩層展開：weapon-profile parent + wp:* child。
+  if(instance.startsWith("wp:")){
+    const prefix=S.team+":wp:";
+    for(const openKey of [...S.open]){
+      if(openKey.startsWith(prefix) && openKey!==k) S.open.delete(openKey);
+    }
+    if(S.open.has(k)) S.open.delete(k);
+    else S.open.add(k);
+    render();
+    return;
+  }
+
   if(S.open.has(k)) S.open.clear();
   else { S.open.clear(); S.open.add(k); }
   render();
 }
 function fav(id){const k=S.team+":"+id;S.fav.has(k)?S.fav.delete(k):S.fav.add(k);localStorage.setItem("ktFav",JSON.stringify([...S.fav]));render()}
 
+function setActiveSide(side,{resetOpen=true}={}){
+  S.side=side==="enemy"?"enemy":"my";
+  S.team=S.side==="enemy"?S.enemyTeam:S.myTeam;
+  localStorage.setItem("ktSide",S.side);
+  localStorage.setItem("ktTeam",S.team); // 舊版相容：記住最後正在看的小隊
+  if(resetOpen){
+    S.open.clear();
+    S.flowOpen.clear();
+  }
+  render();
+}
+
 function bindUI(){
   document.querySelector("#q").addEventListener("input",e=>{S.q=e.target.value;render()});
-  document.querySelector("#teamSelect").addEventListener("change",e=>{
-    S.team=e.target.value;
+  document.querySelector("#myTeamSelect").addEventListener("change",e=>{
+    S.myTeam=e.target.value;
+    localStorage.setItem("ktMyTeam",S.myTeam);
+    if(S.side==="my") S.team=S.myTeam;
     localStorage.setItem("ktTeam",S.team);
-    S.tab="全部";
-    S.subtab="全部";
+    S.open.clear();
+    S.flowOpen.clear();
+    render();
+  });
+  document.querySelector("#enemyTeamSelect").addEventListener("change",e=>{
+    S.enemyTeam=e.target.value;
+    localStorage.setItem("ktEnemyTeam",S.enemyTeam);
+    if(S.side==="enemy") S.team=S.enemyTeam;
+    localStorage.setItem("ktTeam",S.team);
+    S.open.clear();
+    S.flowOpen.clear();
+    render();
+  });
+  document.querySelectorAll("#sideSwitch button").forEach(b=>b.addEventListener("click",()=>setActiveSide(b.dataset.side)));
+  document.querySelector("#swapTeams").addEventListener("click",()=>{
+    [S.myTeam,S.enemyTeam]=[S.enemyTeam,S.myTeam];
+    localStorage.setItem("ktMyTeam",S.myTeam);
+    localStorage.setItem("ktEnemyTeam",S.enemyTeam);
+    S.team=S.side==="enemy"?S.enemyTeam:S.myTeam;
+    localStorage.setItem("ktTeam",S.team);
     S.open.clear();
     S.flowOpen.clear();
     render();

@@ -1,1 +1,1 @@
-2.2.8.7-faction-weapon-rule-star-audit
+2.2.9.6-wrecka-glyphs-prebattle-choice

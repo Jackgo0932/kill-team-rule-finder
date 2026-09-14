@@ -309,3 +309,314 @@ linear-gradient(110deg,rgba(230,92,43,.18),transparent 42%),linear-gradient(180d
   font-weight:900;
   margin-right:.18rem;
 }
+
+/* v2.2.8.8 — clickable referenced weapon profiles */
+.weapon-profile-inline .weapon-head{margin-top:.25rem}
+.weapon-profile-inline .chips{margin-top:.45rem}
+.weapon-profile-link{font-weight:800}
+
+/* v2.2.9.0 — faction equipment that is itself a weapon */
+.equipment-weapon{margin-top:.7rem}
+.equipment-weapon-note{
+  margin-top:.55rem;
+  font-size:.9rem;
+  opacity:.78;
+}
+
+/* v2.2.9.1 — matchup: select both teams once, then switch instantly */
+.matchup{
+  max-width:920px;
+  margin:8px auto 10px;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:var(--panel2);
+}
+.matchup-pickers{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 38px minmax(0,1fr);
+  gap:8px;
+  align-items:end;
+}
+.matchup-team{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.matchup-team>span{
+  font-size:11px;
+  font-weight:800;
+  opacity:.68;
+}
+.matchup .team-select{
+  width:100%;
+  max-width:none;
+  min-width:0;
+}
+.swap-teams{
+  width:38px;
+  height:38px;
+  padding:0;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--panel);
+  color:var(--text);
+  font-size:19px;
+  cursor:pointer;
+}
+.matchup-switch{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+  margin-top:9px;
+  padding:4px;
+  border-radius:12px;
+  background:rgba(0,0,0,.18);
+}
+.matchup-switch button{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:8px 10px;
+  border:1px solid transparent;
+  border-radius:9px;
+  background:transparent;
+  color:var(--text);
+  cursor:pointer;
+}
+.matchup-switch button b{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.matchup-switch button.on{
+  border-color:rgba(230,92,43,.42);
+  background:rgba(230,92,43,.14);
+  box-shadow:inset 3px 0 0 var(--accent);
+}
+.side-label{
+  flex:0 0 auto;
+  font-size:10px;
+  font-weight:900;
+  opacity:.68;
+}
+@media(max-width:640px){
+  .matchup{
+    margin:6px 8px 8px;
+    padding:9px;
+  }
+  .matchup-pickers{
+    grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);
+    gap:6px;
+  }
+  .matchup .team-select{
+    max-width:none;
+    min-width:0;
+    width:100%;
+    font-size:12px;
+    padding:8px 24px 8px 8px;
+  }
+  .swap-teams{width:34px;height:36px}
+  .matchup-switch button{padding:8px 6px;gap:5px}
+  .matchup-switch button b{font-size:12px}
+}
+@media(max-width:390px){
+  .matchup-team>span{font-size:10px}
+  .matchup .team-select{max-width:none;min-width:0;font-size:11px}
+  .matchup-switch button b{font-size:11px}
+}
+
+/* v2.2.9.2 — record selected equipment for both sides */
+.equipment-tracker{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+  margin-top:8px;
+}
+.equipment-summary{
+  min-width:0;
+  padding:8px 9px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:rgba(0,0,0,.12);
+}
+.equipment-summary.active{
+  border-color:rgba(230,92,43,.35);
+}
+.equipment-summary-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:6px;
+  font-size:11px;
+}
+.equipment-summary-head span{
+  font-variant-numeric:tabular-nums;
+  opacity:.7;
+}
+.equipment-summary-items{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+}
+.equipment-summary-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  max-width:100%;
+  padding:4px 7px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:var(--panel);
+  color:var(--text);
+  font-size:11px;
+  cursor:pointer;
+}
+.equipment-summary-chip span{opacity:.6}
+.equipment-summary-empty{
+  font-size:11px;
+  opacity:.48;
+}
+.equipment-limit-note{
+  display:none;
+  margin-top:7px;
+  padding:7px 9px;
+  border-radius:9px;
+  background:rgba(230,92,43,.14);
+  color:var(--text);
+  font-size:12px;
+}
+.equipment-limit-note.show{display:block}
+.equipment-card-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+  padding-right:30px;
+}
+.equipment-card-head h3{margin-right:auto}
+.equipment-pick{
+  flex:0 0 auto;
+  padding:5px 8px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:var(--panel2);
+  color:var(--text);
+  font-size:11px;
+  font-weight:800;
+  cursor:pointer;
+}
+.equipment-pick.on{
+  border-color:rgba(230,92,43,.5);
+  background:rgba(230,92,43,.14);
+}
+@media(max-width:520px){
+  .equipment-tracker{grid-template-columns:1fr}
+  .equipment-summary:not(.active){opacity:.78}
+  .equipment-card-head{padding-right:28px}
+}
+
+/* v2.2.9.3 — equipment wording + internal equipment choices */
+.equipment-option-picker{
+  margin-top:10px;
+  padding:9px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:rgba(0,0,0,.10);
+}
+.equipment-option-picker-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:7px;
+  font-size:11px;
+}
+.equipment-option-picker-head span{opacity:.68;font-variant-numeric:tabular-nums}
+.equipment-option-picker-items{display:flex;flex-wrap:wrap;gap:6px}
+.equipment-option-pick{
+  padding:6px 9px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:var(--panel);
+  color:var(--text);
+  font-size:11px;
+  font-weight:800;
+  cursor:pointer;
+}
+.equipment-option-pick.on{
+  border-color:rgba(230,92,43,.5);
+  background:rgba(230,92,43,.14);
+}
+.equipment-summary-chip small{
+  font-size:9px;
+  opacity:.72;
+  font-weight:700;
+}
+
+/* v2.2.9.4 — equipment has no global cap; grenade choices use quantities */
+.equipment-option-qty-list{display:flex;flex-direction:column;gap:6px}
+.equipment-option-qty{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:6px 8px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:var(--panel);
+  font-size:12px;
+  font-weight:700;
+}
+.equipment-option-stepper{
+  flex:0 0 auto;
+  display:grid;
+  grid-template-columns:30px 28px 30px;
+  align-items:center;
+  text-align:center;
+}
+.equipment-option-stepper button{
+  width:30px;height:28px;padding:0;
+  border:1px solid var(--line);
+  border-radius:7px;
+  background:var(--panel2);
+  color:var(--text);
+  font-size:16px;
+  cursor:pointer;
+}
+.equipment-option-stepper button:disabled{opacity:.3;cursor:default}
+.equipment-option-stepper b{font-variant-numeric:tabular-nums}
+
+/* v2.2.9.5 — equipment internal choices live directly under the selection control */
+.equipment-card>.equipment-option-picker{
+  margin-top:7px;
+  margin-bottom:10px;
+  border-color:rgba(230,92,43,.28);
+  background:rgba(230,92,43,.06);
+}
+
+/* v2.2.9.6 — single-choice equipment configuration, e.g. Wrecka Krew Glyphs */
+.equipment-option-single-list{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:6px;
+}
+.equipment-option-single{
+  min-width:0;
+  padding:8px 10px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:var(--panel);
+  color:var(--text);
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+}
+.equipment-option-single.on{
+  border-color:rgba(230,92,43,.5);
+  background:rgba(230,92,43,.14);
+}
