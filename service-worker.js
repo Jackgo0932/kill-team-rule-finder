@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.2.9.6-wrecka-glyphs-prebattle-choice";
+const CACHE = "kt-rule-finder-v2.2.9.7-canoptek-geomancer-ranged-fix";
 const APP_SHELL = [
   "./",
   "./index.html",

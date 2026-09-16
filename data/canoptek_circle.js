@@ -28,8 +28,8 @@ window.KT_CANOPTEK_CIRCLE = {
   ],
   "operatives":[
     {"id":"geomancer","name":"地相技師","role":"隊長","image":"assets/canoptek_circle/geomancer.webp","stats":"APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14","weapons":[
-      ["震顫長刀（切割物質）","近戰",4,"3+","4/5",[["piercing", "穿刺 1", "Piercing 1"],["piercing-crits", "關鍵穿刺 2", "Piercing Crits 2"]]],
-      ["震顫長刀（撼動）","近戰",5,"3+","1/2",[["blast", "爆炸 2\"", "Blast 2\""],"seeklight","stun"]],
+      ["震顫長刀（切割物質）","遠程",4,"3+","4/5",[["piercing", "穿刺 1", "Piercing 1"],["piercing-crits", "關鍵穿刺 2", "Piercing Crits 2"]]],
+      ["震顫長刀（撼動）","遠程",5,"3+","1/2",[["blast", "爆炸 2\"", "Blast 2\""],"seeklight","stun"]],
       ["震顫長刀（橫掃）","近戰",4,"4+","4/5",["severe","shock","stun"]]
     ],"abilities":[
       ["控制方尖碑節點","執行需要控制目標標識的任務行動時（認證行動 2025 的拾取任務標識或回收除外），可改從一個己方方尖碑節點判定控制。執行操作艙門時，也可改為開關己方節點 1\" 內訪問點的艙門，但仍須滿足行動條件。"],
