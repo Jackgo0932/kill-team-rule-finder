@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-v2.2.9.7-canoptek-geomancer-ranged-fix";
+const CACHE = "kt-rule-finder-2.2.10.0-reposition-control-range-exception";
 const APP_SHELL = [
   "./",
   "./index.html",

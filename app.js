@@ -433,7 +433,8 @@ function items(){
     html:`<div class="card">${star("info:archetypes")}<h3>任務原型</h3><div class="meta">${esc(t.name)} · Archetypes</div><div class="body">可使用：${t.archetypes.map(esc).join("、")}。原型會在特定任務包（例如 Approved Ops）中使用，實際使用方式依該任務流程決定。</div></div>`
   });
   QUICK.forEach(x=>a.push({kind:"核心",id:"q:"+x[0],s:x,html:`<div class="card">${star("q:"+x[0])}<h3>${esc(x[1])}${x[3]?` <span class="meta term-en">${esc(x[3])}</span>`:""}</h3><div class="meta">核心規則</div><div class="body">${esc(x[2]).replace(/\n/g,"<br>")}</div></div>`}));
-  KEYWORDS.forEach(x=>a.push({kind:"武器規則",id:"k:"+x[0],s:x,html:`<div class="card">${star("k:"+x[0])}<h3>${esc(x[1])} <span class="meta">${esc(x[2])}</span></h3><div class="body">${esc(x[3])}</div></div>`}));
+  const factionOnlyWeaponRuleIds=new Set(Object.values(TEAMS).flatMap(t=>t?.factionWeaponRuleIds||[]));
+  KEYWORDS.filter(x=>!factionOnlyWeaponRuleIds.has(x[0])).forEach(x=>a.push({kind:"武器規則",id:"k:"+x[0],s:x,html:`<div class="card">${star("k:"+x[0])}<h3>${esc(x[1])} <span class="meta">${esc(x[2])}</span></h3><div class="body">${esc(x[3])}</div></div>`}));
   if(APPROVED_OPS.flow?.length){
     const steps=APPROVED_OPS.flow.map((x,i)=>`<div class="approved-step"><span class="approved-step-num">${i+1}</span><div><b>${esc(x[0])}</b><div>${esc(x[1])}</div></div></div>`).join("");
     a.push({kind:"對戰流程",id:"ao:game-sequence",s:APPROVED_OPS.flow,html:`<div class="card">${star("ao:game-sequence")}<h3>Approved Ops 2025 對戰流程</h3><div class="meta">Game Sequence · 桌邊速查</div><div class="body approved-flow">${steps}</div></div>`});

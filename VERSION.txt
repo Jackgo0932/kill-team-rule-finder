@@ -1,1 +1,1 @@
-2.2.9.7-canoptek-geomancer-ranged-fix
+2.2.10.0-reposition-control-range-exception
