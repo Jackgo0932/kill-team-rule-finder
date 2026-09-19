@@ -1,7 +1,7 @@
 window.KT_ANGELS_OF_DEATH = {
   "name": "死亡天使",
   "en": "ANGELS OF DEATH",
-  "composition": "先選擇 1 名隊長：突擊仲裁者軍士、仲裁者軍士或星際戰士連長。突擊仲裁者軍士可選「噴火手槍或重型爆矢手槍」搭配「鏈鋸劍、動力拳套、動力武器或雷霆錘」，或選「等離子手槍＋鏈鋸劍」；仲裁者軍士可從自動爆矢步槍、爆矢步槍或追獵者爆矢步槍中選 1 件，再從鏈鋸劍、雙拳、動力拳套、動力武器或雷霆錘中選 1 件。之後再選 5 名：突擊仲裁者擲彈兵、突擊仲裁者戰士、殲滅者狙擊手、重裝仲裁者砲手、仲裁者砲手或仲裁者戰士。除了「戰士」類特工外，其餘名單中的特工每種最多 1 名。",
+  "composition": "【隊長：選擇 1 名】\n• 突擊仲裁者軍士：選擇「噴火手槍或重型爆矢手槍」＋「鏈鋸劍、動力拳套、動力武器或雷霆錘」；或選擇「等離子手槍＋鏈鋸劍」。\n• 仲裁者軍士：選擇「自動爆矢步槍、爆矢步槍或追獵者爆矢步槍」＋「鏈鋸劍、雙拳、動力拳套、動力武器或雷霆錘」。\n• 星際戰士連長。\n\n【其餘特工：選擇 5 名】\n• 突擊仲裁者擲彈兵\n• 突擊仲裁者戰士\n• 殲滅者狙擊手*\n• 重裝仲裁者砲手*\n• 仲裁者砲手：固定裝備附加榴彈發射器，再選擇「自動爆矢步槍＋雙拳、爆矢步槍＋雙拳或追獵者爆矢步槍＋雙拳」。\n• 仲裁者戰士：選擇「自動爆矢步槍＋雙拳、爆矢步槍＋雙拳或追獵者爆矢步槍＋雙拳」。\n\n除了「戰士」類特工外，其餘名單中的特工每種最多 1 名。\n* 殲滅者狙擊手與重裝仲裁者砲手合計最多選擇 1 名。",
   "archetypes": ["安全保護", "搜索與摧毀"],
   "chapterTactics": [
     ["猛攻", "該特工的近戰武器擁有「[[rending|撕裂]]」。"],
@@ -290,7 +290,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "3/5",
           [
-            "heavy",
+            "heavy-dash",
             "lethal5",
             ["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]
           ]
@@ -472,6 +472,7 @@ window.KT_ANGELS_OF_DEATH = {
       "role": "砲手",
       "image": "assets/angels_of_death/intercessor-gunner.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
+      "loadout": "固定裝備附加榴彈發射器，並選擇一組：自動爆矢步槍＋雙拳／爆矢步槍＋雙拳／追獵者爆矢步槍＋雙拳。",
       "weapons": [
         [
           "自動爆矢步槍",
@@ -520,7 +521,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "3/5",
           [
-            "heavy",
+            "heavy-dash",
             "lethal5",
             ["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]
           ]
@@ -550,6 +551,7 @@ window.KT_ANGELS_OF_DEATH = {
       "role": "戰士",
       "image": "assets/angels_of_death/intercessor-warrior.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
+      "loadout": "選擇一組：自動爆矢步槍＋雙拳／爆矢步槍＋雙拳／追獵者爆矢步槍＋雙拳。",
       "weapons": [
         [
           "自動爆矢步槍",
@@ -578,7 +580,7 @@ window.KT_ANGELS_OF_DEATH = {
           "3+",
           "3/5",
           [
-            "heavy",
+            "heavy-dash",
             "lethal5",
             ["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]
           ]

@@ -260,7 +260,7 @@ function changeInitiativeCard(side,card,delta){
 }
 function toggleTrackerPloy(side,id){
   const m=ensureMatchTracker(),x=m.sides[side],t=trackerTeam(side);
-  const ploy=(t?.ploys||[]).find(p=>p[0]===id);if(!ploy)return;
+  const ploy=(t?.ploys||[]).find(p=>p[0]===id&&p[2]==="戰略計謀");if(!ploy)return;
   const at=x.usedPloys.indexOf(id);
   if(at>=0)x.usedPloys.splice(at,1);
   else{x.usedPloys.push(id);trackerLog(`${trackerSideName(side)}使用戰略計謀：${ploy[1]}`)}
@@ -280,7 +280,7 @@ function resetMatchTracker(){
 function trackerSidePanel(side){
   const m=ensureMatchTracker(),x=m.sides[side],t=trackerTeam(side);
   const cards=INITIATIVE_CARDS.map(c=>`<div class="tracker-card-row"><span>${esc(c)}</span><div class="tracker-stepper"><button onclick="changeInitiativeCard('${side}','${c}',-1)" ${x.cards[c]?"":"disabled"}>−</button><b>${x.cards[c]}</b><button onclick="changeInitiativeCard('${side}','${c}',1)">＋</button></div></div>`).join("");
-  const ploys=(t?.ploys||[]).map(p=>`<button class="tracker-ploy ${x.usedPloys.includes(p[0])?"used":""}" onclick="toggleTrackerPloy('${side}','${p[0]}')">${x.usedPloys.includes(p[0])?"✓ ":""}${esc(p[1])}</button>`).join("");
+  const ploys=(t?.ploys||[]).filter(p=>p[2]==="戰略計謀").map(p=>`<button class="tracker-ploy ${x.usedPloys.includes(p[0])?"used":""}" onclick="toggleTrackerPloy('${side}','${p[0]}')">${x.usedPloys.includes(p[0])?"✓ ":""}${esc(p[1])}</button>`).join("");
   return `<section class="tracker-side ${m.initiative===side?"initiative":""}">
     <div class="tracker-side-head"><div><b>${trackerSideName(side)} · ${esc(t?.name||"")}</b><small>${m.initiative===side?"先手":"非先手"}</small></div><button class="tracker-init" onclick="setTrackerInitiative('${side}')">設為先手</button></div>
     <div class="tracker-cp"><span>CP</span><button onclick="changeTrackerCP('${side}',-1)" ${x.cp?"":"disabled"}>−</button><b>${x.cp}</b><button onclick="changeTrackerCP('${side}',1)">＋</button></div>
@@ -486,6 +486,7 @@ function opCard(op){
       </div>
       <div class="op-title-mini" style="background-image:url('${op.image}')"></div>
     </div>
+    ${op.loadout?`<div class="ability operative-loadout"><b>武器選擇</b><div>${esc(op.loadout)}</div></div>`:""}
     ${(op.abilities||[]).map((a,ai)=>`<div class="ability"><b>${esc(a[0])}</b>${markedProse(a[1],`ability:${op.id}:${ai}`)}</div>`).join("")}
     ${(op.weapons||[]).map((w,wi)=>`<div class="weapon weapon-${w[1]==="近戰"?"melee":"ranged"}">
       <div class="weapon-head">
@@ -521,7 +522,7 @@ function items(){
   const a=[],t=team();
   if(t.composition) a.push({
     kind:"小隊資訊",id:"info:composition",s:["小隊組成",t.composition],
-    html:`<div class="card">${star("info:composition")}<h3>小隊組成</h3><div class="meta">${esc(t.name)} · 編成條件</div><div class="body">${esc(t.composition)}</div></div>`
+    html:`<div class="card">${star("info:composition")}<h3>小隊組成</h3><div class="meta">${esc(t.name)} · 編成條件</div><div class="body composition-body">${esc(t.composition).replace(/\n/g,"<br>")}</div></div>`
   });
   if(t.archetypes) a.push({
     kind:"小隊資訊",id:"info:archetypes",s:["任務原型",...t.archetypes],

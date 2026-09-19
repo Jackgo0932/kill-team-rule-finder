@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-2.2.10.2-match-tracker-open-state";
+const CACHE = "kt-rule-finder-2.2.10.5-aod-heavy-dash-only";
 const APP_SHELL = [
   "./",
   "./index.html",
