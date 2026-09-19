@@ -20,7 +20,14 @@ const S={
   flowOpen:new Set(),
   fav:new Set(JSON.parse(localStorage.getItem("ktFav")||"[]")),
   equipmentSelections:JSON.parse(localStorage.getItem("ktEquipmentSelections")||'{"my":{},"enemy":{}}'),
-  equipmentOptionSelections:JSON.parse(localStorage.getItem("ktEquipmentOptionSelections")||'{"my":{},"enemy":{}}')
+  equipmentOptionSelections:JSON.parse(localStorage.getItem("ktEquipmentOptionSelections")||'{"my":{},"enemy":{}}'),
+  matchTracker:JSON.parse(localStorage.getItem("ktMatchTracker")||'null')||{
+    tp:1, initiative:"my",
+    sides:{
+      my:{cp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]},
+      enemy:{cp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]}
+    }, log:[]
+  }
 };
 
 
@@ -205,6 +212,94 @@ function equipmentSelectionBlock(kind,id){
   if(!isEquipmentSelected(kind,id)) return "";
   const cfg=equipmentSelectionConfig(kind,id);
   return cfg?equipmentOptionPicker(kind,id,cfg.options,cfg.maxTotal):"";
+}
+
+
+const INITIATIVE_CARDS=["重擲","+1/-1","+2/-2","+3/-3"];
+function ensureMatchTracker(){
+  const m=S.matchTracker||(S.matchTracker={});
+  m.tp=Math.min(4,Math.max(1,Number(m.tp)||1));
+  if(!["my","enemy"].includes(m.initiative))m.initiative="my";
+  if(!m.sides)m.sides={};
+  ["my","enemy"].forEach(side=>{
+    const x=m.sides[side]||(m.sides[side]={});
+    x.cp=Math.max(0,Number(x.cp)||0);
+    if(!x.cards)x.cards={};
+    INITIATIVE_CARDS.forEach(c=>x.cards[c]=Math.max(0,Number(x.cards[c])||0));
+    if(!Array.isArray(x.usedPloys))x.usedPloys=[];
+  });
+  if(!Array.isArray(m.log))m.log=[];
+  return m;
+}
+function saveMatchTracker(){ensureMatchTracker();localStorage.setItem("ktMatchTracker",JSON.stringify(S.matchTracker))}
+function trackerTeamId(side){return side==="my"?S.myTeam:S.enemyTeam}
+function trackerSideName(side){return side==="my"?"我方":"敵方"}
+function trackerTeam(side){return TEAMS[trackerTeamId(side)]}
+function trackerLog(text){
+  const m=ensureMatchTracker();
+  m.log.unshift({tp:m.tp,text,at:new Date().toLocaleTimeString("zh-TW",{hour:"2-digit",minute:"2-digit"})});
+  if(m.log.length>80)m.log.length=80;
+}
+function changeTrackerCP(side,delta){
+  const m=ensureMatchTracker(),x=m.sides[side],old=x.cp;
+  x.cp=Math.max(0,x.cp+delta);
+  if(x.cp!==old)trackerLog(`${trackerSideName(side)} CP ${delta>0?"+":""}${delta} → ${x.cp}`);
+  saveMatchTracker();renderMatchTracker();
+}
+function setTrackerInitiative(side){
+  const m=ensureMatchTracker();
+  if(m.initiative!==side){m.initiative=side;trackerLog(`${trackerSideName(side)}取得先手`)}
+  saveMatchTracker();renderMatchTracker();
+}
+function changeInitiativeCard(side,card,delta){
+  const m=ensureMatchTracker(),x=m.sides[side],old=x.cards[card]||0,next=Math.max(0,old+delta);
+  if(next===old)return;
+  x.cards[card]=next;
+  trackerLog(delta>0?`${trackerSideName(side)}獲得先手卡：${card}`:`${trackerSideName(side)}使用先手卡：${card}`);
+  saveMatchTracker();renderMatchTracker();
+}
+function toggleTrackerPloy(side,id){
+  const m=ensureMatchTracker(),x=m.sides[side],t=trackerTeam(side);
+  const ploy=(t?.ploys||[]).find(p=>p[0]===id);if(!ploy)return;
+  const at=x.usedPloys.indexOf(id);
+  if(at>=0)x.usedPloys.splice(at,1);
+  else{x.usedPloys.push(id);trackerLog(`${trackerSideName(side)}使用戰略計謀：${ploy[1]}`)}
+  saveMatchTracker();renderMatchTracker();
+}
+function nextTurningPoint(){
+  const m=ensureMatchTracker();if(m.tp>=4)return;
+  m.tp++;m.sides.my.usedPloys=[];m.sides.enemy.usedPloys=[];
+  trackerLog(`進入 TP${m.tp}（已清除上一 TP 的戰略計謀使用標記）`);
+  saveMatchTracker();renderMatchTracker();
+}
+function resetMatchTracker(){
+  if(!confirm("清除目前的公開資訊追蹤與本局紀錄？"))return;
+  S.matchTracker={tp:1,initiative:"my",sides:{my:{cp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]},enemy:{cp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]}},log:[]};
+  saveMatchTracker();renderMatchTracker();
+}
+function trackerSidePanel(side){
+  const m=ensureMatchTracker(),x=m.sides[side],t=trackerTeam(side);
+  const cards=INITIATIVE_CARDS.map(c=>`<div class="tracker-card-row"><span>${esc(c)}</span><div class="tracker-stepper"><button onclick="changeInitiativeCard('${side}','${c}',-1)" ${x.cards[c]?"":"disabled"}>−</button><b>${x.cards[c]}</b><button onclick="changeInitiativeCard('${side}','${c}',1)">＋</button></div></div>`).join("");
+  const ploys=(t?.ploys||[]).map(p=>`<button class="tracker-ploy ${x.usedPloys.includes(p[0])?"used":""}" onclick="toggleTrackerPloy('${side}','${p[0]}')">${x.usedPloys.includes(p[0])?"✓ ":""}${esc(p[1])}</button>`).join("");
+  return `<section class="tracker-side ${m.initiative===side?"initiative":""}">
+    <div class="tracker-side-head"><div><b>${trackerSideName(side)} · ${esc(t?.name||"")}</b><small>${m.initiative===side?"先手":"非先手"}</small></div><button class="tracker-init" onclick="setTrackerInitiative('${side}')">設為先手</button></div>
+    <div class="tracker-cp"><span>CP</span><button onclick="changeTrackerCP('${side}',-1)" ${x.cp?"":"disabled"}>−</button><b>${x.cp}</b><button onclick="changeTrackerCP('${side}',1)">＋</button></div>
+    <details class="tracker-detail" open><summary>先手卡</summary>${cards}</details>
+    <details class="tracker-detail" open><summary>本 TP 戰略計謀</summary><div class="tracker-ploys">${ploys||'<span class="tracker-empty">此小隊沒有戰略計謀資料</span>'}</div></details>
+  </section>`;
+}
+function renderMatchTracker(){
+  const root=document.querySelector("#matchTracker");if(!root)return;
+  const panelWasOpen=root.querySelector(".match-tracker-panel")?.open??false;
+  const historyWasOpen=root.querySelector(".tracker-history")?.open??false;
+  const m=ensureMatchTracker();
+  const logs=m.log.slice(0,20).map(e=>`<div class="tracker-log-row"><span>TP${e.tp}</span><div>${esc(e.text)}</div><small>${esc(e.at||"")}</small></div>`).join("");
+  root.innerHTML=`<details class="match-tracker-panel" ${panelWasOpen?"open":""}>
+    <summary><span><b>對戰公開資訊</b><small>TP${m.tp} · ${trackerSideName(m.initiative)}先手</small></span><span class="tracker-summary-cp">我 ${m.sides.my.cp}CP ／ 敵 ${m.sides.enemy.cp}CP</span></summary>
+    <div class="tracker-toolbar"><div class="tracker-tp"><b>TP ${m.tp}</b><button onclick="nextTurningPoint()" ${m.tp>=4?"disabled":""}>下一轉折點 →</button></div><button class="tracker-reset" onclick="resetMatchTracker()">清除本局</button></div>
+    <div class="tracker-sides">${trackerSidePanel("my")}${trackerSidePanel("enemy")}</div>
+    <details class="tracker-history" ${historyWasOpen?"open":""}><summary>本局紀錄 <span>${m.log.length}</span></summary><div class="tracker-log">${logs||'<div class="tracker-empty">尚無紀錄</div>'}</div></details>
+  </details>`;
 }
 
 const NAV_GROUPS={
@@ -657,6 +752,7 @@ function render(){
   document.querySelector("#enemyTeamName").textContent=TEAMS[S.enemyTeam].name;
   document.querySelectorAll("#sideSwitch button").forEach(b=>b.classList.toggle("on",b.dataset.side===S.side));
   document.querySelector("#equipmentTracker").innerHTML=equipmentSummary("my")+equipmentSummary("enemy");
+  renderMatchTracker();
   document.querySelector("#navTeamName").textContent=team().name;
   if(isFlow){ renderFlow(); return; }
   const groups=NAV_GROUPS[S.view==="team"?"team":"all"];

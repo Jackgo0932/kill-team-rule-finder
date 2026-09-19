@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-2.2.10.0-reposition-control-range-exception";
+const CACHE = "kt-rule-finder-2.2.10.2-match-tracker-open-state";
 const APP_SHELL = [
   "./",
   "./index.html",
