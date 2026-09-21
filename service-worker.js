@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-2.2.10.5-aod-heavy-dash-only";
+const CACHE = "kt-rule-finder-2.2.10.9-crit-ops-official-chinese-audit";
 const APP_SHELL = [
   "./",
   "./index.html",
