@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-2.2.10.9-crit-ops-official-chinese-audit";
+const CACHE = "kt-rule-finder-2.2.11.1-xv26-official-chinese-terms";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -25,6 +25,16 @@ const APP_SHELL = [
   "./data/canoptek_circle.js",
   "./data/kasrkin.js",
   "./data/raveners.js",
+  "./data/xv26.js",
+  "./assets/xv26/shasvre.webp",
+  "./assets/xv26/designator.webp",
+  "./assets/xv26/infiltrator.webp",
+  "./assets/xv26/liberator.webp",
+  "./assets/xv26/lodestar.webp",
+  "./assets/xv26/neutraliser.webp",
+  "./assets/xv26/gun-drone.webp",
+  "./assets/xv26/marker-drone.webp",
+
   "./assets/raveners/prime.webp",
   "./assets/raveners/felltalon.webp",
   "./assets/raveners/tremorscythe.webp",

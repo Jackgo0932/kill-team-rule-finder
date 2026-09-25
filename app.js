@@ -342,9 +342,10 @@ function loadData(){
     ci: window.KT_CELESTIAN_INSIDIANTS,
     cc: window.KT_CANOPTEK_CIRCLE,
     ks: window.KT_KASRKIN,
-    rav: window.KT_RAVENERS
+    rav: window.KT_RAVENERS,
+    xv26: window.KT_XV26
   };
-  if (!TEAMS.pm || !TEAMS.aod || !TEAMS.wk || !TEAMS.mw || !TEAMS.leg || !TEAMS.dw || !TEAMS.ci || !TEAMS.cc || !TEAMS.ks || !TEAMS.rav) {
+  if (!TEAMS.pm || !TEAMS.aod || !TEAMS.wk || !TEAMS.mw || !TEAMS.leg || !TEAMS.dw || !TEAMS.ci || !TEAMS.cc || !TEAMS.ks || !TEAMS.rav || !TEAMS.xv26) {
     throw new Error("Team data scripts did not load.");
   }
   KW = Object.fromEntries(KEYWORDS.map(x=>[x[0],{id:x[0],name:x[1],en:x[2],text:x[3]}]));
