@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-2.2.11.1-xv26-official-chinese-terms";
+const CACHE = "kt-rule-finder-2.2.11.2-aod-sniper-heavy-selection";
 const APP_SHELL = [
   "./",
   "./index.html",
