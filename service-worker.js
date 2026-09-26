@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-2.2.11.2-aod-sniper-heavy-selection";
+const CACHE = "kt-rule-finder-2.2.11.4-close-quarters-hatchway-fight";
 const APP_SHELL = [
   "./",
   "./index.html",
