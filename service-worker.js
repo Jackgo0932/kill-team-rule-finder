@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-2.2.11.6-deathwatch-gravis-role";
+const CACHE = "kt-rule-finder-2.2.11.8-official-zh-keyword-audit";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -9,6 +9,7 @@ const APP_SHELL = [
   "./icon-512.png",
   "./404.html",
   "./VERSION.txt",
+  "./KEYWORD_AUDIT.md",
   "./data/core_rules.js",
   "./data/weapon_rules.js",
   "./data/universal_equipment.js",

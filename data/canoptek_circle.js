@@ -27,7 +27,7 @@ window.KT_CANOPTEK_CIRCLE = {
     ["awakened-obelisk-nodes","覺醒的方尖碑節點","揭示此裝備後擲 D3；本場戰鬥可用 0CP 使用「靈動方尖碑節點」交戰計謀，次數等同擲骰結果。"]
   ],
   "operatives":[
-    {"id":"geomancer","name":"地相技師","role":"隊長","image":"assets/canoptek_circle/geomancer.webp","stats":"APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14","weapons":[
+    {"id":"geomancer","name":"地相技師","role":"隊長","keywords":["太空死靈","隊長","冥工技師","地相技師","冥工之環"],"image":"assets/canoptek_circle/geomancer.webp","stats":"APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14","weapons":[
       ["震顫長刀（切割物質）","遠程",4,"3+","4/5",[["piercing", "穿刺 1", "Piercing 1"],["piercing-crits", "關鍵穿刺 2", "Piercing Crits 2"]]],
       ["震顫長刀（撼動）","遠程",5,"3+","1/2",[["blast", "爆炸 2\"", "Blast 2\""],"seeklight","stun"]],
       ["震顫長刀（橫掃）","近戰",4,"4+","4/5",["severe","shock","stun"]]
@@ -37,21 +37,21 @@ window.KT_CANOPTEK_CIRCLE = {
       ["地相干擾 1AP","選擇可見且 8\" 內地形上的一點；為該點 2\" 內每名特工分別擲 2D6。若結果高於其剩餘耐傷，造成等同差值的傷害。擁有隱匿命令或位於敵方控制範圍內時不能執行。"],
       ["控制冥工 1AP","支援。選擇可見且 6\" 內的己方冥工之環冥工特工；或選擇可見且位於己方矩陣內的己方冥工特工（後者不受支援限制）。被選特工立即免費執行一個 1AP 行動；該行動不能移動超過 2\"，若被移除並重新部署也必須完全位於原位置 2\" 內。地相技師在敵方控制範圍內或正在反應時不能執行。"]
     ]},
-    {"id":"accelerator","name":"冥工加速巨蟲","role":"加速巨蟲","image":"assets/canoptek_circle/accelerator.webp","stats":"APL 2 · 移動 7\" · 豁免 4+ · 耐傷 7","weapons":[
+    {"id":"accelerator","name":"冥工加速巨蟲","role":"加速巨蟲","keywords":["太空死靈","冥工","冥工巨蟲","加速巨蟲","冥工之環"],"image":"assets/canoptek_circle/accelerator.webp","stats":"APL 2 · 移動 7\" · 豁免 4+ · 耐傷 7","weapons":[
       ["火花","遠程",4,"4+","2/3",[["range", "範圍 4\"", "Range 4\""],["piercing", "穿刺 1", "Piercing 1"]]],
       ["利爪和火花","近戰",3,"4+","3/4",["lethal5","stun"]]
     ],"abilities":[
       ["過載 1AP","選擇可見且 3\" 內的另一名己方冥工之環冥工特工；若本特工位於己方矩陣內，也可改選矩陣內另一名己方冥工特工。直到被選特工下一次激活結束，APL +1。位於敵方控制範圍內不能執行。"],
       ["頭腦過載 1AP","選擇可見且 3\" 內的 1 名敵方特工；若本特工位於己方矩陣內，也可改選矩陣內 1 名敵方特工。直到該敵方下一次激活結束，APL -1。位於敵方控制範圍內不能執行。"]
     ]},
-    {"id":"reanimator","name":"冥工重生巨蟲","role":"重生巨蟲","image":"assets/canoptek_circle/reanimator.webp","stats":"APL 2 · 移動 7\" · 豁免 4+ · 耐傷 7","weapons":[
+    {"id":"reanimator","name":"冥工重生巨蟲","role":"重生巨蟲","keywords":["太空死靈","冥工","冥工巨蟲","重生巨蟲","冥工之環"],"image":"assets/canoptek_circle/reanimator.webp","stats":"APL 2 · 移動 7\" · 豁免 4+ · 耐傷 7","weapons":[
       ["原子化光束","遠程",4,"4+","3/4",[["range", "範圍 6\"", "Range 6\""],"lethal5"]],
       ["利爪和尖尾","近戰",4,"4+","3/4",[]]
     ],"abilities":[
       ["重生","每個轉折點一次，另一名己方冥工之環特工將被殘廢時，若它可見且在 6\" 內，或本特工與它都位於己方矩陣內，且雙方都不在敵方控制範圍內，可使其不殘廢並剩 1 耐傷，且直到該行動結束不能再被殘廢。行動後它可立即免費衝刺，但必須結束於本特工控制範圍內或己方矩陣內；本特工與該特工 APL 各 -1，直到各自下一次激活結束。若在該特工激活中觸發，其激活結束。若本特工已殘廢，或射擊行動中本特工會成為主要／次要目標，不能使用。"],
       ["納米甲蟲光束 1AP","選擇可見且 6\" 內的己方冥工之環特工；若本特工位於己方矩陣內，也可改選矩陣內另一名己方特工。目標回復最多 3D3 點失去的耐傷；本轉折點曾使用「重生」的特工不能成為目標。位於敵方控制範圍內不能執行；每個轉折點最多一次。"]
     ]},
-    {"id":"warrior","name":"冥工巨蟲戰士","role":"戰士","image":"assets/canoptek_circle/warrior.webp","stats":"APL 2 · 移動 7\" · 豁免 4+ · 耐傷 7","weapons":[
+    {"id":"warrior","name":"冥工巨蟲戰士","role":"戰士","keywords":["太空死靈","冥工","冥工巨蟲","戰士","冥工之環"],"image":"assets/canoptek_circle/warrior.webp","stats":"APL 2 · 移動 7\" · 豁免 4+ · 耐傷 7","weapons":[
       ["高斯剖切機","遠程",4,"4+","2/3",[["piercing", "穿刺 1", "Piercing 1"]]],
       ["特斯拉拋射器（集中）","遠程",4,"4+","2/3",[]],
       ["特斯拉拋射器（活體閃電）","遠程",4,"4+","2/3",[["blast", "爆炸 2\"", "Blast 2\""]]],
@@ -61,7 +61,7 @@ window.KT_CANOPTEK_CIRCLE = {
       ["消耗品構裝體","在對手的殺戮／消滅任務中忽略這名特工，也忽略其對要求特工逃脫、存活或被敵方殘廢之勝利條件與 VP 條件的影響。"],
       ["無盡巨蟲","第一個轉折點後，每個轉折點可作為戰略計劃使用：若未殘廢的己方冥工之環戰士少於 3 名，在完全位於己方降落區的位置部署另一名就緒、擁有隱匿命令的冥工巨蟲戰士；可正常選擇武器。"]
     ]},
-    {"id":"tomb-crawler","name":"墓穴爬行者","role":"墓穴爬行者","image":"assets/canoptek_circle/tomb-crawler.webp","stats":"APL 2 · 移動 5\" · 豁免 3+ · 耐傷 18","weapons":[
+    {"id":"tomb-crawler","name":"墓穴爬行者","role":"墓穴爬行者","keywords":["太空死靈","冥工","墓穴爬行者","冥工之環"],"image":"assets/canoptek_circle/tomb-crawler.webp","stats":"APL 2 · 移動 5\" · 豁免 3+ · 耐傷 18","weapons":[
       ["跨維隔振器","遠程",5,"4+","5/6",[],["dimensional-banishment"]],
       ["雙聯高斯收割砲（集中）","遠程",5,"4+","4/5",[["piercing", "穿刺 1", "Piercing 1"],"severe"]],
       ["雙聯高斯收割砲（掃射）","遠程",4,"4+","4/5",[["piercing", "穿刺 1", "Piercing 1"],"severe",["torrent", "洪流 1\"", "Torrent 1\""]]],

@@ -32,7 +32,7 @@ window.KT_KASRKIN = {
     ["combat-daggers","格鬥匕首","所有己方卡舍津特工獲得近戰武器「格鬥匕首」：攻擊 3、命中 4+、傷害 3/4。"]
   ],
   "operatives":[
-    {"id":"sergeant","name":"卡舍津軍士","role":"隊長","image":"assets/kasrkin/sergeant.webp","stats":"APL 3 · 移動 6\" · 豁免 4+ · 耐傷 9","weapons":[
+    {"id":"sergeant","name":"卡舍津軍士","role":"隊長","keywords":["帝國","星界軍","領袖","軍士","卡舍津"],"image":"assets/kasrkin/sergeant.webp","stats":"APL 3 · 移動 6\" · 豁免 4+ · 耐傷 9","weapons":[
       ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
       ["高能激光槍","遠程",4,"3+","3/4",[]],
       ["高能激光手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
@@ -45,20 +45,20 @@ window.KT_KASRKIN = {
       ["戰術指揮 0AP","選擇一名己方卡舍津特工，再選擇一個熟練技巧，讓它擁有至下一個戰略階段的就緒步驟；可與其已擁有的熟練技巧疊加，但不能相同。或者若肅清掃蕩標識在殺戮區，可將其移除後重新放置。位於敵方控制範圍內不能執行。"],
       ["精銳領袖","只要軍士位於殺戮區，你使用「熟練技巧」戰略計劃時，可額外選擇一個不同的熟練技巧。"]
     ]},
-    {"id":"combat-medic","name":"卡舍津戰鬥醫療兵","role":"醫療兵","image":"assets/kasrkin/combat-medic.webp","stats":"APL 2 · 移動 6\" · 豁免 4+ · 耐傷 8","weapons":[
+    {"id":"combat-medic","name":"卡舍津戰鬥醫療兵","role":"醫療兵","keywords":["帝國","星界軍","醫療","戰鬥醫療兵","卡舍津"],"image":"assets/kasrkin/combat-medic.webp","stats":"APL 2 · 移動 6\" · 豁免 4+ · 耐傷 8","weapons":[
       ["高能激光槍","遠程",4,"3+","3/4",[]],["槍托","近戰",3,"4+","2/3",[]]
     ],"abilities":[
       ["醫療兵！","每個轉折點第一次有另一名可見且 3\" 內的己方卡舍津特工將被殘廢時，若雙方都不在敵方控制範圍內，可使其不殘廢並剩 1 耐傷，且至該行動結束不能被殘廢。行動後可立即無消耗衝刺，但必須結束在醫療兵控制範圍內；雙方 APL 各 -1 至各自下一次激活結束。若在其激活中觸發，該激活結束。若醫療兵已殘廢，或射擊行動中醫療兵會成為主要／次要目標，不能使用。"],
       ["醫療包 0AP","選擇控制範圍內一名己方卡舍津特工，回復最多 2D3 耐傷；本轉折點曾成為「醫療兵！」目標者不能選。位於敵方控制範圍內不能執行。"]
     ]},
-    {"id":"demo-trooper","name":"卡舍津爆破兵","role":"爆破兵","image":"assets/kasrkin/demo-trooper.webp","stats":"APL 2 · 移動 6\" · 豁免 4+ · 耐傷 8","weapons":[
+    {"id":"demo-trooper","name":"卡舍津爆破兵","role":"爆破兵","keywords":["帝國","星界軍","爆破兵","卡舍津"],"image":"assets/kasrkin/demo-trooper.webp","stats":"APL 2 · 移動 6\" · 豁免 4+ · 耐傷 8","weapons":[
       ["高能激光手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],["槍托","近戰",3,"4+","2/3",[]]
     ],"abilities":[
       ["熱熔地雷","此特工攜帶己方熱熔地雷標識，可對它執行拾取標識；放置它後可立即無消耗衝刺。標識不能放在敵方控制範圍內。"],
       ["感應式地雷","熱熔地雷標識第一次進入另一名特工控制範圍時，移除標識並對該特工造成 2D6+3 傷害；若未殘廢，立即結束其行動。爆破兵自身忽略此效果。"],
       ["防爆內襯","被帶有[[blast|爆炸]]或[[torrent|洪流]]的武器射擊時（掃射數據除外），可重擲一枚防禦骰；此外，除非自己是該流程的目標，否則不受帶距離的「x\" 毀滅 x」效果影響。"]
     ]},
-    {"id":"gunner","name":"卡舍津砲手","role":"砲手","image":"assets/kasrkin/gunner.webp","stats":"APL 2 · 移動 6\" · 豁免 4+ · 耐傷 8","weapons":[
+    {"id":"gunner","name":"卡舍津砲手","role":"砲手","keywords":["帝國","星界軍","砲手","卡舍津"],"image":"assets/kasrkin/gunner.webp","stats":"APL 2 · 移動 6\" · 豁免 4+ · 耐傷 8","weapons":[
       ["火焰噴射器","遠程",4,"2+","3/3",[["range", "範圍 8\"", "Range 8\""],"saturate",["torrent", "洪流 2\"", "Torrent 2\""]]],
       ["榴彈發射器（破片）","遠程",4,"3+","2/4",[["blast", "爆炸 2\"", "Blast 2\""]]],
       ["榴彈發射器（穿甲）","遠程",4,"3+","4/5",[["piercing", "穿刺 1", "Piercing 1"]]],
@@ -69,13 +69,13 @@ window.KT_KASRKIN = {
       ["等離子槍（過載）","遠程",4,"3+","5/6",["hot","lethal5",["piercing", "穿刺 1", "Piercing 1"]]],
       ["槍托","近戰",3,"4+","2/3",[]]
     ],"abilities":[]},
-    {"id":"recon-trooper","name":"卡舍津偵察兵","role":"偵察兵","image":"assets/kasrkin/recon-trooper.webp","stats":"APL 2 · 移動 6\" · 豁免 4+ · 耐傷 8","weapons":[
+    {"id":"recon-trooper","name":"卡舍津偵察兵","role":"偵察兵","keywords":["帝國","星界軍","偵察兵","卡舍津"],"image":"assets/kasrkin/recon-trooper.webp","stats":"APL 2 · 移動 6\" · 豁免 4+ · 耐傷 8","weapons":[
       ["高能激光槍","遠程",4,"3+","3/4",[]],["槍托","近戰",3,"4+","2/3",[]]
     ],"abilities":[
       ["偵察殺戮區","若「轉移位置」戰略計謀選擇此特工，該計謀費用為 0CP。"],
       ["掃描 1AP","直到此特工下一次激活開始或殘廢（先發生者），8\" 內的敵方特工受到掃描。己方卡舍津射擊受到掃描的敵方特工時，該敵方不能被遮擋。位於敵方控制範圍內不能執行。"]
     ]},
-    {"id":"sharpshooter","name":"卡舍津神射手","role":"神射手","image":"assets/kasrkin/sharpshooter.webp","stats":"APL 2 · 移動 6\" · 豁免 4+ · 耐傷 8","weapons":[
+    {"id":"sharpshooter","name":"卡舍津神射手","role":"神射手","keywords":["帝國","星界軍","神射手","卡舍津"],"image":"assets/kasrkin/sharpshooter.webp","stats":"APL 2 · 移動 6\" · 豁免 4+ · 耐傷 8","weapons":[
       ["高能精確射手步槍（隱匿）","遠程",4,"2+","3/3",[["devastating", "毀滅 3", "Devastating 3"],"heavy","silent"],["concealed-position"]],
       ["高能精確射手步槍（移動）","遠程",4,"3+","3/4",[]],
       ["高能精確射手步槍（靜止）","遠程",4,"2+","3/3",[["devastating", "毀滅 3", "Devastating 3"],"heavy"]],
@@ -83,12 +83,12 @@ window.KT_KASRKIN = {
     ],"abilities":[
       ["迷彩披風","被射擊時忽略[[saturate|集中]]。若可保留任何掩護豁免，可額外保留一枚掩護豁免，或將一枚掩護豁免視為關鍵成功保留；不能與制高點地形提供的改良掩護豁免疊加。"]
     ]},
-    {"id":"trooper","name":"卡舍津士兵","role":"士兵","image":"assets/kasrkin/trooper.webp","stats":"APL 2 · 移動 6\" · 豁免 4+ · 耐傷 8","weapons":[
+    {"id":"trooper","name":"卡舍津士兵","role":"士兵","keywords":["帝國","星界軍","士兵","卡舍津"],"image":"assets/kasrkin/trooper.webp","stats":"APL 2 · 移動 6\" · 豁免 4+ · 耐傷 8","weapons":[
       ["高能激光槍","遠程",4,"3+","3/4",[]],["槍托","近戰",3,"4+","2/3",[]]
     ],"abilities":[
       ["多功能裝備","每個轉折點以下各一次：一名己方卡舍津士兵可執行煙霧手雷行動；一名己方卡舍津士兵可執行震盪手雷行動。這些行動使用通用裝備規則，且不計入那些裝備本身的行動次數限制。"]
     ]},
-    {"id":"vox-trooper","name":"卡舍津通訊兵","role":"通訊兵","image":"assets/kasrkin/vox-trooper.webp","stats":"APL 2 · 移動 6\" · 豁免 4+ · 耐傷 8","weapons":[
+    {"id":"vox-trooper","name":"卡舍津通訊兵","role":"通訊兵","keywords":["帝國","星界軍","通訊兵","卡舍津"],"image":"assets/kasrkin/vox-trooper.webp","stats":"APL 2 · 移動 6\" · 豁免 4+ · 耐傷 8","weapons":[
       ["高能激光槍","遠程",4,"3+","3/4",[]],["槍托","近戰",3,"4+","2/3",[]]
     ],"abilities":[
       ["戰鬥通訊 1AP","選擇另一名己方卡舍津特工；直到該特工下一次激活結束，APL +1（套用所有 APL 修正後最多 3）。此特工每次激活可執行兩次本行動，但位於敵方控制範圍內不能執行。"]

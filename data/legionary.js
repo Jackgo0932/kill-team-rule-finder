@@ -122,7 +122,7 @@ window.KT_LEGIONARY = {
     {
       "id": "aspiring-champion",
       "name": "軍團野心勇士",
-      "role": "隊長",
+      "role": "隊長","keywords":["混沌","阿斯塔特叛軍","領袖","野心勇士","軍團"],
       "image": "assets/legionary/aspiring-champion.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 15",
       "weapons": [
@@ -141,7 +141,7 @@ window.KT_LEGIONARY = {
     {
       "id": "chosen",
       "name": "軍團神選者",
-      "role": "隊長",
+      "role": "隊長","keywords":["混沌","阿斯塔特叛軍","領袖","神選者","軍團"],
       "image": "assets/legionary/chosen.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 15",
       "weapons": [
@@ -158,7 +158,7 @@ window.KT_LEGIONARY = {
     {
       "id": "anointed",
       "name": "軍團受選者",
-      "role": "受選者",
+      "role": "受選者","keywords":["混沌","阿斯塔特叛軍","受選者","軍團"],
       "image": "assets/legionary/anointed.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
@@ -172,7 +172,7 @@ window.KT_LEGIONARY = {
     {
       "id": "balefire-acolyte",
       "name": "軍團邪火使徒",
-      "role": "靈能者",
+      "role": "靈能者","keywords":["混沌","阿斯塔特叛軍","靈能者","邪火使徒","軍團"],
       "image": "assets/legionary/balefire-acolyte.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weaponKeywords": {},
@@ -187,7 +187,7 @@ window.KT_LEGIONARY = {
     {
       "id": "butcher",
       "name": "軍團屠夫",
-      "role": "屠夫",
+      "role": "屠夫","keywords":["混沌","阿斯塔特叛軍","屠夫","軍團"],
       "image": "assets/legionary/butcher.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
@@ -201,7 +201,7 @@ window.KT_LEGIONARY = {
     {
       "id": "gunner",
       "name": "軍團砲手",
-      "role": "砲手",
+      "role": "砲手","keywords":["混沌","阿斯塔特叛軍","砲手","軍團"],
       "image": "assets/legionary/gunner.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
@@ -217,7 +217,7 @@ window.KT_LEGIONARY = {
     {
       "id": "heavy-gunner",
       "name": "軍團重砲手",
-      "role": "重砲手",
+      "role": "重砲手","keywords":["混沌","阿斯塔特叛軍","重砲手","軍團"],
       "image": "assets/legionary/heavy-gunner.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
@@ -235,7 +235,7 @@ window.KT_LEGIONARY = {
     {
       "id": "icon-bearer",
       "name": "軍團持徽手",
-      "role": "持徽手",
+      "role": "持徽手","keywords":["混沌","阿斯塔特叛軍","持徽手","軍團"],
       "image": "assets/legionary/icon-bearer.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
@@ -252,7 +252,7 @@ window.KT_LEGIONARY = {
     {
       "id": "shrivetalon",
       "name": "軍團赦罪之爪",
-      "role": "赦罪之爪",
+      "role": "赦罪之爪","keywords":["混沌","阿斯塔特叛軍","赦罪之爪","軍團"],
       "image": "assets/legionary/shrivetalon.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
@@ -268,7 +268,7 @@ window.KT_LEGIONARY = {
     {
       "id": "warrior",
       "name": "軍團戰士",
-      "role": "戰士",
+      "role": "戰士","keywords":["混沌","阿斯塔特叛軍","戰士","軍團"],
       "image": "assets/legionary/warrior.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [

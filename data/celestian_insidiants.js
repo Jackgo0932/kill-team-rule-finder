@@ -30,7 +30,7 @@ window.KT_CELESTIAN_INSIDIANTS = {
     ["vocifera-mortis","殉道悼歌","每場戰鬥限一次：處於聖勉狀態的己方潔天使隱伏者特工殘廢時使用。結算殉道時，所選的另一名己方潔天使隱伏者特工可以不對該殘廢特工可見，也不必位於其 6\" 內。"]
   ],
   "operatives":[
-    {"id":"superior","name":"潔天使隱伏者長執","role":"隊長","image":"assets/celestian_insidiants/superior.webp","stats":"APL 3 · 移動 6\" · 豁免 3+ · 耐傷 10","weapons":[
+    {"id":"superior","name":"潔天使隱伏者長執","role":"隊長","keywords":["帝國","修女會","隊長","長執","潔天使隱伏者"],"image":"assets/celestian_insidiants/superior.webp","stats":"APL 3 · 移動 6\" · 豁免 3+ · 耐傷 10","weapons":[
       ["獄火手槍","遠程",4,"3+","4/2",[["range", "範圍 3\"", "Range 3\""],["devastating", "毀滅 3", "Devastating 3"],["piercing", "穿刺 2", "Piercing 2"]]],
       ["聖物爆矢手槍","遠程",4,"3+","3/5",[["range", "範圍 8\"", "Range 8\""],"lethal5"]],
       ["聖物降罪者擲樁器","遠程",4,"3+","2/2",[["devastating", "毀滅 2", "Devastating 2"],"lethal5",["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"],"silent"],["anti-psyker"]],
@@ -39,36 +39,36 @@ window.KT_CELESTIAN_INSIDIANTS = {
       ["聖潔榜樣","每個轉折點限一次：若這名特工處於聖勉狀態，你可以以 0CP 使用 1 個交戰計謀，但指定的潔天使隱伏者特工必須是它；若指揮重擲用於它的攻擊或防禦骰，也包含在內。"],
       ["靈魂導師 1AP","支援。選擇對這名特工可見且位於 6\" 內的 1 名己方潔天使隱伏者特工，使其處於聖勉狀態。不能在敵方控制範圍內執行，每個轉折點最多一次。"]
     ]},
-    {"id":"abjuror","name":"潔天使隱伏者棄絕者","role":"棄絕者","image":"assets/celestian_insidiants/abjuror.webp","stats":"APL 2 · 移動 6\" · 豁免 2+ · 耐傷 11","weapons":[
+    {"id":"abjuror","name":"潔天使隱伏者棄絕者","role":"棄絕者","keywords":["帝國","修女會","棄絕者","潔天使隱伏者"],"image":"assets/celestian_insidiants/abjuror.webp","stats":"APL 2 · 移動 6\" · 豁免 2+ · 耐傷 11","weapons":[
       ["受祝利劍和庇聖護盾（防禦）","近戰",4,"3+","4/6",[],["shield"]],
       ["受祝利劍和庇聖護盾（進攻）","近戰",4,"3+","4/6",["lethal5"]]
     ],"abilities":[["守聖者","每個轉折點限一次：這名特工 2\" 內且可見的己方潔天使隱伏者特工成為射擊有效目標或近戰目標時，可由這名特工代替成為目標，即使通常不能如此。爆炸或洪流遠程武器不受此規則影響。"]]},
-    {"id":"censor","name":"潔天使隱伏者肅戒者","role":"肅戒者","image":"assets/celestian_insidiants/censor.webp","stats":"APL 2 · 移動 6\" · 豁免 3+ · 耐傷 9","weapons":[
+    {"id":"censor","name":"潔天使隱伏者肅戒者","role":"肅戒者","keywords":["帝國","修女會","肅戒者","潔天使隱伏者"],"image":"assets/celestian_insidiants/censor.webp","stats":"APL 2 · 移動 6\" · 豁免 3+ · 耐傷 9","weapons":[
       ["告誡之杖","近戰",4,"4+","5/5",["brutal","shock"],["anti-psyker"]]
     ],"abilities":[
       ["手執告誡之杖","判斷標識控制權時，這名特工的 APL 視為 +1；這不是 APL 修正，因此可與其他修正疊加。"],
       ["虛無力場","戰鬥開始時虛無範圍為 1\"。敵方特工位於此範圍內時，移動 -2\"，武器命中惡化 1（不與受創疊加）。每獲得 1 枚虛無指示物，範圍 +1\"。"],
       ["虛無儀式 1AP","虛無範圍 +1\"，最高 5\"。不能在敵方控制範圍內執行，每個轉折點最多一次。"]
     ]},
-    {"id":"cremator","name":"潔天使隱伏者焰滅者","role":"焰滅者","image":"assets/celestian_insidiants/cremator.webp","stats":"APL 2 · 移動 6\" · 豁免 3+ · 耐傷 9","weapons":[
+    {"id":"cremator","name":"潔天使隱伏者焰滅者","role":"焰滅者","keywords":["帝國","修女會","焰滅者","潔天使隱伏者"],"image":"assets/celestian_insidiants/cremator.webp","stats":"APL 2 · 移動 6\" · 豁免 3+ · 耐傷 9","weapons":[
       ["噴火手槍（標準）","遠程",4,"2+","3/3",[["range", "範圍 6\"", "Range 6\""],"saturate",["torrent", "洪流 1\"", "Torrent 1\""]]],
       ["噴火手槍（噴湧）","遠程",4,"2+","3/3",[["range", "範圍 4\"", "Range 4\""],"saturate","seek-light",["torrent", "洪流 0\"", "Torrent 0\""]]],
       ["虛無之槌","近戰",4,"3+","4/4",["shock"],["anti-psyker"]]
     ],"abilities":[["聖勉燼火","每個轉折點限一次：這名特工以任一噴火手槍配置對敵方造成傷害但未使其殘廢時，可選擇這名特工 6\" 內 1 名己方潔天使隱伏者特工，使其處於聖勉狀態。洪流 0\" 不能選次要目標，但仍視為具有洪流規則。"]]},
-    {"id":"denuncia","name":"潔天使隱伏者揭諭者","role":"揭諭者","image":"assets/celestian_insidiants/denuncia.webp","stats":"APL 2 · 移動 6\" · 豁免 3+ · 耐傷 9","weapons":[
+    {"id":"denuncia","name":"潔天使隱伏者揭諭者","role":"揭諭者","keywords":["帝國","修女會","揭諭者","潔天使隱伏者"],"image":"assets/celestian_insidiants/denuncia.webp","stats":"APL 2 · 移動 6\" · 豁免 3+ · 耐傷 9","weapons":[
       ["譴罪之聲","遠程",5,"3+","1/1",[["range", "範圍 6\"", "Range 6\""],"seek","stun"]],
       ["宣判之杖","近戰",4,"3+","3/3",["shock"]]
     ],"abilities":[
       ["譴罪祛穢","每當這名特工處於聖勉狀態，若「猜疑並殲滅」選擇的敵方特工或標識對它可見或位於其 6\" 內，該計謀花費 0CP。"],
       ["傳述她跡 1AP","支援。選擇對這名特工可見、位於 6\" 內且處於聖勉狀態的己方潔天使隱伏者特工，使其不再處於聖勉；再選擇另一名對這名特工可見且位於 6\" 內的己方潔天使隱伏者特工，為其結算殉道的一個祷祝，但不能選擇「疾步」。不能在敵方控制範圍內執行。"]
     ]},
-    {"id":"mortisanctus","name":"潔天使隱伏者聖歿者","role":"聖歿者","image":"assets/celestian_insidiants/mortisanctus.webp","stats":"APL 2 · 移動 6\" · 豁免 3+ · 耐傷 9","weapons":[
+    {"id":"mortisanctus","name":"潔天使隱伏者聖歿者","role":"聖歿者","keywords":["帝國","修女會","聖歿者","潔天使隱伏者"],"image":"assets/celestian_insidiants/mortisanctus.webp","stats":"APL 2 · 移動 6\" · 豁免 3+ · 耐傷 9","weapons":[
       ["受祝闊劍","近戰",4,"3+","4/6",["lethal5","brutal"]]
     ],"abilities":[
       ["熾誓絕諭","每場戰鬥限一次，戰略計劃：選擇這名特工 8\" 內且可見的 1 名敵方特工，對手接受或拒絕。接受：這名特工對該敵方近戰或反擊時，受祝闊劍攻擊 +1；本場首次以近戰或反擊使其殘廢後，受祝闊劍攻擊再 +1，兩者均最多至 5。拒絕：該敵方特工對己方潔天使隱伏者特工近戰或反擊時，其武器攻擊 -1。"],
       ["橫刀招架","每當這名特工進行近戰或反擊時，可以在正常順序前先結算 1 枚成功；若如此，該成功必須用於格擋。"]
     ]},
-    {"id":"reliquarius","name":"潔天使隱伏者司聖者","role":"司聖者","image":"assets/celestian_insidiants/reliquarius.webp","stats":"APL 2 · 移動 6\" · 豁免 3+ · 耐傷 9","weapons":[
+    {"id":"reliquarius","name":"潔天使隱伏者司聖者","role":"司聖者","keywords":["帝國","修女會","司聖者","潔天使隱伏者"],"image":"assets/celestian_insidiants/reliquarius.webp","stats":"APL 2 · 移動 6\" · 豁免 3+ · 耐傷 9","weapons":[
       ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
       ["降罪者擲樁器","遠程",4,"3+","2/2",[["devastating", "毀滅 1", "Devastating 1"],["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"],"silent"],["anti-psyker"]],
       ["槍托","近戰",3,"3+","2/3",[]]
@@ -76,7 +76,7 @@ window.KT_CELESTIAN_INSIDIANTS = {
       ["虛無聖像持有者","判斷標識控制權時，若至少 1 名爭奪該標識的敵方特工位於這名特工 3\" 內，將爭奪該標識的敵方特工 APL 總和視為 -1。這不是 APL 修正。"],
       ["熱忱信徒","每當這名特工激活結束時，若它處於聖勉狀態且控制 1 個目標標識或己方任務標識，選擇對它可見且位於 6\" 內的 1 名己方潔天使隱伏者特工，使其處於聖勉狀態。"]
     ]},
-    {"id":"warrior","name":"潔天使隱伏者戰士","role":"戰士","image":"assets/celestian_insidiants/warrior.webp","stats":"APL 2 · 移動 6\" · 豁免 3+ · 耐傷 9","weapons":[
+    {"id":"warrior","name":"潔天使隱伏者戰士","role":"戰士","keywords":["帝國","修女會","戰士","潔天使隱伏者"],"image":"assets/celestian_insidiants/warrior.webp","stats":"APL 2 · 移動 6\" · 豁免 3+ · 耐傷 9","weapons":[
       ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
       ["降罪者擲樁器","遠程",4,"3+","2/2",[["devastating", "毀滅 1", "Devastating 1"],["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"],"silent"],["anti-psyker"]],
       ["虛無之槌","近戰",4,"3+","4/4",["shock"],["anti-psyker"]]

@@ -96,7 +96,7 @@ window.KT_MURDERWING = {
     {
       "id": "chaos-lord",
       "name": "屠戮之翼混沌領主",
-      "role": "隊長 · 領主",
+      "role": "隊長 · 領主","keywords":["混沌","阿斯塔特叛軍","隊長","領主","屠戮之翼"],
       "image": "assets/murderwing/chaos-lord.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 15",
       "weapons": [
@@ -116,7 +116,7 @@ window.KT_MURDERWING = {
     {
       "id": "champion",
       "name": "屠戮之翼勇士",
-      "role": "勇士",
+      "role": "勇士","keywords":["混沌","阿斯塔特叛軍","勇士","屠戮之翼"],
       "image": "assets/murderwing/champion.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
@@ -134,7 +134,7 @@ window.KT_MURDERWING = {
     {
       "id": "curseclaw",
       "name": "屠戮之翼詛咒利爪",
-      "role": "詛咒利爪",
+      "role": "詛咒利爪","keywords":["混沌","阿斯塔特叛軍","詛咒利爪","屠戮之翼"],
       "image": "assets/murderwing/curseclaw.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
@@ -149,7 +149,7 @@ window.KT_MURDERWING = {
     {
       "id": "depredator",
       "name": "屠戮之翼毀掠者",
-      "role": "毀掠者",
+      "role": "毀掠者","keywords":["混沌","阿斯塔特叛軍","毀掠者","屠戮之翼"],
       "image": "assets/murderwing/depredator.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
@@ -164,7 +164,7 @@ window.KT_MURDERWING = {
     {
       "id": "huntmaster",
       "name": "屠戮之翼狩戮者",
-      "role": "狩戮者",
+      "role": "狩戮者","keywords":["混沌","阿斯塔特叛軍","狩戮者","屠戮之翼"],
       "image": "assets/murderwing/huntmaster.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
@@ -179,7 +179,7 @@ window.KT_MURDERWING = {
     {
       "id": "raptor",
       "name": "屠戮之翼猛禽",
-      "role": "猛禽",
+      "role": "猛禽","keywords":["混沌","阿斯塔特叛軍","猛禽","屠戮之翼"],
       "image": "assets/murderwing/raptor.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
@@ -195,7 +195,7 @@ window.KT_MURDERWING = {
     {
       "id": "shrieker",
       "name": "屠戮之翼嘯叫者",
-      "role": "嘯叫者",
+      "role": "嘯叫者","keywords":["混沌","阿斯塔特叛軍","嘯叫者","屠戮之翼"],
       "image": "assets/murderwing/shrieker.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
@@ -210,7 +210,7 @@ window.KT_MURDERWING = {
     {
       "id": "skysear",
       "name": "屠戮之翼天燎者",
-      "role": "天燎者",
+      "role": "天燎者","keywords":["混沌","阿斯塔特叛軍","天燎者","屠戮之翼"],
       "image": "assets/murderwing/skysear.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
@@ -226,7 +226,7 @@ window.KT_MURDERWING = {
     {
       "id": "warp-talon",
       "name": "屠戮之翼次元爪",
-      "role": "次元爪",
+      "role": "次元爪","keywords":["混沌","阿斯塔特叛軍","次元爪","屠戮之翼"],
       "image": "assets/murderwing/warp-talon.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [

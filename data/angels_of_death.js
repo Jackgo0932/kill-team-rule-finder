@@ -101,7 +101,7 @@ window.KT_ANGELS_OF_DEATH = {
     {
       "id": "captain",
       "name": "星際戰士連長",
-      "role": "隊長",
+      "role": "隊長","keywords":["帝國","阿斯塔特修會","隊長","星際戰士連長","死亡天使"],
       "image": "assets/angels_of_death/captain.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 15",
       "weapons": [
@@ -154,7 +154,7 @@ window.KT_ANGELS_OF_DEATH = {
     {
       "id": "assault-sergeant",
       "name": "突擊仲裁者軍士",
-      "role": "隊長",
+      "role": "隊長","keywords":["帝國","阿斯塔特修會","隊長","突擊仲裁者","軍士","死亡天使"],
       "image": "assets/angels_of_death/assault-sergeant.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 15",
       "weapons": [
@@ -259,7 +259,7 @@ window.KT_ANGELS_OF_DEATH = {
     {
       "id": "intercessor-sergeant",
       "name": "仲裁者軍士",
-      "role": "隊長",
+      "role": "隊長","keywords":["帝國","阿斯塔特修會","隊長","仲裁者","軍士","死亡天使"],
       "image": "assets/angels_of_death/intercessor-sergeant.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 15",
       "weapons": [
@@ -357,7 +357,7 @@ window.KT_ANGELS_OF_DEATH = {
     {
       "id": "grenadier",
       "name": "突擊仲裁者擲彈兵",
-      "role": "擲彈兵",
+      "role": "擲彈兵","keywords":["帝國","阿斯塔特修會","突擊仲裁者","擲彈兵","死亡天使"],
       "image": "assets/angels_of_death/grenadier.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
@@ -391,7 +391,7 @@ window.KT_ANGELS_OF_DEATH = {
     {
       "id": "assault-warrior",
       "name": "突擊仲裁者戰士",
-      "role": "戰士",
+      "role": "戰士","keywords":["帝國","阿斯塔特修會","突擊仲裁者","戰士","死亡天使"],
       "image": "assets/angels_of_death/assault-warrior.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "weapons": [
@@ -420,7 +420,7 @@ window.KT_ANGELS_OF_DEATH = {
     {
       "id": "heavy-gunner",
       "name": "重裝仲裁者砲手",
-      "role": "砲手",
+      "role": "砲手","keywords":["帝國","阿斯塔特修會","重裝仲裁者","砲手","死亡天使"],
       "image": "assets/angels_of_death/heavy-gunner.webp",
       "stats": "APL 3 · 移動 5\" · 豁免 3+ · 耐傷 18",
       "weapons": [
@@ -469,7 +469,7 @@ window.KT_ANGELS_OF_DEATH = {
     {
       "id": "intercessor-gunner",
       "name": "仲裁者砲手",
-      "role": "砲手",
+      "role": "砲手","keywords":["帝國","阿斯塔特修會","仲裁者","砲手","死亡天使"],
       "image": "assets/angels_of_death/intercessor-gunner.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "loadout": "固定裝備附加榴彈發射器，並選擇一組：自動爆矢步槍＋雙拳／爆矢步槍＋雙拳／追獵者爆矢步槍＋雙拳。",
@@ -548,7 +548,7 @@ window.KT_ANGELS_OF_DEATH = {
     {
       "id": "intercessor-warrior",
       "name": "仲裁者戰士",
-      "role": "戰士",
+      "role": "戰士","keywords":["帝國","阿斯塔特修會","仲裁者","戰士","死亡天使"],
       "image": "assets/angels_of_death/intercessor-warrior.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 14",
       "loadout": "選擇一組：自動爆矢步槍＋雙拳／爆矢步槍＋雙拳／追獵者爆矢步槍＋雙拳。",
@@ -607,7 +607,7 @@ window.KT_ANGELS_OF_DEATH = {
     {
       "id": "eliminator",
       "name": "殲滅者狙擊手",
-      "role": "狙擊手",
+      "role": "狙擊手","keywords":["帝國","阿斯塔特修會","殲滅者","狙擊手","死亡天使"],
       "image": "assets/angels_of_death/eliminator.webp",
       "stats": "APL 3 · 移動 7\" · 豁免 3+ · 耐傷 12",
       "weapons": [

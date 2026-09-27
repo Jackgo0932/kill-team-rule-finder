@@ -481,7 +481,8 @@ function opCard(op){
       <div class="op-title-text">
         <h3>${esc(op.name)}</h3>
         <div class="meta operative-meta">
-          <div class="operative-type">${esc(op.role)} · ${esc(team().name)}</div>
+          <div class="operative-type">${(op.keywords||[op.role,team().name]).map(esc).join(" · ")}</div>
+          ${S.team==="leg"?`<div class="operative-keyword-note">可選關鍵字：戰前選擇恐虐、納垢、色孽、奸奇或無分之一；邪焰侍僧不能選恐虐。</div>`:""}
           ${op.stats?`<div class="operative-stats">${esc(op.stats)}</div>`:""}
         </div>
       </div>

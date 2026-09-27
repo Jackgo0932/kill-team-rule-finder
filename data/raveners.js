@@ -31,7 +31,7 @@ window.KT_RAVENERS = {
   ],
   "operatives":[
     {
-      "id":"prime","name":"蛇蟲王蟲","role":"隊長 · 王蟲","image":"assets/raveners/prime.webp","stats":"APL 3 · 移動 7\" · 豁免 5+ · 耐傷 19",
+      "id":"prime","name":"蛇蟲王蟲","role":"隊長 · 王蟲","keywords":["大吞噬者","泰倫蟲族","隊長","王蟲","蛇蟲"],"image":"assets/raveners/prime.webp","stats":"APL 3 · 移動 7\" · 豁免 5+ · 耐傷 19",
       "weapons":[
         ["尾刃","遠程",4,"3+","3/4",[["range","範圍 3\"","Range 3\""],"rending","silent"]],
         ["鐮爪與撕裂爪","近戰",5,"3+","4/5",["rending"]]
@@ -42,7 +42,7 @@ window.KT_RAVENERS = {
       ]
     },
     {
-      "id":"felltalon","name":"毒爪蛇蟲","role":"毒爪","image":"assets/raveners/felltalon.webp","stats":"APL 3 · 移動 7\" · 豁免 5+ · 耐傷 18",
+      "id":"felltalon","name":"毒爪蛇蟲","role":"毒爪","keywords":["大吞噬者","泰倫蟲族","毒爪","蛇蟲"],"image":"assets/raveners/felltalon.webp","stats":"APL 3 · 移動 7\" · 豁免 5+ · 耐傷 18",
       "weapons":[
         ["螯尾","遠程",4,"3+","3/4",[["range","範圍 3\"","Range 3\""],"silent"]],
         ["毒囊","遠程",4,"3+","3/4",[["range","範圍 6\"","Range 6\""],"silent"],["rav-poison"]],
@@ -53,7 +53,7 @@ window.KT_RAVENERS = {
       ]
     },
     {
-      "id":"tremorscythe","name":"顫鐮蛇蟲","role":"顫鐮","image":"assets/raveners/tremorscythe.webp","stats":"APL 3 · 移動 7\" · 豁免 5+ · 耐傷 18",
+      "id":"tremorscythe","name":"顫鐮蛇蟲","role":"顫鐮","keywords":["大吞噬者","泰倫蟲族","顫鐮","蛇蟲"],"image":"assets/raveners/tremorscythe.webp","stats":"APL 3 · 移動 7\" · 豁免 5+ · 耐傷 18",
       "weapons":[
         ["螯尾","遠程",4,"3+","3/4",[["range","範圍 3\"","Range 3\""],"silent"]],
         ["鐮爪與撕裂爪","近戰",5,"3+","4/5",["rending"]]
@@ -64,7 +64,7 @@ window.KT_RAVENERS = {
       ]
     },
     {
-      "id":"venomspitter","name":"噴毒蛇蟲","role":"噴毒","image":"assets/raveners/venomspitter.webp","stats":"APL 3 · 移動 7\" · 豁免 5+ · 耐傷 18",
+      "id":"venomspitter","name":"噴毒蛇蟲","role":"噴毒","keywords":["大吞噬者","泰倫蟲族","噴毒","蛇蟲"],"image":"assets/raveners/venomspitter.webp","stats":"APL 3 · 移動 7\" · 豁免 5+ · 耐傷 18",
       "weapons":[
         ["螯尾","遠程",4,"3+","3/4",[["range","範圍 3\"","Range 3\""],"silent"]],
         ["毒鏢（爆炸）","遠程",4,"3+","3/5",[["range","範圍 8\"","Range 8\""],["blast","爆炸 2\"","Blast 2\""]],["rav-poison"]],
@@ -76,7 +76,7 @@ window.KT_RAVENERS = {
       ]
     },
     {
-      "id":"warrior","name":"蛇蟲武士","role":"武士","image":"assets/raveners/warrior.webp","stats":"APL 3 · 移動 7\" · 豁免 5+ · 耐傷 18",
+      "id":"warrior","name":"蛇蟲武士","role":"武士","keywords":["大吞噬者","泰倫蟲族","武士","蛇蟲"],"image":"assets/raveners/warrior.webp","stats":"APL 3 · 移動 7\" · 豁免 5+ · 耐傷 18",
       "weapons":[
         ["螯尾","遠程",4,"3+","3/4",[["range","範圍 3\"","Range 3\""],"silent"]],
         ["鐮爪","近戰",5,"3+","4/5",[]]
@@ -86,7 +86,7 @@ window.KT_RAVENERS = {
       ]
     },
     {
-      "id":"wrecker","name":"破襲蛇蟲","role":"破襲","image":"assets/raveners/wrecker.webp","stats":"APL 3 · 移動 7\" · 豁免 4+ · 耐傷 18",
+      "id":"wrecker","name":"破襲蛇蟲","role":"破襲","keywords":["大吞噬者","泰倫蟲族","破襲","蛇蟲"],"image":"assets/raveners/wrecker.webp","stats":"APL 3 · 移動 7\" · 豁免 4+ · 耐傷 18",
       "weapons":[
         ["堅骨槌","遠程",4,"3+","3/4",[["range","範圍 3\"","Range 3\""],["piercing","穿刺 1","Piercing 1"],"silent"]],
         ["鐮爪與粉碎爪","近戰",5,"3+","4/5",[],["crush"]]

@@ -96,7 +96,7 @@ window.KT_XV26 = {
     {
       "id": "shasvre",
       "name": "XV26 火氏英雄",
-      "role": "隊長 · 火氏英雄",
+      "role": "隊長 · 火氏英雄","keywords":["鈦帝國","隊長","火氏英雄","XV26 隱形戰鬥服"],
       "image": "assets/xv26/shasvre.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 13",
       "weapons": [
@@ -215,7 +215,7 @@ window.KT_XV26 = {
     {
       "id": "designator",
       "name": "XV26 標記者",
-      "role": "標記者",
+      "role": "標記者","keywords":["鈦帝國","標記者","XV26 隱形戰鬥服"],
       "image": "assets/xv26/designator.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 12",
       "weapons": [
@@ -314,7 +314,7 @@ window.KT_XV26 = {
     {
       "id": "infiltrator",
       "name": "XV26 滲透者",
-      "role": "滲透者 · 可重複",
+      "role": "滲透者 · 可重複","keywords":["鈦帝國","滲透者","XV26 隱形戰鬥服"],
       "image": "assets/xv26/infiltrator.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 12",
       "weapons": [
@@ -409,7 +409,7 @@ window.KT_XV26 = {
     {
       "id": "liberator",
       "name": "XV26 解放者",
-      "role": "解放者",
+      "role": "解放者","keywords":["鈦帝國","解放者","XV26 隱形戰鬥服"],
       "image": "assets/xv26/liberator.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 12",
       "weapons": [
@@ -540,7 +540,7 @@ window.KT_XV26 = {
     {
       "id": "lodestar",
       "name": "XV26 指引者",
-      "role": "指引者",
+      "role": "指引者","keywords":["鈦帝國","指引者","XV26 隱形戰鬥服"],
       "image": "assets/xv26/lodestar.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 12",
       "weapons": [
@@ -639,7 +639,7 @@ window.KT_XV26 = {
     {
       "id": "neutraliser",
       "name": "XV26 消除者",
-      "role": "消除者",
+      "role": "消除者","keywords":["鈦帝國","消除者","XV26 隱形戰鬥服"],
       "image": "assets/xv26/neutraliser.webp",
       "stats": "APL 3 · 移動 6\" · 豁免 3+ · 耐傷 12",
       "weapons": [
@@ -738,7 +738,7 @@ window.KT_XV26 = {
     {
       "id": "gun-drone",
       "name": "MV15 火砲無人機",
-      "role": "無人機 · 固定編入",
+      "role": "無人機 · 固定編入","keywords":["鈦帝國","MV15 火砲","無人機","XV26 隱形戰鬥服"],
       "image": "assets/xv26/gun-drone.webp",
       "stats": "APL 2 · 移動 6\" · 豁免 4+ · 耐傷 7",
       "weapons": [
@@ -775,7 +775,7 @@ window.KT_XV26 = {
     {
       "id": "marker-drone",
       "name": "MV75 標記無人機",
-      "role": "無人機 · 固定編入",
+      "role": "無人機 · 固定編入","keywords":["鈦帝國","MV75 標記","無人機","XV26 隱形戰鬥服"],
       "image": "assets/xv26/marker-drone.webp",
       "stats": "APL 2 · 移動 6\" · 豁免 4+ · 耐傷 7",
       "weapons": [

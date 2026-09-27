@@ -98,7 +98,7 @@ window.KT_WRECKA_KREW = {
     {
       "id": "boss-nob",
       "name": "破壞頭目強蠻人",
-      "role": "隊長",
+      "role": "隊長","keywords":["歐克蠻人","隊長","頭目強蠻人","破壞專隊"],
       "stats": "APL 2 · 移動 6\" · 豁免 4+ · 耐傷 14",
       "image": "assets/wrecka_krew/boss-nob.webp",
       "abilities": [
@@ -170,7 +170,7 @@ window.KT_WRECKA_KREW = {
     {
       "id": "bomb-squig",
       "name": "破壞炸彈跳跳",
-      "role": "炸彈跳跳",
+      "role": "炸彈跳跳","keywords":["歐克蠻人","炸彈跳跳","破壞專隊"],
       "stats": "APL 2 · 移動 6\" · 豁免 5+ · 耐傷 5",
       "image": "assets/wrecka_krew/bomb-squig.webp",
       "abilities": [
@@ -217,7 +217,7 @@ window.KT_WRECKA_KREW = {
     {
       "id": "demolisha",
       "name": "毀滅小子爆破錘手",
-      "role": "毀滅小子 · 爆破錘手",
+      "role": "毀滅小子 · 爆破錘手","keywords":["毀滅小子","爆破錘手","破壞專隊"],
       "stats": "APL 2 · 移動 6\" · 豁免 4+ · 耐傷 12",
       "image": "assets/wrecka_krew/demolisha.webp",
       "abilities": [
@@ -256,7 +256,7 @@ window.KT_WRECKA_KREW = {
     {
       "id": "fighter",
       "name": "毀滅小子鬥士",
-      "role": "毀滅小子 · 鬥士",
+      "role": "毀滅小子 · 鬥士","keywords":["歐克蠻人","毀滅小子","鬥士","破壞專隊"],
       "stats": "APL 2 · 移動 6\" · 豁免 4+ · 耐傷 12",
       "image": "assets/wrecka_krew/fighter.webp",
       "abilities": [
@@ -281,7 +281,7 @@ window.KT_WRECKA_KREW = {
     {
       "id": "krusha",
       "name": "毀滅小子粉碎者",
-      "role": "毀滅小子 · 粉碎者",
+      "role": "毀滅小子 · 粉碎者","keywords":["歐克蠻人","毀滅小子","粉碎者","破壞專隊"],
       "stats": "APL 2 · 移動 6\" · 豁免 4+ · 耐傷 12",
       "image": "assets/wrecka_krew/krusha.webp",
       "abilities": [
@@ -312,7 +312,7 @@ window.KT_WRECKA_KREW = {
     {
       "id": "gunner",
       "name": "坦克破壞者砲手",
-      "role": "坦克破壞者 · 砲手",
+      "role": "坦克破壞者 · 砲手","keywords":["歐克蠻人","坦克破壞者","砲手","破壞專隊"],
       "stats": "APL 2 · 移動 6\" · 豁免 4+ · 耐傷 12",
       "image": "assets/wrecka_krew/gunner.webp",
       "abilities": [
@@ -356,7 +356,7 @@ window.KT_WRECKA_KREW = {
     {
       "id": "rokkiteer",
       "name": "坦克破壞者火箭手",
-      "role": "坦克破壞者 · 火箭手",
+      "role": "坦克破壞者 · 火箭手","keywords":["歐克蠻人","坦克破壞者","火箭手","破壞專隊"],
       "stats": "APL 2 · 移動 6\" · 豁免 4+ · 耐傷 12",
       "image": "assets/wrecka_krew/rokkiteer.webp",
       "abilities": [

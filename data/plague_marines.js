@@ -100,7 +100,7 @@ window.KT_PLAGUE_MARINES = {
     {
       "id": "champion",
       "name": "瘟疫戰士勇士",
-      "role": "隊長",
+      "role": "隊長","keywords":["混沌","阿斯塔特叛軍","隊長","勇士","瘟疫戰士"],
       "image": "assets/plague_marines/champion.webp",
       "stats": "APL 3 · 移動 5\" · 豁免 3+ · 耐傷 15",
       "weapons": [
@@ -151,7 +151,7 @@ window.KT_PLAGUE_MARINES = {
     {
       "id": "bombardier",
       "name": "瘟疫戰士擲彈兵",
-      "role": "擲彈兵",
+      "role": "擲彈兵","keywords":["混沌","阿斯塔特叛軍","擲彈兵","瘟疫戰士"],
       "image": "assets/plague_marines/bombardier.webp",
       "stats": "APL 3 · 移動 5\" · 豁免 3+ · 耐傷 14",
       "weapons": [
@@ -182,7 +182,7 @@ window.KT_PLAGUE_MARINES = {
     {
       "id": "fighter",
       "name": "瘟疫戰士鬥士",
-      "role": "鬥士",
+      "role": "鬥士","keywords":["混沌","阿斯塔特叛軍","鬥士","瘟疫戰士"],
       "image": "assets/plague_marines/fighter.webp",
       "stats": "APL 3 · 移動 5\" · 豁免 3+ · 耐傷 14",
       "weapons": [
@@ -220,7 +220,7 @@ window.KT_PLAGUE_MARINES = {
     {
       "id": "heavy",
       "name": "瘟疫戰士重砲手",
-      "role": "重砲手",
+      "role": "重砲手","keywords":["混沌","阿斯塔特叛軍","重砲手","瘟疫戰士"],
       "image": "assets/plague_marines/heavy.webp",
       "stats": "APL 3 · 移動 5\" · 豁免 3+ · 耐傷 14",
       "weapons": [
@@ -262,7 +262,7 @@ window.KT_PLAGUE_MARINES = {
     {
       "id": "icon",
       "name": "瘟疫戰士持徽手",
-      "role": "持徽手",
+      "role": "持徽手","keywords":["混沌","阿斯塔特叛軍","持徽手","瘟疫戰士"],
       "image": "assets/plague_marines/icon.webp",
       "stats": "APL 3 · 移動 5\" · 豁免 3+ · 耐傷 14",
       "weapons": [
@@ -302,7 +302,7 @@ window.KT_PLAGUE_MARINES = {
     {
       "id": "caster",
       "name": "惡瘟投放者",
-      "role": "靈能者",
+      "role": "靈能者","keywords":["混沌","阿斯塔特叛軍","靈能者","惡瘟投放者","瘟疫戰士"],
       "image": "assets/plague_marines/caster.webp",
       "stats": "APL 3 · 移動 5\" · 豁免 3+ · 耐傷 14",
       "weapons": [
@@ -363,7 +363,7 @@ window.KT_PLAGUE_MARINES = {
     {
       "id": "warrior",
       "name": "瘟疫戰士士兵",
-      "role": "士兵",
+      "role": "士兵","keywords":["混沌","阿斯塔特叛軍","士兵","瘟疫戰士"],
       "image": "assets/plague_marines/warrior.webp",
       "stats": "APL 3 · 移動 5\" · 豁免 3+ · 耐傷 14",
       "weapons": [
