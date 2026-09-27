@@ -46,13 +46,13 @@ window.KT_DEATHWATCH = {
       ["異形相位劍（決鬥）","近戰",5,"3+","4/6",["brutal","lethal5"]],
       ["異形相位劍（相位橫掃）","近戰",4,"3+","4/6",["brutal","lethal5"],["phase-sweep"]]
     ],"abilities":[["適應性劍術","忽略對這名特工異形相位劍命中屬性的任何變化。每當它進行近戰或反擊時，可以在正常順序前先結算 1 枚己方成功；若如此，該成功必須用於格擋。"]]},
-    {"id":"bombard","name":"死亡守望轟擊手老兵","role":"轟擊手","image":"assets/deathwatch/bombard.webp","stats":"APL 3 · 移動 5\" · 豁免 3+ · 耐傷 18","weapons":[
+    {"id":"bombard","name":"死亡守望轟擊手老兵","role":"重裝型裝甲 · 轟擊手","image":"assets/deathwatch/bombard.webp","stats":"APL 3 · 移動 5\" · 豁免 3+ · 耐傷 18","weapons":[
       ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
       ["破片砲（彈頭）","遠程",4,"3+","5/7",[["piercing", "穿刺 1", "Piercing 1"]]],
       ["破片砲（彈片）","遠程",5,"3+","4/5",[["torrent", "洪流 2\"", "Torrent 2\""]]],
       ["雙拳","近戰",4,"3+","3/4",[]]
     ],"abilities":[]},
-    {"id":"breacher","name":"死亡守望突破手老兵","role":"突破手","image":"assets/deathwatch/breacher.webp","stats":"APL 3 · 移動 5\" · 豁免 3+ · 耐傷 18","weapons":[
+    {"id":"breacher","name":"死亡守望突破手老兵","role":"重裝型裝甲 · 突破手","image":"assets/deathwatch/breacher.webp","stats":"APL 3 · 移動 5\" · 豁免 3+ · 耐傷 18","weapons":[
       ["下掛榴彈發射器（破片）","遠程",4,"3+","2/4",[["blast", "爆炸 2\"", "Blast 2\""]]],
       ["下掛榴彈發射器（穿甲）","遠程",4,"3+","4/5",[["piercing", "穿刺 1", "Piercing 1"]]],
       ["地獄風暴爆矢步槍","遠程",4,"3+","4/5",[["torrent", "洪流 1\"", "Torrent 1\""]]],
@@ -86,7 +86,7 @@ window.KT_DEATHWATCH = {
       ["重力傘和抓鉤發射器","攀爬時，垂直距離視為 2\"，不論實際垂直移動多少；跳落時忽略垂直距離。"],
       ["隱秘奪首者","這名特工擁有隱匿命令時也能執行衝鋒。每當它與在該次激活／反應開始時對它不可見的特工近戰，該流程中你第一次出擊時，可以立即再將另一枚己方成功結算為出擊，先於對手。"]
     ]},
-    {"id":"horde-slayer","name":"死亡守望獸群屠戮者老兵","role":"獸群屠戮者","image":"assets/deathwatch/horde-slayer.webp","stats":"APL 3 · 移動 5\" · 豁免 3+ · 耐傷 18","weapons":[
+    {"id":"horde-slayer","name":"死亡守望獸群屠戮者老兵","role":"重裝型裝甲 · 獸群屠戮者","image":"assets/deathwatch/horde-slayer.webp","stats":"APL 3 · 移動 5\" · 豁免 3+ · 耐傷 18","weapons":[
       ["爆矢手槍","遠程",4,"3+","3/4",[["range", "範圍 8\"", "Range 8\""]]],
       ["地獄火重型爆矢槍（火焰）","遠程",5,"2+","3/3",[["range", "範圍 8\"", "Range 8\""],"saturate",["torrent", "洪流 2\"", "Torrent 2\""]]],
       ["地獄火重型爆矢槍（爆矢點射）","遠程",5,"3+","4/5",[["piercing-crits", "關鍵穿刺 1", "Piercing Crits 1"]]],

@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-2.2.11.4-close-quarters-hatchway-fight";
+const CACHE = "kt-rule-finder-2.2.11.6-deathwatch-gravis-role";
 const APP_SHELL = [
   "./",
   "./index.html",
