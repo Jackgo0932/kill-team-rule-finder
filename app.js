@@ -22,6 +22,7 @@ const S={
   fav:new Set(JSON.parse(localStorage.getItem("ktFav")||"[]")),
   equipmentSelections:JSON.parse(localStorage.getItem("ktEquipmentSelections")||'{"my":{},"enemy":{}}'),
   equipmentOptionSelections:JSON.parse(localStorage.getItem("ktEquipmentOptionSelections")||'{"my":{},"enemy":{}}'),
+  recentViewed:JSON.parse(localStorage.getItem("ktRecentViewed")||"[]"),
   matchTracker:JSON.parse(localStorage.getItem("ktMatchTracker")||'null')||{
     tp:1, initiative:"my",
     sides:{
@@ -358,6 +359,51 @@ const NAV_GROUPS={
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const match=(o,q)=>!q||JSON.stringify(o).toLowerCase().includes(q.toLowerCase().trim());
 const team=()=>TEAMS[S.team];
+const normalizeSearch=s=>String(s??"").toLowerCase().trim().replace(/\s+/g," ");
+function itemTitle(item){
+  const m=String(item.html||"").match(/<h3[^>]*>([\s\S]*?)<\/h3>/i);
+  return m?m[1].replace(/<[^>]+>/g," ").replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/\s+/g," ").trim():item.kind;
+}
+function itemSource(item){
+  const factionKinds=new Set(["小隊資訊","陣營規則","戰略計謀","交戰計謀","Tac Ops","陣營裝備","特工"]);
+  return factionKinds.has(item.kind)?`${team().name} · ${item.kind}`:item.kind;
+}
+function searchRank(item,q){
+  const needle=normalizeSearch(q); if(!needle)return 0;
+  const title=normalizeSearch(itemTitle(item));
+  const source=normalizeSearch(itemSource(item));
+  const raw=normalizeSearch(JSON.stringify(item.s));
+  if(title===needle)return 400;
+  if(title.startsWith(needle))return 320;
+  if(title.includes(needle))return 260;
+  if(source.includes(needle))return 190;
+  // Array data usually keeps English name / keywords near the front, so reward early matches.
+  const early=normalizeSearch(Array.isArray(item.s)?item.s.slice(0,3).join(" "):"");
+  if(early.includes(needle))return 160;
+  if(raw.includes(needle))return 100;
+  return -1;
+}
+function rememberViewed(id,title,source){
+  if(!id||!title)return;
+  const entry={id,title,source,team:S.team,side:S.side};
+  S.recentViewed=[entry,...S.recentViewed.filter(x=>!(x.id===id&&x.team===S.team))].slice(0,6);
+  localStorage.setItem("ktRecentViewed",JSON.stringify(S.recentViewed));
+  renderRecentViewed();
+}
+function renderRecentViewed(){
+  const root=document.querySelector("#recentViewed"); if(!root)return;
+  if(!S.recentViewed.length){root.innerHTML="";root.classList.add("empty-recent");return;}
+  root.classList.remove("empty-recent");
+  root.innerHTML=`<span>最近查看</span>${S.recentViewed.map((x,i)=>`<button onclick="openRecentViewed(${i})" title="${esc(x.source||'')}">${esc(x.title)}</button>`).join("")}`;
+}
+function openRecentViewed(index){
+  const x=S.recentViewed[index]; if(!x)return;
+  if(x.side==="enemy"||x.side==="my") setActiveSide(x.side,{resetOpen:false});
+  S.view="all"; S.tab="全部"; S.subtab="全部"; S.q=x.title;
+  document.querySelector("#q").value=S.q;
+  document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("on",b.dataset.view==="all"));
+  render();
+}
 
 function loadData(){
   QUICK = window.KT_CORE_RULES || [];
@@ -851,10 +897,20 @@ function render(){
     const active=S.subtab!=="全部"?[S.subtab]:kinds;
     if(active.length)a=a.filter(x=>active.includes(x.kind));
   }
-  a=a.filter(x=>match(x.s,S.q));
+  if(S.q){
+    a=a.map((x,index)=>({...x,_rank:searchRank(x,S.q),_order:index})).filter(x=>x._rank>=0).sort((a,b)=>b._rank-a._rank||a._order-b._order);
+  }
+  const rendered=a.map(x=>{
+    const title=itemTitle(x),source=itemSource(x);
+    const attrs=` data-result-id="${esc(x.id)}" data-result-title="${esc(title)}" data-result-source="${esc(source)}"`;
+    let html=x.html.replace(/<div class="([^"]*\bcard\b[^"]*)"/,(_,classes)=>`<div class="${classes}"${attrs}`);
+    if(S.q) html=html.replace(/(<h3[^>]*>[\s\S]*?<\/h3>)/i,`$1<div class="search-result-source">${esc(source)}</div>`);
+    return html;
+  }).join("");
   document.querySelector("#content").innerHTML=a.length
-    ? `<div class="count"><span class="team-accent">${esc(team().name)}</span> · ${a.length} 筆結果</div><div class="grid">${a.map(x=>x.html).join("")}</div>`
+    ? `<div class="count"><span class="team-accent">${esc(team().name)}</span> · ${a.length} 筆結果${S.q?' · 已依相關度排序':''}</div><div class="grid">${rendered}</div>`
     : `<div class="empty">找不到符合的規則</div>`;
+  renderRecentViewed();
 }
 
 function tab(t){S.tab=t;S.subtab="全部";S.open.clear();render()}
@@ -895,6 +951,10 @@ function setActiveSide(side,{resetOpen=true}={}){
 
 function bindUI(){
   document.querySelector("#q").addEventListener("input",e=>{S.q=e.target.value;render()});
+  document.querySelector("#content").addEventListener("click",e=>{
+    const card=e.target.closest(".card[data-result-id]");
+    if(card) rememberViewed(card.dataset.resultId,card.dataset.resultTitle,card.dataset.resultSource);
+  });
   document.querySelector("#myTeamSelect").addEventListener("change",e=>{
     S.myTeam=e.target.value;
     localStorage.setItem("ktMyTeam",S.myTeam);

@@ -699,3 +699,6 @@ linear-gradient(110deg,rgba(230,92,43,.18),transparent 42%),linear-gradient(180d
 /* v2.2.13.1 — live match refresh + removable log entries */
 .battle-log-meta{display:flex;align-items:center;gap:7px;justify-content:flex-end}.battle-log-remove{border:1px solid var(--line);border-radius:8px;background:var(--panel2);color:var(--muted);padding:4px 7px;font-size:11px;font-weight:700;cursor:pointer}.battle-log-remove:hover{color:var(--text);border-color:var(--accent)}
 @media(max-width:520px){.battle-log-row{grid-template-columns:36px 1fr auto}.battle-log-meta{flex-direction:column;align-items:flex-end;gap:4px}.battle-log-remove{padding:3px 6px}}
+
+/* v2.2.14 search quality */
+.recent-viewed{display:flex;align-items:center;gap:6px;overflow-x:auto;padding:7px 2px 0;scrollbar-width:none}.recent-viewed::-webkit-scrollbar{display:none}.recent-viewed.empty-recent{display:none}.recent-viewed>span{font-size:11px;color:var(--muted);white-space:nowrap}.recent-viewed button{border:1px solid #3b4045;background:#1b1e21;color:#d9dde0;border-radius:999px;padding:5px 9px;font-size:11px;white-space:nowrap}.recent-viewed button:hover{border-color:#777}.search-result-source{display:inline-flex;margin:3px 0 8px;padding:3px 7px;border-radius:999px;background:#262a2e;color:#bfc6cc;font-size:11px;font-weight:700;letter-spacing:.02em}

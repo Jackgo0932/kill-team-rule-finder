@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-2.2.13.1-match-log-fix";
+const CACHE = "kt-rule-finder-2.2.14.0-search-quality";
 const APP_SHELL = [
   "./",
   "./index.html",
