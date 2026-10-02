@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-2.2.11.8-official-zh-keyword-audit";
+const CACHE = "kt-rule-finder-2.2.12.1-match-hub-only";
 const APP_SHELL = [
   "./",
   "./index.html",

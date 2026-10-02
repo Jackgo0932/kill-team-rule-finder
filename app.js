@@ -14,6 +14,7 @@ const S={
   team:SAVED_SIDE==="enemy"?SAVED_ENEMY_TEAM:SAVED_MY_TEAM,
   tab:"全部",
   view:"all",
+  matchTab:"log",
   q:"",
   subtab:"全部",
   open:new Set(),
@@ -745,19 +746,47 @@ function toggleFlow(id){
   render();
 }
 
+function matchEquipmentSide(side){
+  const teamId=side==="enemy"?S.enemyTeam:S.myTeam;
+  const t=TEAMS[teamId];
+  const bucket=equipmentBucket(side,teamId);
+  const items=bucket.map(key=>`<div class="match-equipment-item">${esc(equipmentNameByKey(teamId,key))}${equipmentOptionSummary(side,teamId,key)}</div>`).join("");
+  return `<section class="match-equipment-side"><h3>${trackerSideName(side)} · ${esc(t?.name||"")}</h3><small>已選 ${bucket.length} 件裝備</small><div class="match-equipment-items">${items||'<div class="match-equipment-empty">尚未選擇裝備</div>'}</div></section>`;
+}
+function setMatchTab(tab){
+  if(!["log","equipment","public"].includes(tab))return;
+  S.matchTab=tab;
+  renderMatchHub();
+}
+function renderMatchHub(){
+  const m=ensureMatchTracker();
+  const root=document.querySelector("#content");
+  const tabs=`<div class="match-hub-tabs"><button class="match-hub-tab ${S.matchTab==="log"?"on":""}" onclick="setMatchTab('log')">戰鬥紀錄</button><button class="match-hub-tab ${S.matchTab==="equipment"?"on":""}" onclick="setMatchTab('equipment')">雙方裝備</button><button class="match-hub-tab ${S.matchTab==="public"?"on":""}" onclick="setMatchTab('public')">公開資訊</button></div>`;
+  let body="";
+  if(S.matchTab==="equipment"){
+    body=`<div class="match-equipment-grid">${matchEquipmentSide("my")}${matchEquipmentSide("enemy")}</div>`;
+  }else if(S.matchTab==="public"){
+    body=`<div class="match-public"><div class="tracker-toolbar"><div class="tracker-tp"><b>TP ${m.tp}</b><button onclick="nextTurningPoint()" ${m.tp>=4?"disabled":""}>下一轉折點 →</button></div><button class="tracker-reset" onclick="resetMatchTracker()">清除本局</button></div><div class="tracker-sides">${trackerSidePanel("my")}${trackerSidePanel("enemy")}</div></div>`;
+  }else{
+    const logs=m.log.map(e=>`<div class="battle-log-row"><span class="battle-log-tp">TP${e.tp}</span><div class="battle-log-text">${esc(e.text)}</div><small>${esc(e.at||"")}</small></div>`).join("");
+    body=`<div class="battle-log-summary"><span>我方 ${m.sides.my.cp} CP</span><span>敵方 ${m.sides.enemy.cp} CP</span><span>共 ${m.log.length} 筆</span></div><div class="battle-log-list">${logs||'<div class="tracker-empty battle-log-empty">尚無戰鬥紀錄。調整 CP、先手卡、先手或使用戰略計謀後，紀錄會顯示在這裡。</div>'}</div>`;
+  }
+  root.innerHTML=`<div class="match-hub"><div class="match-hub-head"><div><div class="flow-eyebrow">MATCH</div><h2>本局對戰</h2><p>戰鬥紀錄、雙方所選裝備與對戰公開資訊集中在這裡，桌邊不必再往上找。</p></div><div class="match-hub-status"><b>TP ${m.tp}</b><span>${trackerSideName(m.initiative)}先手</span></div></div>${tabs}${body}</div>`;
+}
+
 function render(){
   const isFlow=S.view==="flow";
-  document.querySelector(".sticky").classList.toggle("flow-hidden",isFlow);
-  document.querySelector("#tabs").classList.toggle("flow-hidden",isFlow);
+  const isMatch=S.view==="match";
+  document.querySelector(".sticky").classList.toggle("flow-hidden",isFlow||isMatch);
+  document.querySelector("#tabs").classList.toggle("flow-hidden",isFlow||isMatch);
   document.querySelector("#myTeamSelect").value=S.myTeam;
   document.querySelector("#enemyTeamSelect").value=S.enemyTeam;
   document.querySelector("#myTeamName").textContent=TEAMS[S.myTeam].name;
   document.querySelector("#enemyTeamName").textContent=TEAMS[S.enemyTeam].name;
   document.querySelectorAll("#sideSwitch button").forEach(b=>b.classList.toggle("on",b.dataset.side===S.side));
-  document.querySelector("#equipmentTracker").innerHTML=equipmentSummary("my")+equipmentSummary("enemy");
-  renderMatchTracker();
   document.querySelector("#navTeamName").textContent=team().name;
   if(isFlow){ renderFlow(); return; }
+  if(isMatch){ renderMatchHub(); return; }
   const groups=NAV_GROUPS[S.view==="team"?"team":"all"];
   const tabs=Object.keys(groups);
   if(!tabs.includes(S.tab)){S.tab="全部";S.subtab="全部";}
@@ -854,6 +883,7 @@ function bindUI(){
     S.tab="全部";
     S.subtab="全部";
     render();
+    if(S.view==="match") document.querySelector("#content")?.scrollIntoView({block:"start"});
   });
 }
 
