@@ -688,3 +688,14 @@ linear-gradient(110deg,rgba(230,92,43,.18),transparent 42%),linear-gradient(180d
 .match-equipment-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.match-equipment-side{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:14px}.match-equipment-side h3{margin:0 0 3px}.match-equipment-side>small{display:block;color:var(--muted);margin-bottom:12px}.match-equipment-items{display:flex;flex-direction:column;gap:7px}.match-equipment-item{padding:10px 11px;border-radius:10px;background:var(--panel2);font-size:13px;font-weight:700}.match-equipment-empty{color:var(--muted);font-size:13px;padding:12px 0}
 .match-public .match-tracker-panel{margin:0}.match-public .match-tracker-panel>summary{display:none}.match-public .tracker-history{display:none}
 @media(max-width:560px){.match-hub-head{padding:14px}.match-hub-head h2{font-size:20px}.match-hub-head p{font-size:12px}.match-hub-tabs{gap:4px}.match-hub-tab{font-size:12px;padding:9px 4px}.match-equipment-grid{grid-template-columns:1fr}}
+
+/* v2.2.13.0 — Match Tracker v2 */
+.tracker-vp{margin-bottom:4px}.tracker-vp b{font-size:20px}
+.manual-log{display:grid;grid-template-columns:1fr auto;gap:7px;margin:0 0 8px}.manual-log input{min-width:0;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);padding:10px 12px;font:inherit}.manual-log button,.quick-log button{border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--text);padding:9px 11px;font-weight:700}
+.quick-log{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}.quick-log button{font-size:12px;padding:7px 9px}
+.match-equipment-item{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;border:0;color:var(--text);cursor:pointer}.match-equipment-item small{color:var(--muted);white-space:nowrap;font-weight:600}
+@media(max-width:520px){.manual-log{grid-template-columns:1fr}.manual-log button{width:100%}.match-hub-status span{white-space:normal;text-align:right;max-width:150px}}
+
+/* v2.2.13.1 — live match refresh + removable log entries */
+.battle-log-meta{display:flex;align-items:center;gap:7px;justify-content:flex-end}.battle-log-remove{border:1px solid var(--line);border-radius:8px;background:var(--panel2);color:var(--muted);padding:4px 7px;font-size:11px;font-weight:700;cursor:pointer}.battle-log-remove:hover{color:var(--text);border-color:var(--accent)}
+@media(max-width:520px){.battle-log-row{grid-template-columns:36px 1fr auto}.battle-log-meta{flex-direction:column;align-items:flex-end;gap:4px}.battle-log-remove{padding:3px 6px}}
