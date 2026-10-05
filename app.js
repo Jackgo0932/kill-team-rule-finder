@@ -644,7 +644,12 @@ function items(){
   });
   if(t.ploys2) t.ploys2.forEach(x=>{const opts=choiceOptionsFor(S.team,"ploy2",x[0]);a.push({kind:"交戰計謀",id:"p2:"+x[0],s:x,html:`<div class="card">${star("p2:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">${esc(t.name)} · ${esc(x[2])}</div>${opts?`<div class="body">在一名己方瘟疫戰士特工的激活或反應期間、其執行一次行動之前或之後使用。選擇一個效果：</div>${choiceOptionList(opts,`ploy2-choice:${x[0]}`)}`:markedProse(x[3],`ploy2:${x[0]}`)}</div>`})});
   t.equipment.forEach(x=>{
+    const equipmentChoices=choiceOptionsFor(S.team,"equipment",x[0]);
     let content=markedProse(x[2],`equip:${x[0]}`);
+    if(equipmentChoices){
+      const intro=x[2].split("選擇：")[0].trim();
+      content=`<div class="body">${esc(intro)} 選擇一個效果：</div>${choiceOptionList(equipmentChoices,`equipment-choice:${x[0]}`)}`;
+    }
     // 像「疫病手雷」這種裝備本身就是一個完整武器資料，
     // 直接用武器卡呈現，不再把攻擊／命中／傷害寫成一段敘述。
     if(S.team==="pm" && x[0]==="grenades"){
