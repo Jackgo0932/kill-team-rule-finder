@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-2.2.14.3-bioscryer-timing-inline";
+const CACHE = "kt-rule-finder-2.2.14.4-bioscryer-timing-inline";
 const APP_SHELL = [
   "./",
   "./index.html",
