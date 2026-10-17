@@ -14,7 +14,7 @@ const S={
   team:SAVED_SIDE==="enemy"?SAVED_ENEMY_TEAM:SAVED_MY_TEAM,
   tab:"全部",
   view:"all",
-  matchTab:"log",
+  matchTab:"roster",
   q:"",
   subtab:"全部",
   open:new Set(),
@@ -301,6 +301,7 @@ function nextTurningPoint(){
   saveMatchTracker();refreshMatchUI();
 }
 function startNewMatch(){
+  if(battleRoster){beginBattleSetup();return}
   if(!confirm("開始新對戰？將清除目前 TP、VP、CP、先手、先手卡、戰略計謀與戰鬥紀錄；雙方目前選擇的裝備會保留。"))return;
   S.matchTracker={tp:1,initiative:"my",sides:{my:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]},enemy:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]}},log:[]};
   saveMatchTracker();render();
@@ -853,16 +854,209 @@ function matchEquipmentSide(side){
   return `<section class="match-equipment-side"><h3>${trackerSideName(side)} · ${esc(t?.name||"")}</h3><small>已選 ${bucket.length} 件裝備</small><div class="match-equipment-items">${items||'<div class="match-equipment-empty">尚未選擇裝備</div>'}</div></section>`;
 }
 function setMatchTab(tab){
-  if(!["log","equipment","public"].includes(tab))return;
+  if(!["roster","log","equipment","public"].includes(tab))return;
   S.matchTab=tab;
   renderMatchHub();
 }
+
+// v2.3: battle roster is a per-match shortlist, not a substitute for official composition validation.
+const ROSTER_KEY="ktBattleRosterV230";
+let battleRoster=(()=>{
+  try {const x=JSON.parse(localStorage.getItem(ROSTER_KEY)||"null");return x&&typeof x==="object"?x:null}
+  catch{return null}
+})();
+if(battleRoster&&TEAMS[battleRoster.myTeam]&&TEAMS[battleRoster.enemyTeam]){
+ S.myTeam=battleRoster.myTeam;S.enemyTeam=battleRoster.enemyTeam;
+ S.team=S.side==="enemy"?S.enemyTeam:S.myTeam;
+}
+let battleDraft=null;
+let battleWeaponDraft={my:{},enemy:{}};
+function rosterTeam(side){return side==="my"?S.myTeam:S.enemyTeam}
+function teamsLocked(){return (!!battleRoster&&!battleDraft)||!!(battleDraft&&battleDraft.step>0)}
+function guardTeamChange(){
+ if(!teamsLocked())return false;
+ alert(battleDraft?"已確認小隊，請返回建立對戰的第一步修改。":"本場對戰已鎖定雙方小隊。請在「本場特工」使用「重新選擇出戰特工」建立新對戰。");
+ render();return true;
+}
+function rosterOps(side){return TEAMS[rosterTeam(side)]?.operatives||[]}
+// Declarative composition rules. Weapon/loadout choices remain manual.
+const TEAM_ROSTER_RULES={
+ "xv26":{fixed:{shasvre:1,"marker-drone":1,"gun-drone":1},slots:4,allowed:["designator","infiltrator","liberator","lodestar","neutraliser"],repeat:["infiltrator"],note:"融合砲全隊最多 2 把，需自行核對武器配置。"},
+ "rav":{fixed:{prime:1},slots:4,allowed:["felltalon","tremorscythe","venomspitter","warrior","wrecker"],repeat:["warrior"]},
+ "ci":{fixed:{superior:1},slots:8,allowed:["abjuror","censor","cremator","denuncia","mortisanctus","reliquarius","warrior"],repeat:["cremator","warrior"],caps:{cremator:2}},
+ "ks":{fixed:{sergeant:1},slots:9,allowed:["combat-medic","demo-trooper","gunner","recon-trooper","sharpshooter","trooper","vox-trooper"],repeat:["trooper"],groupCaps:[{ids:["combat-medic","demo-trooper","gunner","recon-trooper","sharpshooter","vox-trooper"],max:4}],note:"砲手武器選項需另行核對。"},
+ "cc":{fixed:{geomancer:1,accelerator:1,reanimator:1,warrior:3,"tomb-crawler":2},slots:0,allowed:[],note:"墓穴爬行者武器選擇與跨維隔振器最多 1 個，仍須自行核對。"},
+ "leg":{leader:["aspiring-champion","chosen"],slots:5,allowed:["anointed","balefire-acolyte","butcher","gunner","heavy-gunner","icon-bearer","shrivetalon","warrior"],repeat:["warrior"]},
+ "wk":{fixed:{"boss-nob":1,"bomb-squig":2},slots:5,allowed:["demolisha","fighter","krusha","gunner","rokkiteer"],repeat:["fighter","gunner"]},
+ "mw":{fixed:{"chaos-lord":1},slots:5,allowed:["champion","curseclaw","depredator","huntmaster","raptor","shrieker","skysear","warp-talon"],repeat:["raptor"],note:"標 * 武器合計最多 2 名，需自行核對。"},
+ "pm":{fixed:{champion:1},slots:5,allowed:["bombardier","fighter","heavy","icon","caster","warrior"],repeat:[]},
+ "aod":{leader:["captain","assault-sergeant","intercessor-sergeant"],slots:5,allowed:["grenadier","assault-warrior","heavy-gunner","intercessor-gunner","intercessor-warrior","eliminator"],repeat:["assault-warrior","intercessor-warrior"]},
+ "dw":{slots:5,allowed:["watch-sergeant","aegis","blademaster","bombard","breacher","demolisher","disruptor","gunner","headtaker","horde-slayer","marksman"],repeat:[],note:"重裝型裝甲（GRAVIS）特工最多 1 名，需核對裝甲關鍵字。"}
+};
+function rosterRule(side){return TEAM_ROSTER_RULES[rosterTeam(side)]||null}
+function fixedIds(rule){return Object.entries(rule.fixed||{}).flatMap(([id,n])=>Array(n).fill(id))}
+function initialDraft(side){const r=rosterRule(side);return r?fixedIds(r):[]}
+function selectedCount(a,id){return a.filter(x=>x===id).length}
+function rosterError(side){
+ const r=rosterRule(side),a=battleDraft[side];
+ if(!r)return a.length?"":"請至少選擇一名特工。";
+ const known=new Set(rosterOps(side).map(x=>x.id));
+ if(a.some(id=>!known.has(id)))return "包含無法辨識的特工。";
+ for(const [id,n] of Object.entries(r.fixed||{}))if(selectedCount(a,id)!==n)return `固定特工 ${id} 需要 ${n} 名。`;
+ const leaders=(r.leader||[]).reduce((n,id)=>n+selectedCount(a,id),0);
+ if(r.leader&&leaders!==1)return "必須從隊長候選中選擇恰好 1 名。";
+ const extras=a.filter(id=>!(id in (r.fixed||{}))&&!(r.leader||[]).includes(id));
+ if(extras.length!==r.slots)return `其餘特工需要 ${r.slots} 名，目前 ${extras.length} 名。`;
+ if(extras.some(id=>!r.allowed.includes(id)))return "存在不符合編成的職位。";
+ for(const id of new Set(extras))if(!r.repeat.includes(id)&&selectedCount(extras,id)>1)return "不可重複編入："+id;
+ for(const [id,n] of Object.entries(r.caps||{}))if(selectedCount(a,id)>n)return `${id} 最多 ${n} 名。`;
+ for(const g of r.groupCaps||[])if(a.filter(id=>g.ids.includes(id)).length>g.max)return `專家類特工最多 ${g.max} 名。`;
+ return "";
+}
+function changeDraftCount(side,id,delta){
+ if(!battleDraft)return;
+ const r=rosterRule(side),a=battleDraft[side],idx=a.lastIndexOf(id);
+ if(!rosterOps(side).some(o=>o.id===id))return;
+ if(delta<0){
+  if(r?.fixed?.[id]&&selectedCount(a,id)<=r.fixed[id])return;
+  if(idx>=0)a.splice(idx,1);
+ }else{
+  if(r){
+   if(r.fixed?.[id])return;
+   if(r.leader?.includes(id)){if(r.leader.some(x=>a.includes(x)))return}
+   else{
+    if(!r.allowed.includes(id))return;
+    if(a.filter(x=>r.allowed.includes(x)).length>=r.slots)return;
+    if(!r.repeat.includes(id)&&a.includes(id))return;
+    if(r.caps?.[id]&&selectedCount(a,id)>=r.caps[id])return;
+    if(r.groupCaps?.some(g=>g.ids.includes(id)&&a.filter(x=>g.ids.includes(x)).length>=g.max))return;
+   }
+  }else if(a.includes(id))return;
+  a.push(id);
+ }
+ render();
+}
+function draftVisualCard(side,o){
+ const a=battleDraft[side],r=rosterRule(side),count=selectedCount(a,o.id);
+ const fixed=!!r?.fixed?.[o.id],canAdd=()=>{
+  if(!r)return !count;
+  if(fixed)return false;
+  if(r.leader?.includes(o.id))return !r.leader.some(id=>a.includes(id));
+  if(!r.allowed.includes(o.id)||a.filter(id=>r.allowed.includes(id)).length>=r.slots)return false;
+  if(!r.repeat.includes(o.id)&&count)return false;
+  if(r.caps?.[o.id]&&count>=r.caps[o.id])return false;
+  return !r.groupCaps?.some(g=>g.ids.includes(o.id)&&a.filter(id=>g.ids.includes(id)).length>=g.max);
+ };
+ return `<div class="battle-pick-card">${o.image?`<img src="${esc(o.image)}" alt="${esc(o.name)}" loading="lazy">`:""}<div><b>${esc(o.name)}</b><small>${esc(o.role||"")}</small><div class="battle-pick-controls"><button onclick="changeDraftCount('${side}','${o.id}',-1)" ${fixed||!count?"disabled":""}>−</button><span>${count}${fixed?" · 固定":""}</span><button onclick="changeDraftCount('${side}','${o.id}',1)" ${canAdd()?"":"disabled"}>＋</button></div></div></div>`;
+}
+function beginBattleSetup(){
+  if(battleRoster&&!confirm("重新建立對戰？現有出戰名單會被取代，完成設定時將重置本局紀錄。"))return;
+  battleRoster=null;
+  localStorage.removeItem(ROSTER_KEY);
+  battleDraft={my:initialDraft("my"),enemy:initialDraft("enemy"),enemySkipped:false,step:0};
+  battleWeaponDraft={my:{},enemy:{}};
+  S.view="match";render();
+}
+function toggleDraftOperative(side,id){
+  if(!battleDraft)return;
+  const list=battleDraft[side],idx=list.indexOf(id);
+  if(idx>=0)list.splice(idx,1);else list.push(id);
+  render();
+}
+function battleSetupNext(){
+  if(!battleDraft)return;
+  if(battleDraft.step===1&&(!battleDraft.my.length||rosterError("my"))){alert(rosterError("my")||"請至少選擇一名我方特工。");return}
+  if(battleDraft.step===2&&!battleDraft.enemySkipped&&(!battleDraft.enemy.length||rosterError("enemy"))){alert(rosterError("enemy")||"請選擇敵方特工，或勾選略過敵方編隊。");return}
+  if(battleDraft.step<4)battleDraft.step++;
+  render();
+}
+function battleSetupBack(){if(battleDraft){battleDraft.step=Math.max(0,battleDraft.step-1);render()}}
+function changeBattleSetupTeam(side,id){
+ if(!battleDraft||battleDraft.step!==0||!TEAMS[id])return;
+ if(side==="my"){S.myTeam=id;S.team=S.side==="my"?id:S.team;battleDraft.my=initialDraft("my");battleWeaponDraft.my={};localStorage.setItem("ktMyTeam",id)}
+ else{S.enemyTeam=id;S.team=S.side==="enemy"?id:S.team;battleDraft.enemy=initialDraft("enemy");battleWeaponDraft.enemy={};localStorage.setItem("ktEnemyTeam",id)}
+ localStorage.setItem("ktTeam",S.team);
+ render();
+}
+function battleTeamPicker(side){
+ const selected=rosterTeam(side);
+ return `<label class="battle-team-picker"><b>${side==="my"?"我方小隊":"敵方小隊"}</b><select aria-label="${side==="my"?"選擇我方小隊":"選擇敵方小隊"}" onchange="changeBattleSetupTeam('${side}',this.value)">${Object.keys(TEAMS).map(id=>`<option value="${esc(id)}" ${id===selected?"selected":""}>${esc(TEAMS[id].name)}</option>`).join("")}</select></label>`;
+}
+function skipEnemyRoster(){if(battleDraft){battleDraft.enemySkipped=!battleDraft.enemySkipped;render()}}
+function setBattleWeapon(side,index,weaponIndex,checked){
+ const k=String(index),teamId=rosterTeam(side),id=battleDraft?.[side]?.[index];
+ const op=TEAMS[teamId]?.operatives?.find(o=>o.id===id);
+ if(!op)return;
+ let chosen=battleWeaponDraft[side][k];
+ if(!Array.isArray(chosen))chosen=op.weapons.map((_,i)=>i);
+ chosen=checked?[...new Set([...chosen,weaponIndex])]:chosen.filter(i=>i!==weaponIndex);
+ battleWeaponDraft[side][k]=chosen;
+ // Keep the currently open details element and scroll position intact.
+
+}
+function renderBattleWeapons(side){
+ return `<div class="battle-weapon-config">${battleDraft[side].map((id,index)=>{
+  const op=rosterOps(side).find(o=>o.id===id);if(!op)return "";
+  const selected=battleWeaponDraft[side][String(index)];
+  return `<details class="battle-weapon-unit"><summary>${op.image?`<img src="${esc(op.image)}" alt="">`:""}<b>${esc(op.name)}</b><span>武器顯示設定</span></summary>
+    <p>${esc(op.loadout||"請依官方編成規則選擇武器；此設定僅控制本場數據卡顯示。")}</p>
+    ${(op.weapons||[]).map((w,i)=>`<label><input type="checkbox" ${!selected||selected.includes(i)?"checked":""} onchange="setBattleWeapon('${side}',${index},${i},this.checked)"> ${esc(w[0])}（${esc(w[1])}）</label>`).join("")}
+  </details>`;
+ }).join("")}</div>`;
+}
+function finishBattleSetup(){
+  if(!battleDraft||!battleDraft.my.length||rosterError("my")||(!battleDraft.enemySkipped&&rosterError("enemy")))return;
+  if(!confirm("開始對戰並重置本局 TP、VP、CP 與戰鬥紀錄？"))return;
+  battleRoster={myTeam:S.myTeam,enemyTeam:S.enemyTeam,my:[...battleDraft.my],enemy:battleDraft.enemySkipped?null:[...battleDraft.enemy],weapons:JSON.parse(JSON.stringify(battleWeaponDraft))};
+  localStorage.setItem(ROSTER_KEY,JSON.stringify(battleRoster));
+  battleDraft=null;
+  S.matchTracker={tp:1,initiative:"my",sides:{my:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]},enemy:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]}},log:[]};
+  saveMatchTracker();S.matchTab="roster";render();
+}
+function renderBattleSetup(){
+  const d=battleDraft,side=d.step===1?"my":"enemy";
+  if(d.step===0)return `<div class="battle-setup"><h2>① 選擇本場雙方小隊</h2><p>在這裡決定雙方小隊。進入下一步後就鎖定；若要修改，請按「上一步」回來。</p><div class="battle-team-picker-grid">${battleTeamPicker("my")}${battleTeamPicker("enemy")}</div><button onclick="battleSetupNext()">確認小隊，下一步 →</button></div>`;
+  if(d.step===4){
+    return `<div class="battle-setup"><h2>確認本場編隊</h2><p>已檢查目前已建模的基本編成條件；武器配置與未建模的特殊限制仍須依「編成規則」核對。</p>
+    <p>我方：${d.my.length} 名 · 敵方：${d.enemySkipped?"未設定":d.enemy.length+" 名"}</p>
+    <button onclick="battleSetupBack()">返回修改</button> <button onclick="finishBattleSetup()">確認並開始對戰</button></div>`;
+  }
+  if(d.step===3)return `<div class="battle-setup"><h2>④ 設定本場武器顯示</h2>
+    <p>取消勾選不使用的武器，讓本場數據卡更精簡。這不是武器編成合法性驗證；同名特工分開設定。</p>
+    <h3>我方武器</h3>${renderBattleWeapons("my")}
+    ${d.enemySkipped?"":`<h3>敵方武器</h3>${renderBattleWeapons("enemy")}`}
+    <button onclick="battleSetupBack()">上一步</button> <button onclick="battleSetupNext()">下一步 →</button></div>`;
+  const ops=rosterOps(side),chosen=d[side];
+  return `<div class="battle-setup"><h2>${d.step===1?"② 選擇我方出戰特工":"③ 選擇敵方出戰特工"}</h2>
+  <p>${esc(TEAMS[rosterTeam(side)]?.name||"")} · 已選 ${chosen.length} 名。選擇的是本場快捷名單，不會修改原始資料。</p>
+  ${d.step===2?`<label class="battle-skip"><input type="checkbox" ${d.enemySkipped?"checked":""} onchange="skipEnemyRoster()"> 暫不設定敵方特工（保留完整敵方規則查詢）</label>`:""}
+  ${rosterRule(side)?`<div class="battle-xv26-tools"><small>${esc(rosterRule(side).note||"請自行選擇出戰特工，系統檢查基本編成條件。")}</small></div>`:""}
+  <div class="battle-picks">${ops.map(o=>draftVisualCard(side,o)).join("")}</div>
+  ${rosterError(side)?`<p class="battle-validation">${esc(rosterError(side))}</p>`:""}
+  <p class="battle-note">即時檢查已建模的編成人數、隊長、職位及重複限制。武器選擇、裝甲關鍵字及未建模的特殊條件仍須核對正式規則。</p>
+  <button onclick="battleSetupBack()">上一步</button> <button onclick="battleSetupNext()">下一步 →</button></div>`;
+}
+function showRosterSide(side){
+  const teamId=rosterTeam(side),t=TEAMS[teamId],ids=battleRoster?.[side];
+  if(ids===null)return `<section><h3>${side==="my"?"我方":"敵方"} · ${esc(t.name)}</h3><p>未設定出戰名單，可使用上方完整小隊查詢。</p></section>`;
+  return `<section><h3>${side==="my"?"我方":"敵方"} · ${esc(t.name)}</h3><div class="battle-roster-cards">${ids.map((id,index)=>{
+    const o=t.operatives.find(x=>x.id===id);
+    const selected=battleRoster?.weapons?.[side]?.[String(index)];
+    const shown=Array.isArray(selected)?{...o,weapons:o.weapons.filter((_,i)=>selected.includes(i))}:o;
+    return o?`<details class="battle-operative-fold"><summary>${o.image?`<img src="${esc(o.image)}" alt="" loading="lazy">`:""}<span class="battle-operative-title"><b>${esc(o.name)}</b><small>${esc(o.stats||"")}</small></span><span class="battle-fold-hint">展開數據卡</span></summary><div class="battle-operative-body">${opCard(shown)}</div></details>`:`<p>找不到特工資料：${esc(id)}</p>`;
+  }).join("")}</div></section>`;
+}
+
 function renderMatchHub(){
   const m=ensureMatchTracker();
   const root=document.querySelector("#content");
-  const tabs=`<div class="match-hub-tabs"><button class="match-hub-tab ${S.matchTab==="log"?"on":""}" onclick="setMatchTab('log')">戰鬥紀錄</button><button class="match-hub-tab ${S.matchTab==="equipment"?"on":""}" onclick="setMatchTab('equipment')">雙方裝備</button><button class="match-hub-tab ${S.matchTab==="public"?"on":""}" onclick="setMatchTab('public')">公開資訊</button></div>`;
+  if(battleDraft){root.innerHTML=renderBattleSetup();return}
+  // Match roster remains tied to its original teams; team selectors are locked while active.
+  const tabs=`<div class="match-hub-tabs"><button class="match-hub-tab ${S.matchTab==="roster"?"on":""}" onclick="setMatchTab('roster')">本場特工</button><button class="match-hub-tab ${S.matchTab==="log"?"on":""}" onclick="setMatchTab('log')">戰鬥紀錄</button><button class="match-hub-tab ${S.matchTab==="equipment"?"on":""}" onclick="setMatchTab('equipment')">雙方裝備</button><button class="match-hub-tab ${S.matchTab==="public"?"on":""}" onclick="setMatchTab('public')">公開資訊</button></div>`;
   let body="";
-  if(S.matchTab==="equipment"){
+  if(S.matchTab==="roster"){
+    body=battleRoster?`<div class="battle-roster-actions"><button onclick="beginBattleSetup()">重新選擇出戰特工</button></div><div class="battle-roster-grid">${showRosterSide("my")}${showRosterSide("enemy")}</div>`:`<div class="battle-setup"><h2>建立本場出戰名單</h2><p>從建立對戰開始選擇雙方小隊，再挑選本場使用的特工。敵方可以略過。</p><button onclick="beginBattleSetup()">開始設定對戰 →</button></div>`;
+  }else if(S.matchTab==="equipment"){
     body=`<div class="match-equipment-grid">${matchEquipmentSide("my")}${matchEquipmentSide("enemy")}</div>`;
   }else if(S.matchTab==="public"){
     body=`<div class="match-public"><div class="tracker-toolbar"><div class="tracker-tp"><b>TP ${m.tp}</b><button onclick="nextTurningPoint()" ${m.tp>=4?"disabled":""}>下一轉折點 →</button></div><button class="tracker-reset" onclick="startNewMatch()">開始新對戰</button></div><div class="tracker-sides">${trackerSidePanel("my")}${trackerSidePanel("enemy")}</div></div>`;
@@ -870,14 +1064,18 @@ function renderMatchHub(){
     const logs=m.log.map(e=>`<div class="battle-log-row"><span class="battle-log-tp">TP${e.tp}</span><div class="battle-log-text">${esc(e.text)}</div><div class="battle-log-meta"><small>${esc(e.at||"")}</small><button class="battle-log-remove" onclick="removeMatchLog('${e.id}')" aria-label="移除這筆紀錄" title="移除紀錄">移除</button></div></div>`).join("");
     body=`<div class="battle-log-summary"><span>我方 ${m.sides.my.vp} VP · ${m.sides.my.cp} CP</span><span>敵方 ${m.sides.enemy.vp} VP · ${m.sides.enemy.cp} CP</span><span>共 ${m.log.length} 筆</span></div><div class="manual-log"><input id="manualMatchLog" maxlength="120" placeholder="手動記錄事件…" onkeydown="if(event.key==='Enter')addManualMatchLog()"><button onclick="addManualMatchLog()">＋ 新增紀錄</button></div><div class="battle-log-list">${logs||'<div class="tracker-empty battle-log-empty">尚無戰鬥紀錄。你可以手動記事，或調整 VP、CP、先手與戰略計謀讓系統自動記錄。</div>'}</div>`;
   }
-  root.innerHTML=`<div class="match-hub"><div class="match-hub-head"><div><div class="flow-eyebrow">MATCH</div><h2>本局對戰</h2><p>戰鬥紀錄、雙方所選裝備與對戰公開資訊集中在這裡，桌邊不必再往上找。</p></div><div class="match-hub-status"><b>TP ${m.tp} · ${trackerSideName(m.initiative)}先手</b><span>我 ${m.sides.my.vp}VP / ${m.sides.my.cp}CP · 敵 ${m.sides.enemy.vp}VP / ${m.sides.enemy.cp}CP</span></div></div>${tabs}${body}</div>`;
+  root.innerHTML=`<div class="match-hub"><div class="match-hub-head"><div><div class="flow-eyebrow">MATCH</div><h2>本局對戰</h2><p>戰鬥紀錄、雙方所選裝備與對戰公開資訊集中在這裡，桌邊不必再往上找。</p></div><div class="match-hub-status"><b>TP ${m.tp} · ${trackerSideName(m.initiative)}先手</b><span>我 ${m.sides.my.vp}VP / ${m.sides.my.cp}CP · 敵 ${m.sides.enemy.vp}VP / ${m.sides.enemy.cp}CP</span></div></div>${battleRoster?"":`<div class="battle-start-cta"><button onclick="beginBattleSetup()">開始新對戰・選擇出戰特工</button></div>`}${tabs}${body}</div>`;
 }
 
 function render(){
   const isFlow=S.view==="flow";
   const isMatch=S.view==="match";
   document.querySelector(".sticky").classList.toggle("flow-hidden",isFlow||isMatch);
+  document.querySelector(".matchup").classList.toggle("flow-hidden",isMatch);
   document.querySelector("#tabs").classList.toggle("flow-hidden",isFlow||isMatch);
+  document.querySelector("#myTeamSelect").disabled=teamsLocked();
+  document.querySelector("#enemyTeamSelect").disabled=teamsLocked();
+  document.querySelector("#swapTeams").disabled=teamsLocked();
   document.querySelector("#myTeamSelect").value=S.myTeam;
   document.querySelector("#enemyTeamSelect").value=S.enemyTeam;
   document.querySelector("#myTeamName").textContent=TEAMS[S.myTeam].name;
@@ -961,7 +1159,9 @@ function bindUI(){
     if(card) rememberViewed(card.dataset.resultId,card.dataset.resultTitle,card.dataset.resultSource);
   });
   document.querySelector("#myTeamSelect").addEventListener("change",e=>{
+    if(guardTeamChange())return;
     S.myTeam=e.target.value;
+    if(battleDraft){battleDraft.my=initialDraft("my");battleWeaponDraft.my={}}
     localStorage.setItem("ktMyTeam",S.myTeam);
     if(S.side==="my") S.team=S.myTeam;
     localStorage.setItem("ktTeam",S.team);
@@ -971,7 +1171,9 @@ function bindUI(){
     render();
   });
   document.querySelector("#enemyTeamSelect").addEventListener("change",e=>{
+    if(guardTeamChange())return;
     S.enemyTeam=e.target.value;
+    if(battleDraft){battleDraft.enemy=initialDraft("enemy");battleWeaponDraft.enemy={}}
     localStorage.setItem("ktEnemyTeam",S.enemyTeam);
     if(S.side==="enemy") S.team=S.enemyTeam;
     localStorage.setItem("ktTeam",S.team);
@@ -982,6 +1184,7 @@ function bindUI(){
   });
   document.querySelectorAll("#sideSwitch button").forEach(b=>b.addEventListener("click",()=>setActiveSide(b.dataset.side)));
   document.querySelector("#swapTeams").addEventListener("click",()=>{
+    if(guardTeamChange())return;
     [S.myTeam,S.enemyTeam]=[S.enemyTeam,S.myTeam];
     localStorage.setItem("ktMyTeam",S.myTeam);
     localStorage.setItem("ktEnemyTeam",S.enemyTeam);

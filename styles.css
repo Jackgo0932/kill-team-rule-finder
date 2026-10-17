@@ -702,3 +702,51 @@ linear-gradient(110deg,rgba(230,92,43,.18),transparent 42%),linear-gradient(180d
 
 /* v2.2.14 search quality */
 .recent-viewed{display:flex;align-items:center;gap:6px;overflow-x:auto;padding:7px 2px 0;scrollbar-width:none}.recent-viewed::-webkit-scrollbar{display:none}.recent-viewed.empty-recent{display:none}.recent-viewed>span{font-size:11px;color:var(--muted);white-space:nowrap}.recent-viewed button{border:1px solid #3b4045;background:#1b1e21;color:#d9dde0;border-radius:999px;padding:5px 9px;font-size:11px;white-space:nowrap}.recent-viewed button:hover{border-color:#777}.search-result-source{display:inline-flex;margin:3px 0 8px;padding:3px 7px;border-radius:999px;background:#262a2e;color:#bfc6cc;font-size:11px;font-weight:700;letter-spacing:.02em}
+
+/* Battle setup v2.3 */
+.battle-setup,.battle-roster-actions,.battle-start-cta{padding:18px;border:1px solid var(--border,#7775);border-radius:12px;margin:12px 0}
+.battle-picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin:16px 0}
+.battle-pick{display:flex;gap:9px;align-items:center;padding:12px;border:1px solid var(--border,#7775);border-radius:9px;cursor:pointer}
+.battle-pick:has(input:checked){outline:2px solid var(--accent,#69a)}
+.battle-roster-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.battle-roster-cards{display:grid;gap:12px}
+.battle-roster-cards .card{margin:0}
+.battle-note{font-size:.88em;opacity:.8}
+.battle-skip{display:flex;gap:8px;align-items:center}
+
+.battle-picks{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.battle-pick-card{display:flex;gap:10px;align-items:center;padding:10px;border:1px solid var(--border,#7775);border-radius:12px}
+.battle-pick-card img{width:76px;height:96px;object-fit:contain;border-radius:8px;background:#7772}
+.battle-pick-card>div{display:grid;gap:7px;flex:1}
+.battle-pick-card small{opacity:.75}
+.battle-pick-controls{display:flex;gap:10px;align-items:center}
+.battle-pick-controls button{min-width:34px;min-height:34px}
+.battle-xv26-tools{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:12px 0}
+.battle-validation{color:#c75e37;font-weight:600}
+
+/* v2.3.2: compact roster with expandable full operative cards */
+.battle-operative-fold{border:1px solid var(--border,#7775);border-radius:12px;margin:0 0 10px;overflow:hidden}
+.battle-operative-fold>summary{display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;list-style:none}
+.battle-operative-fold>summary::-webkit-details-marker{display:none}
+.battle-operative-fold>summary:before{content:"▸";font-size:1.1em;opacity:.8}
+.battle-operative-fold[open]>summary:before{content:"▾"}
+.battle-operative-fold>summary img{width:52px;height:65px;object-fit:contain;border-radius:6px;background:#7772}
+.battle-operative-title{flex:1;min-width:0;display:grid;gap:3px}
+.battle-operative-title small{opacity:.78;font-size:.8em}
+.battle-fold-hint{font-size:.78em;opacity:.7;white-space:nowrap}
+.battle-operative-fold[open] .battle-fold-hint{display:none}
+.battle-operative-body{padding:8px 12px 12px;border-top:1px solid var(--border,#7775)}
+@media(max-width:520px){.battle-fold-hint{display:none}.battle-operative-fold>summary{padding:9px}}
+
+.battle-weapon-config{display:grid;gap:9px;margin:12px 0}
+.battle-weapon-unit{border:1px solid var(--border,#7775);border-radius:10px;padding:10px}
+.battle-weapon-unit>summary{display:flex;align-items:center;gap:12px;cursor:pointer}
+.battle-weapon-unit>summary img{width:44px;height:54px;object-fit:contain}
+.battle-weapon-unit>summary span{margin-left:auto;opacity:.7;font-size:.85em}
+.battle-weapon-unit label{display:block;padding:7px 4px}
+.battle-weapon-unit p{font-size:.88em;opacity:.85}
+
+.battle-team-picker-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:18px 0}
+.battle-team-picker{display:grid;gap:8px}
+.battle-team-picker select{width:100%;padding:12px;border:1px solid #aab2bd;border-radius:9px;background:#fff;color:#17212f;font:inherit;color-scheme:light}
+.battle-team-picker select option{background:#fff;color:#17212f}
