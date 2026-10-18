@@ -964,7 +964,29 @@ function mwSpecialCount(side,skipIndex=-1){
  },0);
 }
 function mwOptionMarked(op,indices){return indices.some(i=>/等離子手槍|熱熔槍|等離子槍/.test(op.weapons?.[i]?.[0]||""))}
+function legSplitOptions(op){
+ if(op.id==="aspiring-champion")return {pistols:[{key:"plasma",label:"等離子手槍",indices:[0,1]},{key:"bolt",label:"腐化爆矢手槍",indices:[2]}],melees:[{key:"fist",label:"動力拳套",indices:[3]},{key:"hammer",label:"動力槌",indices:[4]},{key:"power",label:"動力武器",indices:[5]},{key:"chain",label:"腐化鏈鋸劍",indices:[6]}]};
+ if(op.id==="icon-bearer"||op.id==="warrior")return {pistols:[{key:"boltgun",label:"爆矢槍",indices:[1,3]},{key:"chainsword",label:"爆矢手槍＋鏈鋸劍",indices:[0,2]}],melees:[]};
+ return null;
+}
+function chooseBattlePickerLeg(slot,key){
+ if(!battlePicker||rosterTeam(battlePicker.side)!=="leg")return;
+ const op=rosterOps(battlePicker.side).find(o=>o.id===battlePicker.id),split=legSplitOptions(op);
+ if(!split)return;
+ const [a,b]=(battlePicker.wk||wkOptions(battlePicker.side,op)[0].key).split("-");
+ const next=split.melees.length?(slot==="pistol"?key+"-"+b:a+"-"+key):key;
+ chooseBattlePickerWk(next);
+}
 function wkOptions(side,op){
+ if(rosterTeam(side)==="leg"){
+  const split=legSplitOptions(op);
+  if(split){if(!split.melees.length)return split.pistols.map(p=>({key:p.key,label:p.label,indices:p.indices}));
+   return split.pistols.flatMap(p=>split.melees.map(m=>({key:p.key+"-"+m.key,label:p.label+"＋"+m.label,indices:[...p.indices,...m.indices]})));}
+  if(op.id==="chosen")return [{key:"plasma",label:"等離子手槍",indices:[0,1,3]},{key:"bolt",label:"腐化爆矢手槍",indices:[2,3]}];
+  if(op.id==="gunner")return [{key:"flamer",label:"火焰噴射器",indices:[0,1,5]},{key:"melta",label:"熱熔槍",indices:[0,2,5]},{key:"plasma",label:"等離子槍",indices:[0,3,4,5]}];
+  if(op.id==="heavy-gunner")return [{key:"bolter",label:"重型爆矢槍",indices:[0,1,2,7]},{key:"missile",label:"導彈發射器",indices:[0,3,4,7]},{key:"reaper",label:"收割者機砲",indices:[0,5,6,7]}];
+  return null;
+ }
  if(rosterTeam(side)==="ks"){
   if(op.id==="sergeant")return [
    {key:"bolt-power",label:"爆矢手槍＋動力武器",indices:[0,7]},
@@ -1215,7 +1237,12 @@ function battlePickerPanel(){
  ${[{key:"bolt",label:"爆矢手槍"},{key:"plasma",label:"等離子手槍"}].map(item=>`<label><input type="radio" name="battle-mw-champion-pistol" value="${item.key}" ${(x.wk||"bolt-fist").startsWith(item.key+"-")?"checked":""} onchange="chooseBattlePickerMwChampion('pistol','${item.key}')">${item.label}</label>`).join("")}</fieldset>
  <fieldset class="battle-config-weapons"><legend>選擇近戰武器</legend>
  ${[{key:"fist",label:"動力拳"},{key:"power",label:"動力武器"}].map(item=>`<label><input type="radio" name="battle-mw-champion-melee" value="${item.key}" ${(x.wk||"bolt-fist").endsWith("-"+item.key)?"checked":""} onchange="chooseBattlePickerMwChampion('melee','${item.key}')">${item.label}</label>`).join("")}</fieldset>`:
- wkOptions(x.side,op)?`<fieldset class="battle-config-weapons"><legend>選擇配備武器</legend>${wkOptions(x.side,op).map(item=>`<label><input type="radio" name="battle-wk-weapon" value="${item.key}" ${x.wk===item.key?"checked":""} onchange="chooseBattlePickerWk('${item.key}')">${item.label}</label>`).join("")}</fieldset>`:""}
+ rosterTeam(x.side)==="leg"&&op.id==="aspiring-champion"?(()=>{
+  const split=legSplitOptions(op),selected=x.wk||wkOptions(x.side,op)[0].key;
+  const [pistol,melee]=selected.split("-");
+  return `<fieldset class="battle-config-weapons"><legend>選擇手槍</legend>${split.pistols.map(item=>`<label><input type="radio" name="battle-leg-pistol" value="${item.key}" ${pistol===item.key?"checked":""} onchange="chooseBattlePickerLeg('pistol','${item.key}')">${item.label}</label>`).join("")}</fieldset>
+  <fieldset class="battle-config-weapons"><legend>選擇近戰武器</legend>${split.melees.map(item=>`<label><input type="radio" name="battle-leg-melee" value="${item.key}" ${melee===item.key?"checked":""} onchange="chooseBattlePickerLeg('melee','${item.key}')">${item.label}</label>`).join("")}</fieldset>`;
+ })():wkOptions(x.side,op)?`<fieldset class="battle-config-weapons"><legend>選擇配備武器</legend>${wkOptions(x.side,op).map(item=>`<label><input type="radio" name="battle-wk-weapon" value="${item.key}" ${x.wk===item.key?"checked":""} onchange="chooseBattlePickerWk('${item.key}')">${item.label}</label>`).join("")}</fieldset>`:""}
  ${aodRifleConfigurable(x.side,op)?`<fieldset class="battle-config-weapons"><legend>選擇主武器</legend>
  ${AOD_RIFLE_OPTIONS.map(item=>`<label><input type="radio" name="battle-config-rifle" value="${item.key}" ${x.rifle===item.key?"checked":""} onchange="chooseBattlePickerRifle('${item.key}')">${item.label}</label>`).join("")}
  <small>其他已配備武器會保留；追獵者步槍的射擊模式會一併顯示。</small></fieldset>`:""}
@@ -1428,6 +1455,15 @@ function battleWeaponValidationError(){
     if(mwOptionMarked(op,chosen))marked++;
    }
    if(marked>2)return `${side==="my"?"我方":"敵方"} 屠戮之翼特殊武器特工最多 2 名。`;
+  }
+  if(rosterTeam(side)==="leg"){
+   for(let i=0;i<battleDraft[side].length;i++){
+    const op=rosterOps(side).find(o=>o.id===battleDraft[side][i]);
+    if(!op)continue;
+    const opts=wkOptions(side,op);if(!opts)continue;
+    const chosen=battleWeaponSelection(side,i,op);
+    if(!opts.some(o=>o.indices.length===chosen.length&&o.indices.every(j=>chosen.includes(j))))return `${side==="my"?"我方":"敵方"} ${op.name} 武器配置不合法。`;
+   }
   }
   if(rosterTeam(side)==="ks"){
    for(let i=0;i<battleDraft[side].length;i++){
