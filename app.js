@@ -1128,6 +1128,7 @@ function battlePickerPanel(){
  <fieldset class="battle-config-weapons"><legend>選擇近戰武器</legend>
  ${AOD_SERGEANT_MELEE.map(name=>`<label><input type="radio" name="battle-assault-melee" value="${esc(name)}" ${x.assaultMelee===name?"checked":""} ${x.assault==="plasma"&&name!=="鏈鋸劍"?"disabled":""} onchange="chooseBattlePickerAssaultMelee('${name}')">${name}</label>`).join("")}</fieldset>`:""}
  ${primary?`<fieldset class="battle-config-weapons"><legend>選擇主武器</legend><label><input type="radio" name="battle-config-primary" value="rapid" ${x.primary==="rapid"?"checked":""} onchange="chooseBattlePickerPrimary('rapid')">速射砲</label><label><input type="radio" name="battle-config-primary" value="fusion" ${x.primary==="fusion"?"checked":""} ${battlePickerFusionAvailable(x,op)?"":"disabled"} onchange="chooseBattlePickerPrimary('fusion')">融合砲</label><small>全隊融合砲 ${xv26FusionCount(x.side)}/2${battlePickerFusionAvailable(x,op)?"":" · 已達上限"}</small></fieldset>`:""}
+ ${rosterTeam(x.side)==="rav"?`<p class="battle-config-hint">蛇蟲特工沒有可切換的配備組合；以下列出此職位全部固定武器與射擊模式。</p>`:""}
  ${battlePickerPreview(x.side,op,x)}
  <div class="battle-config-actions"><button type="button" onclick="closeBattlePicker()">取消</button>${x.index>=0&&!fixed?`<button type="button" onclick="removeBattleRosterEntry('${x.side}',${x.index})">移出隊伍</button>`:""}<button type="button" onclick="confirmBattlePicker()">${x.index>=0?"確認配置":"確認加入隊伍"}</button></div></section></div>`;
 }
@@ -1152,7 +1153,7 @@ function battleSelectedList(side){
   const chosen=battleWeaponSelection(side,index,op);
   const configurable=xv26CanChoosePrimary(side,op);
   const fusion=configurable&&chosen.some(i=>xv26PrimaryIndices(op,"fusion").includes(i));
-  const weapon=aodAssaultConfigurable(side,op)?`${({flamer:"噴火手槍",heavy:"重型爆矢手槍",plasma:"等離子手槍"})[aodAssaultKind(side,index,op)]} · ${aodAssaultMeleeKind(side,index,op)}`:configurable?(fusion?"融合砲":"速射砲"):aodRifleConfigurable(side,op)?`${AOD_RIFLE_OPTIONS.find(x=>x.key===aodRifleKind(side,index,op))?.label||"爆矢步槍"}${aodSergeantConfigurable(side,op)?" · "+aodSergeantMeleeKind(side,index,op):""}`:"預設武器";
+  const weapon=aodAssaultConfigurable(side,op)?`${({flamer:"噴火手槍",heavy:"重型爆矢手槍",plasma:"等離子手槍"})[aodAssaultKind(side,index,op)]} · ${aodAssaultMeleeKind(side,index,op)}`:configurable?(fusion?"融合砲":"速射砲"):aodRifleConfigurable(side,op)?`${AOD_RIFLE_OPTIONS.find(x=>x.key===aodRifleKind(side,index,op))?.label||"爆矢步槍"}${aodSergeantConfigurable(side,op)?" · "+aodSergeantMeleeKind(side,index,op):""}`:rosterTeam(side)==="rav"?"固定武器配置":"預設武器";
   const isFixed=!!rule?.fixed?.[id];
   return `<button type="button" class="battle-selected-item" onclick="openBattlePicker('${side}','${id}',${index})">
    ${op.image?`<img class="battle-selected-portrait" src="${esc(op.image)}" alt="" loading="lazy">`:""}
@@ -1165,6 +1166,7 @@ function battleSelectedList(side){
   <small>${progress.complete?"✓ 基本編成已完成":total===null?"請選擇出戰特工":`尚缺 ${progress.remaining} 名${progress.remaining===0?"，請檢查編成條件":""}`}</small>
  </div>
  ${rosterTeam(side)==="xv26"?`<p class="battle-selected-fusion">融合砲 ${xv26FusionCount(side)} / 2</p>`:""}
+ ${rosterTeam(side)==="rav"?`<p class="battle-selected-fusion">蛇蟲編成：固定 1 名王蟲＋4 名其他特工；僅蛇蟲武士可重複。所有職位目前均使用固定武器配置，點擊特工可預覽完整武器與規則。</p>`:""}
  ${a.length?`<div class="battle-selected-items">${entries}</div>`:`<p>尚未選擇特工。請點左側特工加入。</p>`}
  </section>`;
 }
