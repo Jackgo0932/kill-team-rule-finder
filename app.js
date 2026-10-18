@@ -870,6 +870,7 @@ let battleRoster=(()=>{
 let battleDraft=null;
 let battleDraftTeams=null;
 let battleWeaponDraft={my:{},enemy:{}};
+let battleMarkDraft={my:{},enemy:{}};
 function rosterTeam(side){return battleDraftTeams?.[side]||(battleRoster?.[side+"Team"])||(side==="my"?S.myTeam:S.enemyTeam)}
 function teamsLocked(){return false}
 function guardTeamChange(){
@@ -1052,6 +1053,16 @@ function chooseBattlePickerMwChampion(slot,kind){
  chooseBattlePickerWk(next);
 }
 function chooseBattlePickerWk(kind){if(!battlePicker)return;const op=rosterOps(battlePicker.side).find(o=>o.id===battlePicker.id);if(!wkOptions(battlePicker.side,op)?.some(o=>o.key===kind))return;battlePicker.wk=kind;renderBattlePickerPreservingState()}
+const LEG_MARKS=[["undivided","無分"],["khorne","恐虐"],["nurgle","納垢"],["slaanesh","色孽"],["tzeentch","奸奇"]];
+function legMarkAllowed(op,mark){return LEG_MARKS.some(([key])=>key===mark)&&!(op.id==="balefire-acolyte"&&mark==="khorne")}
+function legMarkKey(side,index){return battleWeaponKey(side,index)}
+function chooseBattlePickerLegMark(mark){
+ if(!battlePicker||rosterTeam(battlePicker.side)!=="leg")return;
+ const op=rosterOps(battlePicker.side).find(o=>o.id===battlePicker.id);
+ if(!op||!legMarkAllowed(op,mark))return;
+ battlePicker.mark=mark;renderBattlePickerPreservingState();
+}
+function legMarkName(mark){return LEG_MARKS.find(([key])=>key===mark)?.[1]||"無分"}
 function openBattlePicker(side,id,index=-1){
  const op=rosterOps(side).find(x=>x.id===id);
  if(!battleDraft||!op)return;
@@ -1060,7 +1071,7 @@ function openBattlePicker(side,id,index=-1){
  const selected=index>=0?battleWeaponSelection(side,index,op):null;
  battlePicker={side,id,index,primary:selected&&selected.some(i=>xv26PrimaryIndices(op,"fusion").includes(i))?"fusion":"rapid",
  rifle:index>=0&&aodRifleConfigurable(side,op)?aodRifleKind(side,index,op):"auto",
- melee:index>=0&&aodSergeantConfigurable(side,op)?aodSergeantMeleeKind(side,index,op):AOD_INTERCESSOR_MELEE[0], assault:index>=0&&aodAssaultConfigurable(side,op)?aodAssaultKind(side,index,op):"heavy", assaultMelee:index>=0&&aodAssaultConfigurable(side,op)?aodAssaultMeleeKind(side,index,op):"鏈鋸劍", wk:wkSavedKind(side,op,selected),expandedRule:null};
+ melee:index>=0&&aodSergeantConfigurable(side,op)?aodSergeantMeleeKind(side,index,op):AOD_INTERCESSOR_MELEE[0], assault:index>=0&&aodAssaultConfigurable(side,op)?aodAssaultKind(side,index,op):"heavy", assaultMelee:index>=0&&aodAssaultConfigurable(side,op)?aodAssaultMeleeKind(side,index,op):"鏈鋸劍", wk:wkSavedKind(side,op,selected),mark:index>=0?(battleMarkDraft[side][legMarkKey(side,index)]||battleRoster?.marks?.[side]?.[legMarkKey(side,index)]||"undivided"):"undivided",expandedRule:null};
  render();
  document.addEventListener("keydown",battlePickerHandleKeydown);
  document.querySelector(".battle-config-header button")?.focus();
@@ -1143,6 +1154,7 @@ function confirmBattlePicker(){
   battleWeaponDraft[side][battleWeaponKey(side,target)]=[...all.filter(i=>!exclude.has(i)),...xv26PrimaryIndices(op,picker.primary)];
  }
  if(wkOptions(side,op)){battleWeaponDraft[side][battleWeaponKey(side,target)]=wkIndices(side,op,picker.wk);}
+ if(rosterTeam(side)==="leg")battleMarkDraft[side][legMarkKey(side,target)]=picker.mark||"undivided";
  if(aodAssaultConfigurable(side,op)){
   battleWeaponDraft[side][battleWeaponKey(side,target)]=configuredAodAssaultWeapons(op,picker.assault,picker.assaultMelee);
  }
@@ -1158,9 +1170,9 @@ function removeBattleRosterEntry(side,index){
  if(!battleDraft||index<0)return;
  const a=battleDraft[side],id=a[index],r=rosterRule(side);
  if(!id||r?.fixed?.[id]&&selectedCount(a,id)<=r.fixed[id])return;
- const before=a.map((value,i)=>({value,chosen:battleWeaponDraft[side][battleWeaponKey(side,i)]}));
- before.splice(index,1);a.splice(index,1);battleWeaponDraft[side]={};
- before.forEach((item,i)=>{if(Array.isArray(item.chosen))battleWeaponDraft[side][battleWeaponKey(side,i)]=item.chosen});
+ const before=a.map((value,i)=>({value,chosen:battleWeaponDraft[side][battleWeaponKey(side,i)],mark:battleMarkDraft[side][legMarkKey(side,i)]}));
+ before.splice(index,1);a.splice(index,1);battleWeaponDraft[side]={};battleMarkDraft[side]={};
+ before.forEach((item,i)=>{if(Array.isArray(item.chosen))battleWeaponDraft[side][battleWeaponKey(side,i)]=item.chosen;if(item.mark)battleMarkDraft[side][legMarkKey(side,i)]=item.mark});
  document.removeEventListener("keydown",battlePickerHandleKeydown);
  battlePicker=null;render();
 }
@@ -1243,6 +1255,7 @@ function battlePickerPanel(){
   return `<fieldset class="battle-config-weapons"><legend>選擇手槍</legend>${split.pistols.map(item=>`<label><input type="radio" name="battle-leg-pistol" value="${item.key}" ${pistol===item.key?"checked":""} onchange="chooseBattlePickerLeg('pistol','${item.key}')">${item.label}</label>`).join("")}</fieldset>
   <fieldset class="battle-config-weapons"><legend>選擇近戰武器</legend>${split.melees.map(item=>`<label><input type="radio" name="battle-leg-melee" value="${item.key}" ${melee===item.key?"checked":""} onchange="chooseBattlePickerLeg('melee','${item.key}')">${item.label}</label>`).join("")}</fieldset>`;
  })():wkOptions(x.side,op)?`<fieldset class="battle-config-weapons"><legend>選擇配備武器</legend>${wkOptions(x.side,op).map(item=>`<label><input type="radio" name="battle-wk-weapon" value="${item.key}" ${x.wk===item.key?"checked":""} onchange="chooseBattlePickerWk('${item.key}')">${item.label}</label>`).join("")}</fieldset>`:""}
+ ${rosterTeam(x.side)==="leg"?`<fieldset class="battle-config-weapons"><legend>選擇混沌印記</legend>${LEG_MARKS.filter(([key])=>legMarkAllowed(op,key)).map(([key,label])=>`<label><input type="radio" name="battle-leg-mark" value="${key}" ${x.mark===key?"checked":""} onchange="chooseBattlePickerLegMark('${key}')">${label}</label>`).join("")}<small>每名特工可選不同印記；邪焰侍僧不可選恐虐。</small></fieldset>`:""}
  ${aodRifleConfigurable(x.side,op)?`<fieldset class="battle-config-weapons"><legend>選擇主武器</legend>
  ${AOD_RIFLE_OPTIONS.map(item=>`<label><input type="radio" name="battle-config-rifle" value="${item.key}" ${x.rifle===item.key?"checked":""} onchange="chooseBattlePickerRifle('${item.key}')">${item.label}</label>`).join("")}
  <small>其他已配備武器會保留；追獵者步槍的射擊模式會一併顯示。</small></fieldset>`:""}
@@ -1280,10 +1293,11 @@ function battleSelectedList(side){
   const configurable=xv26CanChoosePrimary(side,op);
   const fusion=configurable&&chosen.some(i=>xv26PrimaryIndices(op,"fusion").includes(i));
   const weapon=wkOptions(side,op)?wkOptions(side,op).find(o=>o.key===wkSavedKind(side,op,chosen))?.label:aodAssaultConfigurable(side,op)?`${({flamer:"噴火手槍",heavy:"重型爆矢手槍",plasma:"等離子手槍"})[aodAssaultKind(side,index,op)]} · ${aodAssaultMeleeKind(side,index,op)}`:configurable?(fusion?"融合砲":"速射砲"):aodRifleConfigurable(side,op)?`${AOD_RIFLE_OPTIONS.find(x=>x.key===aodRifleKind(side,index,op))?.label||"爆矢步槍"}${aodSergeantConfigurable(side,op)?" · "+aodSergeantMeleeKind(side,index,op):""}`:rosterTeam(side)==="rav"?"固定武器配置":"預設武器";
+  const markLabel=rosterTeam(side)==="leg"?" · "+legMarkName(battleMarkDraft[side][legMarkKey(side,index)]||battleRoster?.marks?.[side]?.[legMarkKey(side,index)]||"undivided"):"";
   const isFixed=!!rule?.fixed?.[id];
   return `<button type="button" class="battle-selected-item" onclick="openBattlePicker('${side}','${id}',${index})">
    ${op.image?`<img class="battle-selected-portrait" src="${esc(op.image)}" alt="" loading="lazy">`:""}
-   <span class="battle-selected-main"><b>${esc(op.name)}</b><small>${esc(weapon)}${isFixed?" · 固定編成":" · 已選入"}</small></span>
+   <span class="battle-selected-main"><b>${esc(op.name)}</b><small>${esc(weapon)}${markLabel}${isFixed?" · 固定編成":" · 已選入"}</small></span>
    <span class="battle-selected-edit">編輯 ›</span></button>`;
  }).join("");
  return `<section class="battle-selected-list"><div class="battle-selected-header"><h3>已加入隊伍</h3><strong>${a.length}${total===null?"":` / ${total}`} 名</strong></div>
@@ -1301,7 +1315,7 @@ function beginBattleSetup(){
   // Keep the previous match until the replacement is confirmed and finished.
   battleDraftTeams={my:battleRoster?.myTeam||S.myTeam,enemy:battleRoster?.enemyTeam||S.enemyTeam};
   battleDraft={my:initialDraft("my"),enemy:initialDraft("enemy"),enemySkipped:false,step:0};
-  battleWeaponDraft={my:{},enemy:{}};battleChapterDraft={my:{primary:"",secondary:""},enemy:{primary:"",secondary:""}};battlePicker=null;
+  battleWeaponDraft={my:{},enemy:{}};battleMarkDraft={my:{},enemy:{}};battleChapterDraft={my:{primary:"",secondary:""},enemy:{primary:"",secondary:""}};battlePicker=null;
   S.view="match";render();
 }
 function toggleDraftOperative(side,id){
@@ -1325,7 +1339,7 @@ function battleSetupBack(){if(battleDraft){battleDraft.step=Math.max(0,battleDra
 function cancelBattleSetup(){
  if(!battleDraft)return;
  battleDraft=null;battleDraftTeams=null;battlePicker=null;
- battleWeaponDraft={my:{},enemy:{}};battleChapterDraft={my:{primary:"",secondary:""},enemy:{primary:"",secondary:""}};
+ battleWeaponDraft={my:{},enemy:{}};battleMarkDraft={my:{},enemy:{}};battleChapterDraft={my:{primary:"",secondary:""},enemy:{primary:"",secondary:""}};
  render();
 }
 function changeBattleSetupTeam(side,id){
@@ -1333,6 +1347,7 @@ function changeBattleSetupTeam(side,id){
  battleDraftTeams[side]=id;
  battleDraft[side]=initialDraft(side);
  battleWeaponDraft[side]={};
+ battleMarkDraft[side]={};
  battleChapterDraft[side]={primary:"",secondary:""};
  render();
 }
@@ -1586,12 +1601,21 @@ function battleSetupSummarySide(side){
     aodAssaultConfigurable(side,op)?`<strong>${esc(({flamer:"噴火手槍",heavy:"重型爆矢手槍",plasma:"等離子手槍"})[aodAssaultKind(side,index,op)]+" · "+aodAssaultMeleeKind(side,index,op))}</strong>`:
     aodRifleConfigurable(side,op)?`<strong>${esc((AOD_RIFLE_OPTIONS.find(x=>x.key===aodRifleKind(side,index,op))?.label||"")+(aodSergeantConfigurable(side,op)?" · "+aodSergeantMeleeKind(side,index,op):""))}</strong>`:
     `<span>預設武器資料</span>`;
-  return `<li><span>${esc(op.name)}</span>${main}</li>`;
+  const mark=rosterTeam(side)==="leg"?` · 印記：${esc(legMarkName(battleMarkDraft[side][legMarkKey(side,index)]||"undivided"))}`:"";
+  return `<li><span>${esc(op.name)}${mark}</span>${main}</li>`;
  }).join("");
  return `<section class="battle-review-side"><h3>${side==="my"?"我方":"敵方"} · ${esc(team?.name||"")}</h3><p>共 ${ids.length} 名${rosterTeam(side)==="xv26"?` · 融合砲 ${xv26FusionCount(side)}/2`:""}</p><ul>${cards}</ul></section>`;
 }
 function finishBattleSetup(){
   if(!battleDraft||!battleDraft.my.length||rosterError("my")||(!battleDraft.enemySkipped&&rosterError("enemy")))return;
+  for(const side of ["my","enemy"]){
+   if(rosterTeam(side)!=="leg"||(side==="enemy"&&battleDraft.enemySkipped))continue;
+   for(let i=0;i<battleDraft[side].length;i++){
+    const op=rosterOps(side).find(o=>o.id===battleDraft[side][i]);
+    const mark=battleMarkDraft[side][legMarkKey(side,i)]||"undivided";
+    if(!op||!legMarkAllowed(op,mark)){alert("軍團特工混沌印記配置不合法。");return;}
+   }
+  }
   const weaponError=battleWeaponValidationError();
   if(weaponError){alert(weaponError);return;}
   for(const side of ["my","enemy"]){const error=chapterTacticsError(side);if(error){alert(error);return;}}
@@ -1606,7 +1630,7 @@ function finishBattleSetup(){
     }
    });
   }
-  battleRoster={myTeam:battleDraftTeams.my,enemyTeam:battleDraftTeams.enemy,my:[...battleDraft.my],enemy:battleDraft.enemySkipped?null:[...battleDraft.enemy],weapons:JSON.parse(JSON.stringify(battleWeaponDraft)),chapterTactics:JSON.parse(JSON.stringify(battleChapterDraft))};
+  battleRoster={myTeam:battleDraftTeams.my,enemyTeam:battleDraftTeams.enemy,my:[...battleDraft.my],enemy:battleDraft.enemySkipped?null:[...battleDraft.enemy],weapons:JSON.parse(JSON.stringify(battleWeaponDraft)),marks:JSON.parse(JSON.stringify(battleMarkDraft)),chapterTactics:JSON.parse(JSON.stringify(battleChapterDraft))};
   localStorage.setItem(ROSTER_KEY,JSON.stringify(battleRoster));
   battleDraft=null;battleDraftTeams=null;
   S.matchTracker={tp:1,initiative:"my",sides:{my:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]},enemy:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]}},log:[]};
@@ -1626,11 +1650,18 @@ function renderBattleSetup(){
   return `<div class="battle-setup"><h2>${d.step===1?"② 選擇我方出戰特工":"③ 選擇敵方出戰特工"}</h2>
   <p>${esc(TEAMS[rosterTeam(side)]?.name||"")} · 已選 ${chosen.length} 名。選擇的是本場快捷名單，不會修改原始資料。</p>
   ${d.step===2?`<label class="battle-skip"><input type="checkbox" ${d.enemySkipped?"checked":""} onchange="skipEnemyRoster()"> 暫不設定敵方特工（保留完整敵方規則查詢）</label>`:""}
-  ${rosterRule(side)?`<div class="battle-xv26-tools"><small>${esc(rosterRule(side).note||"請自行選擇出戰特工，系統檢查基本編成條件。")}${rosterTeam(side)==="ks"?`<br><strong>砲手／神射手：${(battleDraft?.[side]||[]).filter(id=>["gunner-flamer","gunner-grenade","gunner-volley","gunner-melta","gunner-plasma","sharpshooter"].includes(id)).length} / 4</strong>`:""}</small></div>`:""}
+  ${rosterRule(side)?`<div class="battle-xv26-tools"><small>${esc(rosterRule(side).note||"請自行選擇出戰特工，系統檢查基本編成條件。")}${rosterTeam(side)==="ci"?`<br><strong>焰滅者：${(battleDraft?.[side]||[]).filter(id=>id==="cremator").length} / 2</strong>`:""}${rosterTeam(side)==="ks"?`<br><strong>砲手／神射手：${(battleDraft?.[side]||[]).filter(id=>["gunner-flamer","gunner-grenade","gunner-volley","gunner-melta","gunner-plasma","sharpshooter"].includes(id)).length} / 4</strong>`:""}</small></div>`:""}
   <div class="battle-compact-layout"><section><h3>尚可加入的特工</h3><div class="battle-compact-options">${ops.filter(o=>canDraftAdd(side,o.id)).map(o=>draftVisualCard(side,o)).join("")||`<p class="battle-options-empty">目前沒有其他可加入的特工。需要調整時，請從「已加入隊伍」編輯或移除特工。</p>`}</div></section>${battleSelectedList(side)}</div>${battlePickerPanel()}
   ${rosterError(side)?`<p class="battle-validation">${esc(rosterError(side))}</p>`:""}
   <p class="battle-note">點擊特工開啟配置，確認後加入隊伍。點擊已加入名單可修改武器；非固定特工也可移除。已選且不可重複的職位會從可選列表隱藏；允許重複的職位則保留至編成上限。${rosterTeam(side)==="xv26"?"XV26 融合砲最多 2 把。":""}</p>
   <button onclick="battleSetupBack()">上一步</button> <button onclick="battleSetupNext()" ${!(d.step===2&&d.enemySkipped)&&rosterError(side)?'disabled title="請先完成基本編成"':""}>下一步 →</button> <button onclick="cancelBattleSetup()">取消設定</button></div>`;
+}
+function savedLegMarkLabel(side,id,index,ids){
+ if((battleRoster?.[side+"Team"])!=="leg")return "";
+ const occurrence=ids.slice(0,index).filter(x=>x===id).length;
+ const key=`${id}#${occurrence}`;
+ const mark=battleRoster?.marks?.[side]?.[key]||battleRoster?.marks?.[side]?.[String(index)]||"undivided";
+ return ` · 印記：${esc(legMarkName(mark))}`;
 }
 function showRosterSide(side){
   const teamId=rosterTeam(side),t=TEAMS[teamId],ids=battleRoster?.[side];
@@ -1640,7 +1671,7 @@ function showRosterSide(side){
     const occurrence=ids.slice(0,index).filter(x=>x===id).length;
     const selected=battleRoster?.weapons?.[side]?.[`${id}#${occurrence}`]??battleRoster?.weapons?.[side]?.[String(index)];
     const shown=o&&Array.isArray(selected)?{...o,weapons:(o.weapons||[]).filter((_,i)=>selected.includes(i))}:o;
-    return o?`<details class="battle-operative-fold"><summary>${o.image?`<img src="${esc(o.image)}" alt="" loading="lazy">`:""}<span class="battle-operative-title"><b>${esc(o.name)}</b><small>${esc(o.stats||"")}</small></span><span class="battle-fold-hint">展開數據卡</span></summary><div class="battle-operative-body">${opCard(shown)}</div></details>`:`<p>找不到特工資料：${esc(id)}</p>`;
+    return o?`<details class="battle-operative-fold"><summary>${o.image?`<img src="${esc(o.image)}" alt="" loading="lazy">`:""}<span class="battle-operative-title"><b>${esc(o.name)}</b><small>${esc(o.stats||"")}${savedLegMarkLabel(side,id,index,ids)}</small></span><span class="battle-fold-hint">展開數據卡</span></summary><div class="battle-operative-body">${opCard(shown)}</div></details>`:`<p>找不到特工資料：${esc(id)}</p>`;
   }).join("")}</div></section>`;
 }
 
