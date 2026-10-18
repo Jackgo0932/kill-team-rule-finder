@@ -959,11 +959,62 @@ function openBattlePicker(side,id,index=-1){
  if(index<0&&!canDraftAdd(side,id))return;
  if(index>=0&&battleDraft[side][index]!==id)return;
  const selected=index>=0?battleWeaponSelection(side,index,op):null;
- battlePicker={side,id,index,primary:selected&&selected.some(i=>xv26PrimaryIndices(op,"fusion").includes(i))?"fusion":"rapid"};
+ battlePicker={side,id,index,primary:selected&&selected.some(i=>xv26PrimaryIndices(op,"fusion").includes(i))?"fusion":"rapid",
+ rifle:index>=0&&aodRifleConfigurable(side,op)?aodRifleKind(side,index,op):"auto",
+ melee:index>=0&&aodSergeantConfigurable(side,op)?aodSergeantMeleeKind(side,index,op):AOD_INTERCESSOR_MELEE[0], assault:index>=0&&aodAssaultConfigurable(side,op)?aodAssaultKind(side,index,op):"heavy", assaultMelee:index>=0&&aodAssaultConfigurable(side,op)?aodAssaultMeleeKind(side,index,op):"鏈鋸劍", expandedRule:null};
  render();
+ document.addEventListener("keydown",battlePickerHandleKeydown);
+ document.querySelector(".battle-config-header button")?.focus();
 }
-function closeBattlePicker(){battlePicker=null;render()}
-function chooseBattlePickerPrimary(kind){if(battlePicker){battlePicker.primary=kind;render()}}
+function closeBattlePicker(){
+ document.removeEventListener("keydown",battlePickerHandleKeydown);
+ battlePicker=null;render();
+}
+// Keep the user's place while changing weapons or expanding a rule.
+// render() rebuilds the dialog DOM, so restore its scroll and keyboard focus.
+function renderBattlePickerPreservingState(){
+ const panel=document.querySelector(".battle-config-panel");
+ const preview=document.querySelector(".battle-config-preview-list");
+ const panelTop=panel?.scrollTop||0,previewTop=preview?.scrollTop||0;
+ const focused=document.activeElement;
+ const focusName=focused?.getAttribute("name");
+ const focusValue=focused?.getAttribute("value");
+ const ruleButton=focused?.closest(".battle-preview-rule");
+ const ruleIndex=ruleButton?[...document.querySelectorAll(".battle-preview-rule")].indexOf(ruleButton):-1;
+ render();
+ const nextPanel=document.querySelector(".battle-config-panel");
+ const nextPreview=document.querySelector(".battle-config-preview-list");
+ if(nextPanel)nextPanel.scrollTop=panelTop;
+ if(nextPreview)nextPreview.scrollTop=previewTop;
+ let target=null;
+ if(focusName){
+  target=[...document.querySelectorAll(".battle-config-panel input")].find(el=>
+   el.getAttribute("name")===focusName&&el.getAttribute("value")===focusValue);
+  // Melee radios have no value; match checked input after rerender.
+  if(!target)target=document.querySelector(`.battle-config-panel input[name="${focusName}"]:checked`);
+ }
+ if(!target&&ruleIndex>=0)target=document.querySelectorAll(".battle-preview-rule button")[ruleIndex];
+ target?.focus({preventScroll:true});
+}
+function chooseBattlePickerPrimary(kind){if(battlePicker){battlePicker.primary=kind;renderBattlePickerPreservingState()}}
+function chooseBattlePickerRifle(kind){
+ if(!battlePicker||!AOD_RIFLE_OPTIONS.some(x=>x.key===kind))return;
+ battlePicker.rifle=kind;renderBattlePickerPreservingState();
+}
+function chooseBattlePickerMelee(kind){
+ if(!battlePicker||!AOD_INTERCESSOR_MELEE.includes(kind))return;
+ battlePicker.melee=kind;renderBattlePickerPreservingState();
+}
+function chooseBattlePickerAssault(kind){
+ if(!battlePicker||!["flamer","heavy","plasma"].includes(kind))return;
+ battlePicker.assault=kind;
+ if(kind==="plasma")battlePicker.assaultMelee="鏈鋸劍";
+ renderBattlePickerPreservingState();
+}
+function chooseBattlePickerAssaultMelee(kind){
+ if(!battlePicker||!AOD_SERGEANT_MELEE.includes(kind))return;
+ battlePicker.assaultMelee=kind;renderBattlePickerPreservingState();
+}
 function confirmBattlePicker(){
  const picker=battlePicker;if(!picker)return;
  const {side,id,index}=picker,op=rosterOps(side).find(x=>x.id===id);
@@ -978,6 +1029,15 @@ function confirmBattlePicker(){
   const all=(op.weapons||[]).map((_,i)=>i),exclude=new Set([...xv26PrimaryIndices(op,"fusion"),...xv26PrimaryIndices(op,"rapid")]);
   battleWeaponDraft[side][battleWeaponKey(side,target)]=[...all.filter(i=>!exclude.has(i)),...xv26PrimaryIndices(op,picker.primary)];
  }
+ if(aodAssaultConfigurable(side,op)){
+  battleWeaponDraft[side][battleWeaponKey(side,target)]=configuredAodAssaultWeapons(op,picker.assault,picker.assaultMelee);
+ }
+ if(aodRifleConfigurable(side,op)){
+  battleWeaponDraft[side][battleWeaponKey(side,target)]=aodSergeantConfigurable(side,op)?
+   configuredAodSergeantWeapons(op,picker.rifle,picker.melee):
+   configuredAodWeapons(op,picker.rifle);
+ }
+ document.removeEventListener("keydown",battlePickerHandleKeydown);
  battlePicker=null;render();
 }
 function removeBattleRosterEntry(side,index){
@@ -987,34 +1047,132 @@ function removeBattleRosterEntry(side,index){
  const before=a.map((value,i)=>({value,chosen:battleWeaponDraft[side][battleWeaponKey(side,i)]}));
  before.splice(index,1);a.splice(index,1);battleWeaponDraft[side]={};
  before.forEach((item,i)=>{if(Array.isArray(item.chosen))battleWeaponDraft[side][battleWeaponKey(side,i)]=item.chosen});
+ document.removeEventListener("keydown",battlePickerHandleKeydown);
  battlePicker=null;render();
+}
+function battlePickerPreviewIndices(side,op,picker){
+ if(aodAssaultConfigurable(side,op))return configuredAodAssaultWeapons(op,picker.assault,picker.assaultMelee);
+ if(aodSergeantConfigurable(side,op))return configuredAodSergeantWeapons(op,picker.rifle,picker.melee).filter(i=>i>=0);
+ if(aodRifleConfigurable(side,op))return configuredAodWeapons(op,picker.rifle);
+ if(xv26CanChoosePrimary(side,op)){
+  const all=(op.weapons||[]).map((_,i)=>i);
+  const excludes=new Set([...xv26PrimaryIndices(op,"rapid"),...xv26PrimaryIndices(op,"fusion")]);
+  return all.filter(i=>!excludes.has(i)).concat(xv26PrimaryIndices(op,picker.primary));
+ }
+ return (op.weapons||[]).map((_,i)=>i);
+}
+function toggleBattlePickerRule(key){
+ if(!battlePicker)return;
+ battlePicker.expandedRule=battlePicker.expandedRule===key?null:key;
+ renderBattlePickerPreservingState();
+}
+function battlePickerRuleChips(side,weapon,weaponIndex,picker){
+ const t=TEAMS[rosterTeam(side)]||{};
+ const custom=t.weaponRules||{},keywords=t.weaponKeywords||{};
+ const rules=(weapon[5]||[]).map((r,i)=>{
+  const id=ruleId(r),k=KW[id],label=ruleLabel(r),en=ruleEn(r);
+  return {key:`${weaponIndex}:rule:${i}`,label:label||id,en,text:k?.text||"",kind:"通用武器規則"};
+ });
+ for(const [i,id] of (weapon[6]||[]).entries()){
+  const r=custom[id]||keywords[id];
+  rules.push({key:`${weaponIndex}:custom:${i}`,label:r?.[0]||id,en:r?.[1]||"",text:r?.[2]||"",kind:custom[id]?"陣營專用規則":"武器關鍵字"});
+ }
+ if(!rules.length)return "";
+ return `<div class="battle-preview-rules">${rules.map(r=>{
+  const open=picker.expandedRule===r.key;
+  return `<div class="battle-preview-rule"><button type="button" class="chip ${open?"open":""}" aria-expanded="${open}" onclick="toggleBattlePickerRule('${r.key}')">${esc(r.label)}${r.en?` · ${esc(r.en)}`:""}</button>${open?`<div class="battle-preview-explanation"><small>${esc(r.kind)}</small><p>${esc(r.text||"目前資料沒有此規則的詳細說明")}</p></div>`:""}</div>`;
+ }).join("")}</div>`;
+}
+function battlePickerPreview(side,op,picker){
+ const indices=battlePickerPreviewIndices(side,op,picker);
+ const weapons=indices.map(i=>({index:i,w:op.weapons?.[i]})).filter(x=>x.w);
+ return `<div class="battle-config-preview"><strong>武器與規則預覽</strong>
+ <div class="battle-config-preview-list">${weapons.map(({index,w})=>`<div class="battle-preview-weapon"><div class="battle-preview-weapon-head"><b>${esc(w[0])}</b><small>${esc(w[1]||"")} · 攻擊 ${esc(w[2]??"—")} · 命中 ${esc(w[3]??"—")} · 傷害 ${esc(w[4]??"—")}</small></div>${battlePickerRuleChips(side,w,index,picker)}</div>`).join("")}</div></div>`;
+}
+function battlePickerFusionAvailable(picker,op){
+ if(!xv26CanChoosePrimary(picker.side,op))return true;
+ if(picker.index>=0){
+  const selected=battleWeaponSelection(picker.side,picker.index,op);
+  if(selected.some(i=>xv26PrimaryIndices(op,"fusion").includes(i)))return true;
+ }
+ return xv26FusionCount(picker.side)<2;
+}
+function battlePickerHandleKeydown(event){
+ if(!battlePicker)return;
+ if(event.key==="Escape"){
+  event.preventDefault();closeBattlePicker();return;
+ }
+ if(event.key!=="Tab")return;
+ const panel=document.querySelector(".battle-config-panel");
+ if(!panel)return;
+ const controls=[...panel.querySelectorAll('button:not([disabled]),input:not([disabled])')].filter(el=>el.getClientRects().length);
+ if(!controls.length)return;
+ const first=controls[0],last=controls[controls.length-1];
+ if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}
+ else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
 }
 function battlePickerPanel(){
  const x=battlePicker;if(!x)return "";
  const op=rosterOps(x.side).find(o=>o.id===x.id);if(!op)return "";
  const primary=xv26CanChoosePrimary(x.side,op),fixed=x.index>=0&&!!rosterRule(x.side)?.fixed?.[x.id];
- return `<div class="battle-config-overlay"><section class="battle-config-panel" role="dialog" aria-modal="true" aria-label="配置特工"><div class="battle-config-header"><h3>${esc(op.name)}</h3><button type="button" onclick="closeBattlePicker()" aria-label="關閉">✕</button></div>
+ return `<div class="battle-config-overlay" onclick="if(event.target===this)closeBattlePicker()"><section class="battle-config-panel" role="dialog" aria-modal="true" aria-label="配置特工"><div class="battle-config-header"><h3>${esc(op.name)}</h3><button type="button" onclick="closeBattlePicker()" aria-label="關閉">✕</button></div>
  <p>${esc(op.role||"")}</p>${op.image?`<img class="battle-config-image" src="${esc(op.image)}" alt="">`:""}
- ${primary?`<fieldset class="battle-config-weapons"><legend>選擇主武器</legend><label><input type="radio" name="battle-config-primary" value="rapid" ${x.primary==="rapid"?"checked":""} onchange="chooseBattlePickerPrimary('rapid')">速射砲</label><label><input type="radio" name="battle-config-primary" value="fusion" ${x.primary==="fusion"?"checked":""} onchange="chooseBattlePickerPrimary('fusion')">融合砲</label><small>全隊融合砲 ${xv26FusionCount(x.side)}/2</small></fieldset>`:`<div class="battle-config-info"><strong>武器資料</strong><p>此特工目前尚無可配置的武器選項，加入後顯示完整武器數據。</p>${(op.weapons||[]).map(w=>`<span>${esc(w[0])}</span>`).join("")}</div>`}
+ ${aodRifleConfigurable(x.side,op)?`<fieldset class="battle-config-weapons"><legend>選擇主武器</legend>
+ ${AOD_RIFLE_OPTIONS.map(item=>`<label><input type="radio" name="battle-config-rifle" value="${item.key}" ${x.rifle===item.key?"checked":""} onchange="chooseBattlePickerRifle('${item.key}')">${item.label}</label>`).join("")}
+ <small>其他已配備武器會保留；追獵者步槍的射擊模式會一併顯示。</small></fieldset>`:""}
+ ${aodSergeantConfigurable(x.side,op)?`<fieldset class="battle-config-weapons"><legend>選擇近戰武器</legend>
+ ${AOD_INTERCESSOR_MELEE.map(name=>`<label><input type="radio" name="battle-config-melee" value="${esc(name)}" ${x.melee===name?"checked":""} onchange="chooseBattlePickerMelee('${name}')">${name}</label>`).join("")}
+ </fieldset>`:""}
+ ${aodAssaultConfigurable(x.side,op)?`<fieldset class="battle-config-weapons"><legend>選擇手槍</legend>
+ ${[{key:"flamer",label:"噴火手槍"},{key:"heavy",label:"重型爆矢手槍"},{key:"plasma",label:"等離子手槍（固定搭配鏈鋸劍）"}].map(item=>`<label><input type="radio" name="battle-assault-pistol" value="${item.key}" ${x.assault===item.key?"checked":""} onchange="chooseBattlePickerAssault('${item.key}')">${item.label}</label>`).join("")}</fieldset>
+ <fieldset class="battle-config-weapons"><legend>選擇近戰武器</legend>
+ ${AOD_SERGEANT_MELEE.map(name=>`<label><input type="radio" name="battle-assault-melee" value="${esc(name)}" ${x.assaultMelee===name?"checked":""} ${x.assault==="plasma"&&name!=="鏈鋸劍"?"disabled":""} onchange="chooseBattlePickerAssaultMelee('${name}')">${name}</label>`).join("")}</fieldset>`:""}
+ ${primary?`<fieldset class="battle-config-weapons"><legend>選擇主武器</legend><label><input type="radio" name="battle-config-primary" value="rapid" ${x.primary==="rapid"?"checked":""} onchange="chooseBattlePickerPrimary('rapid')">速射砲</label><label><input type="radio" name="battle-config-primary" value="fusion" ${x.primary==="fusion"?"checked":""} ${battlePickerFusionAvailable(x,op)?"":"disabled"} onchange="chooseBattlePickerPrimary('fusion')">融合砲</label><small>全隊融合砲 ${xv26FusionCount(x.side)}/2${battlePickerFusionAvailable(x,op)?"":" · 已達上限"}</small></fieldset>`:""}
+ ${battlePickerPreview(x.side,op,x)}
  <div class="battle-config-actions"><button type="button" onclick="closeBattlePicker()">取消</button>${x.index>=0&&!fixed?`<button type="button" onclick="removeBattleRosterEntry('${x.side}',${x.index})">移出隊伍</button>`:""}<button type="button" onclick="confirmBattlePicker()">${x.index>=0?"確認配置":"確認加入隊伍"}</button></div></section></div>`;
 }
 function draftVisualCard(side,o){
  const a=battleDraft[side],count=selectedCount(a,o.id),fixed=!!rosterRule(side)?.fixed?.[o.id];
- return `<button type="button" class="battle-compact-option ${count?"is-selected":""}" onclick="openBattlePicker('${side}','${o.id}')" ${canDraftAdd(side,o.id)?"":"disabled"}>${o.image?`<img src="${esc(o.image)}" alt="" loading="lazy">`:""}<span><b>${esc(o.name)}</b><small>${esc(o.role||"")}</small></span><em>${count?`已選 ${count}`:"＋ 加入"}</em></button>`;
+ return `<button type="button" class="battle-compact-option ${count?"is-selected":""}" onclick="openBattlePicker('${side}','${o.id}')" ${canDraftAdd(side,o.id)?"":"disabled"}>${o.image?`<img src="${esc(o.image)}" alt="" loading="lazy">`:""}<span><b>${esc(o.name)}</b><small>${esc(o.role||"")}${rosterRule(side)?.repeat?.includes(o.id)?" · 可重複":""}</small></span><em>${count?`已選 ${count}`:"＋ 加入"}</em></button>`;
+}
+function battleRosterProgress(side){
+ const rule=rosterRule(side),a=battleDraft[side];
+ if(!rule)return {total:null,remaining:0,complete:!!a.length};
+ const fixed=Object.values(rule.fixed||{}).reduce((sum,n)=>sum+n,0);
+ const total=fixed+(rule.leader?1:0)+rule.slots;
+ const remaining=Math.max(0,total-a.length);
+ return {total,remaining,complete:remaining===0&&!rosterError(side)};
 }
 function battleSelectedList(side){
- const a=battleDraft[side];return `<section class="battle-selected-list"><h3>已加入隊伍 <small>${a.length} 名</small></h3>${a.length?`<div class="battle-selected-items">${a.map((id,index)=>{
- const op=rosterOps(side).find(o=>o.id===id);if(!op)return "";
- const chosen=battleWeaponSelection(side,index,op),fusion=xv26CanChoosePrimary(side,op)&&chosen.some(i=>xv26PrimaryIndices(op,"fusion").includes(i));
- const weapon=xv26CanChoosePrimary(side,op)?fusion?"融合砲":"速射砲":"預設武器";
- return `<button type="button" class="battle-selected-item" onclick="openBattlePicker('${side}','${id}',${index})"><span>${esc(op.name)}</span><small>${esc(weapon)}</small><span>編輯 ›</span></button>`;
- }).join("")}</div>`:`<p>尚未選擇特工。</p>`}</section>`;
+ const a=battleDraft[side],rule=rosterRule(side);
+ const progress=battleRosterProgress(side);
+ const total=progress.total;
+ const entries=a.map((id,index)=>{
+  const op=rosterOps(side).find(o=>o.id===id);if(!op)return "";
+  const chosen=battleWeaponSelection(side,index,op);
+  const configurable=xv26CanChoosePrimary(side,op);
+  const fusion=configurable&&chosen.some(i=>xv26PrimaryIndices(op,"fusion").includes(i));
+  const weapon=aodAssaultConfigurable(side,op)?`${({flamer:"噴火手槍",heavy:"重型爆矢手槍",plasma:"等離子手槍"})[aodAssaultKind(side,index,op)]} · ${aodAssaultMeleeKind(side,index,op)}`:configurable?(fusion?"融合砲":"速射砲"):aodRifleConfigurable(side,op)?`${AOD_RIFLE_OPTIONS.find(x=>x.key===aodRifleKind(side,index,op))?.label||"爆矢步槍"}${aodSergeantConfigurable(side,op)?" · "+aodSergeantMeleeKind(side,index,op):""}`:"預設武器";
+  const isFixed=!!rule?.fixed?.[id];
+  return `<button type="button" class="battle-selected-item" onclick="openBattlePicker('${side}','${id}',${index})">
+   ${op.image?`<img class="battle-selected-portrait" src="${esc(op.image)}" alt="" loading="lazy">`:""}
+   <span class="battle-selected-main"><b>${esc(op.name)}</b><small>${esc(weapon)}${isFixed?" · 固定編成":" · 已選入"}</small></span>
+   <span class="battle-selected-edit">編輯 ›</span></button>`;
+ }).join("");
+ return `<section class="battle-selected-list"><div class="battle-selected-header"><h3>已加入隊伍</h3><strong>${a.length}${total===null?"":` / ${total}`} 名</strong></div>
+ <div class="battle-roster-progress" role="status" aria-live="polite">
+  ${total!==null?`<div class="battle-progress-track"><div class="battle-progress-fill" style="width:${Math.min(100,Math.round(a.length/Math.max(1,total)*100))}%"></div></div>`:""}
+  <small>${progress.complete?"✓ 基本編成已完成":total===null?"請選擇出戰特工":`尚缺 ${progress.remaining} 名${progress.remaining===0?"，請檢查編成條件":""}`}</small>
+ </div>
+ ${rosterTeam(side)==="xv26"?`<p class="battle-selected-fusion">融合砲 ${xv26FusionCount(side)} / 2</p>`:""}
+ ${a.length?`<div class="battle-selected-items">${entries}</div>`:`<p>尚未選擇特工。請點左側特工加入。</p>`}
+ </section>`;
 }
 function beginBattleSetup(){
   if(battleRoster&&!confirm("重新建立對戰？現有出戰名單會被取代，完成設定時將重置本局紀錄。"))return;
   // Keep the previous match until the replacement is confirmed and finished.
   battleDraft={my:initialDraft("my"),enemy:initialDraft("enemy"),enemySkipped:false,step:0};
-  battleWeaponDraft={my:{},enemy:{}};battlePicker=null;
+  battleWeaponDraft={my:{},enemy:{}};battleChapterDraft={my:{primary:"",secondary:""},enemy:{primary:"",secondary:""}};battlePicker=null;
   S.view="match";render();
 }
 function toggleDraftOperative(side,id){
@@ -1038,7 +1196,7 @@ function battleSetupBack(){if(battleDraft){battleDraft.step=Math.max(0,battleDra
 function cancelBattleSetup(){
  if(!battleDraft)return;
  battleDraft=null;battlePicker=null;
- battleWeaponDraft={my:{},enemy:{}};
+ battleWeaponDraft={my:{},enemy:{}};battleChapterDraft={my:{primary:"",secondary:""},enemy:{primary:"",secondary:""}};
  if(battleRoster){
   S.myTeam=battleRoster.myTeam;S.enemyTeam=battleRoster.enemyTeam;
   S.team=S.side==="enemy"?S.enemyTeam:S.myTeam;
@@ -1047,8 +1205,8 @@ function cancelBattleSetup(){
 }
 function changeBattleSetupTeam(side,id){
  if(!battleDraft||battleDraft.step!==0||!TEAMS[id])return;
- if(side==="my"){S.myTeam=id;S.team=S.side==="my"?id:S.team;battleDraft.my=initialDraft("my");battleWeaponDraft.my={};localStorage.setItem("ktMyTeam",id)}
- else{S.enemyTeam=id;S.team=S.side==="enemy"?id:S.team;battleDraft.enemy=initialDraft("enemy");battleWeaponDraft.enemy={};localStorage.setItem("ktEnemyTeam",id)}
+ if(side==="my"){S.myTeam=id;S.team=S.side==="my"?id:S.team;battleDraft.my=initialDraft("my");battleWeaponDraft.my={};battleChapterDraft.my={primary:"",secondary:""};localStorage.setItem("ktMyTeam",id)}
+ else{S.enemyTeam=id;S.team=S.side==="enemy"?id:S.team;battleDraft.enemy=initialDraft("enemy");battleWeaponDraft.enemy={};battleChapterDraft.enemy={primary:"",secondary:""};localStorage.setItem("ktEnemyTeam",id)}
  localStorage.setItem("ktTeam",S.team);
  render();
 }
@@ -1070,10 +1228,68 @@ function xv26CanChoosePrimary(side,op){
   ["shasvre","designator","infiltrator","liberator","lodestar","neutraliser"].includes(op.id) &&
   xv26PrimaryIndices(op,"fusion").length>0 && xv26PrimaryIndices(op,"rapid").length>0;
 }
+// Verified against the bundled Angels of Death operative loadout text.
+// Other operatives remain on the existing complete-weapon display.
+const AOD_RIFLE_IDS=["intercessor-warrior","intercessor-gunner","intercessor-sergeant"];
+const AOD_RIFLE_OPTIONS=[
+ {key:"auto",label:"自動爆矢步槍",prefix:"自動爆矢步槍"},
+ {key:"bolt",label:"爆矢步槍",prefix:"爆矢步槍"},
+ {key:"stalker",label:"追獵者爆矢步槍",prefix:"追獵者爆矢步槍"}
+];
+const AOD_ASSAULT_PISTOLS={flamer:["噴火手槍"],heavy:["重型爆矢手槍"],plasma:["等離子手槍（標準）","等離子手槍（過載）"]};
+function aodAssaultConfigurable(side,op){return rosterTeam(side)==="aod"&&op.id==="assault-sergeant";}
+function aodAssaultKind(side,index,op){
+ const saved=battleWeaponDraft[side][battleWeaponKey(side,index)];
+ return Object.keys(AOD_ASSAULT_PISTOLS).find(k=>Array.isArray(saved)&&AOD_ASSAULT_PISTOLS[k].some(name=>saved.includes((op.weapons||[]).findIndex(w=>w[0]===name))))||"heavy";
+}
+function aodAssaultMeleeKind(side,index,op){
+ const saved=battleWeaponDraft[side][battleWeaponKey(side,index)];
+ return AOD_SERGEANT_MELEE.find(name=>Array.isArray(saved)&&saved.includes((op.weapons||[]).findIndex(w=>w[0]===name)))||"鏈鋸劍";
+}
+function configuredAodAssaultWeapons(op,pistol,melee){
+ const selectedPistol=AOD_ASSAULT_PISTOLS[pistol]||AOD_ASSAULT_PISTOLS.heavy;
+ const selectedMelee=pistol==="plasma"?"鏈鋸劍":melee;
+ return [...selectedPistol,selectedMelee].map(name=>(op.weapons||[]).findIndex(w=>w[0]===name)).filter(i=>i>=0);
+}
+const AOD_SERGEANT_MELEE=["鏈鋸劍","動力拳套","動力武器","雷霆錘"];
+const AOD_INTERCESSOR_MELEE=["鏈鋸劍","雙拳","動力拳套","動力武器","雷霆錘"];
+function aodSergeantConfigurable(side,op){
+ return rosterTeam(side)==="aod"&&op.id==="intercessor-sergeant";
+}
+function aodSergeantMeleeIndex(op,kind){
+ return (op.weapons||[]).findIndex(w=>w[0]===kind);
+}
+function aodSergeantMeleeKind(side,index,op){
+ const saved=battleWeaponDraft[side][battleWeaponKey(side,index)];
+ return AOD_INTERCESSOR_MELEE.find(name=>Array.isArray(saved)&&saved.includes(aodSergeantMeleeIndex(op,name)))||AOD_INTERCESSOR_MELEE[0];
+}
+function configuredAodSergeantWeapons(op,rifle,melee){
+ const allMelee=new Set(AOD_INTERCESSOR_MELEE.map(x=>aodSergeantMeleeIndex(op,x)).filter(i=>i>=0));
+ return configuredAodWeapons(op,rifle).filter(i=>!allMelee.has(i)).concat(aodSergeantMeleeIndex(op,melee)).filter(i=>i>=0);
+}
+function aodRifleConfigurable(side,op){
+ return rosterTeam(side)==="aod"&&AOD_RIFLE_IDS.includes(op.id);
+}
+function aodRifleIndices(op,kind){
+ const prefix=AOD_RIFLE_OPTIONS.find(x=>x.key===kind)?.prefix;
+ return prefix?(op.weapons||[]).flatMap((w,i)=>String(w[0]).startsWith(prefix)?[i]:[]):[];
+}
+function aodRifleKind(side,index,op){
+ const key=battleWeaponKey(side,index),saved=battleWeaponDraft[side][key];
+ if(!Array.isArray(saved))return "auto";
+ return AOD_RIFLE_OPTIONS.find(x=>x.key!=="auto"&&saved.some(i=>aodRifleIndices(op,x.key).includes(i)))?.key||"auto";
+}
+function configuredAodWeapons(op,kind){
+ const rifles=new Set(AOD_RIFLE_OPTIONS.flatMap(x=>aodRifleIndices(op,x.key)));
+ return [...(op.weapons||[]).keys()].filter(i=>!rifles.has(i)).concat(aodRifleIndices(op,kind));
+}
 function battleWeaponSelection(side,index,op){
  const key=battleWeaponKey(side,index),saved=battleWeaponDraft[side][key];
  if(Array.isArray(saved))return saved;
  const all=(op.weapons||[]).map((_,i)=>i);
+ if(aodAssaultConfigurable(side,op))return configuredAodAssaultWeapons(op,"heavy","鏈鋸劍");
+ if(aodSergeantConfigurable(side,op))return configuredAodSergeantWeapons(op,"auto",AOD_INTERCESSOR_MELEE[0]);
+ if(aodRifleConfigurable(side,op))return configuredAodWeapons(op,"auto");
  return xv26CanChoosePrimary(side,op)?all.filter(i=>!xv26PrimaryIndices(op,"fusion").includes(i)):all;
 }
 function xv26FusionCount(side){
@@ -1102,6 +1318,29 @@ function battleWeaponValidationError(){
  if(!battleDraft)return "尚未建立編隊。";
  for(const side of ["my","enemy"]){
   if(side==="enemy"&&battleDraft.enemySkipped)continue;
+  if(rosterTeam(side)==="aod"){
+   for(let i=0;i<battleDraft[side].length;i++){
+    const op=rosterOps(side).find(o=>o.id===battleDraft[side][i]);
+    if(op&&aodAssaultConfigurable(side,op)){
+     const chosen=battleWeaponSelection(side,i,op);
+     const valid=Object.keys(AOD_ASSAULT_PISTOLS).some(pistol=>AOD_SERGEANT_MELEE.some(melee=>{
+      if(pistol==="plasma"&&melee!=="鏈鋸劍")return false;
+      const expected=configuredAodAssaultWeapons(op,pistol,melee);
+      return expected.length===(pistol==="plasma"?3:2)&&expected.length===chosen.length&&expected.every(j=>chosen.includes(j));
+     }));
+     if(!valid)return `${side==="my"?"我方":"敵方"} ${op.name} 的手槍與近戰武器組合不合法。`;
+    }
+    if(!op||!aodRifleConfigurable(side,op))continue;
+    const chosen=battleWeaponSelection(side,i,op);
+    const equipped=AOD_RIFLE_OPTIONS.filter(x=>chosen.some(j=>aodRifleIndices(op,x.key).includes(j)));
+    if(equipped.length!==1||aodRifleIndices(op,equipped[0].key).some(j=>!chosen.includes(j)))
+     return `${side==="my"?"我方":"敵方"} ${op.name} 必須選擇且完整保留一種爆矢步槍。`;
+    if(aodSergeantConfigurable(side,op)){
+     const equippedMelee=AOD_INTERCESSOR_MELEE.filter(name=>chosen.includes(aodSergeantMeleeIndex(op,name)));
+     if(equippedMelee.length!==1)return `${side==="my"?"我方":"敵方"} ${op.name} 必須且只能選擇一種近戰武器。`;
+    }
+   }
+  }
   if(rosterTeam(side)!=="xv26")continue;
   const count=xv26FusionCount(side);
   if(count>2)return `${side==="my"?"我方":"敵方"} XV26 融合砲 ${count} 把，超過最多 2 把的限制。`;
@@ -1116,6 +1355,52 @@ function battleWeaponValidationError(){
  }
  return "";
 }
+// Chapter tactics are selected once per Angels of Death team for the battle.
+const AOD_CHAPTER_TACTICS=["猛攻","決鬥家","堅決","隱匿","機動","強健","神射手","攻城戰專家"];
+let battleChapterDraft={my:{primary:"",secondary:""},enemy:{primary:"",secondary:""}};
+function chapterTacticsError(side){
+ if(rosterTeam(side)!=="aod"||(side==="enemy"&&battleDraft?.enemySkipped))return "";
+ const t=battleChapterDraft[side];
+ if(!t||!AOD_CHAPTER_TACTICS.includes(t.primary)||!AOD_CHAPTER_TACTICS.includes(t.secondary))return `${side==="my"?"我方":"敵方"}死亡天使需要選擇首要與次要戰團戰術。`;
+ if(t.primary===t.secondary)return `${side==="my"?"我方":"敵方"}死亡天使的兩項戰團戰術不可重複。`;
+ return "";
+}
+function chooseChapterTactic(side,slot,value){
+ if(!battleDraft||battleDraft.step!==3||rosterTeam(side)!=="aod"||!["primary","secondary"].includes(slot))return;
+ if(value!==""&&!AOD_CHAPTER_TACTICS.includes(value))return;
+ battleChapterDraft[side][slot]=value;
+ render();
+}
+// In-match chapter tactics are public, editable state. Keep setup drafts separate.
+function changeLiveChapterTactic(side,slot,value){
+ if(!battleRoster||!["my","enemy"].includes(side)||!["primary","secondary"].includes(slot))return;
+ if((side==="my"?battleRoster.myTeam:battleRoster.enemyTeam)!=="aod"||battleRoster[side]===null)return;
+ if(!AOD_CHAPTER_TACTICS.includes(value))return;
+ const saved=battleRoster.chapterTactics||{my:{primary:"",secondary:""},enemy:{primary:"",secondary:""}};
+ const current=saved[side]||{primary:"",secondary:""};
+ const other=slot==="primary"?"secondary":"primary";
+ if(value===current[other]){alert("首要與次要戰團戰術不可相同。");renderMatchHub();return;}
+ if(current[slot]===value)return;
+ const old=current[slot]||"未設定";
+ saved[side]={...current,[slot]:value};
+ battleRoster.chapterTactics=saved;
+ localStorage.setItem(ROSTER_KEY,JSON.stringify(battleRoster));
+ trackerLog(`${trackerSideName(side)}${slot==="primary"?"首要":"次要"}戰團戰術：${old} → ${value}`);
+ saveMatchTracker();
+ renderMatchHub();
+}
+function liveChapterTacticsPanel(side){
+ if(!battleRoster||battleRoster[side]===null||(side==="my"?battleRoster.myTeam:battleRoster.enemyTeam)!=="aod")return "";
+ const t=battleRoster.chapterTactics?.[side]||{primary:"",secondary:""};
+ const field=(slot,title)=>`<label class="battle-chapter-choice"><span>${title}</span><select aria-label="${side==="my"?"我方":"敵方"}${title}" onchange="changeLiveChapterTactic('${side}','${slot}',this.value)"><option value="" disabled ${!t[slot]?"selected":""}>請選擇</option>${AOD_CHAPTER_TACTICS.map(name=>`<option value="${esc(name)}" ${t[slot]===name?"selected":""} ${t[slot==="primary"?"secondary":"primary"]===name?"disabled":""}>${esc(name)}</option>`).join("")}</select></label>`;
+ return `<section class="battle-chapter-picker"><h3>${side==="my"?"我方":"敵方"} · 死亡天使戰團戰術</h3><div class="battle-chapter-grid">${field("primary","首要戰團戰術")}${field("secondary","次要戰團戰術")}</div><small>對戰中可修改；變更會保存並加入戰鬥紀錄，不會重置本局數值。</small></section>`;
+}
+function chapterTacticsPicker(side){
+ if(rosterTeam(side)!=="aod"||(side==="enemy"&&battleDraft.enemySkipped))return "";
+ const t=battleChapterDraft[side];
+ const field=(slot,title)=>`<label class="battle-chapter-choice"><span>${title}</span><select onchange="chooseChapterTactic('${side}','${slot}',this.value)"><option value="">請選擇</option>${AOD_CHAPTER_TACTICS.map(name=>`<option value="${esc(name)}" ${t[slot]===name?"selected":""} ${t[slot!=="primary"?"primary":"secondary"]===name?"disabled":""}>${esc(name)}</option>`).join("")}</select></label>`;
+ return `<section class="battle-chapter-picker"><h3>${side==="my"?"我方":"敵方"} · 死亡天使戰團戰術</h3><div class="battle-chapter-grid">${field("primary","首要戰團戰術")}${field("secondary","次要戰團戰術")}</div>${chapterTacticsError(side)?`<small class="battle-validation">${esc(chapterTacticsError(side))}</small>`:""}<small>本場使用兩種不同戰術；戰術效果請參考死亡天使的「戰團戰術」規則卡。</small></section>`;
+}
 function battleSetupSummarySide(side){
  const team=TEAMS[rosterTeam(side)],ids=battleDraft[side];
  if(side==="enemy"&&battleDraft.enemySkipped)
@@ -1128,6 +1413,8 @@ function battleSetupSummarySide(side){
   const isXv=xv26CanChoosePrimary(side,op);
   const fusion=isXv&&chosen.some(i=>xv26PrimaryIndices(op,"fusion").includes(i));
   const main=isXv?`<strong>${fusion?"融合砲":"速射砲"}</strong>`:
+    aodAssaultConfigurable(side,op)?`<strong>${esc(({flamer:"噴火手槍",heavy:"重型爆矢手槍",plasma:"等離子手槍"})[aodAssaultKind(side,index,op)]+" · "+aodAssaultMeleeKind(side,index,op))}</strong>`:
+    aodRifleConfigurable(side,op)?`<strong>${esc((AOD_RIFLE_OPTIONS.find(x=>x.key===aodRifleKind(side,index,op))?.label||"")+(aodSergeantConfigurable(side,op)?" · "+aodSergeantMeleeKind(side,index,op):""))}</strong>`:
     `<span>預設武器資料</span>`;
   return `<li><span>${esc(op.name)}</span>${main}</li>`;
  }).join("");
@@ -1137,6 +1424,7 @@ function finishBattleSetup(){
   if(!battleDraft||!battleDraft.my.length||rosterError("my")||(!battleDraft.enemySkipped&&rosterError("enemy")))return;
   const weaponError=battleWeaponValidationError();
   if(weaponError){alert(weaponError);return;}
+  for(const side of ["my","enemy"]){const error=chapterTacticsError(side);if(error){alert(error);return;}}
   if(!confirm("開始對戰並重置本局 TP、VP、CP 與戰鬥紀錄？"))return;
   for(const side of ["my","enemy"]){
    (battleDraft[side]||[]).forEach((id,index)=>{
@@ -1148,7 +1436,7 @@ function finishBattleSetup(){
     }
    });
   }
-  battleRoster={myTeam:S.myTeam,enemyTeam:S.enemyTeam,my:[...battleDraft.my],enemy:battleDraft.enemySkipped?null:[...battleDraft.enemy],weapons:JSON.parse(JSON.stringify(battleWeaponDraft))};
+  battleRoster={myTeam:S.myTeam,enemyTeam:S.enemyTeam,my:[...battleDraft.my],enemy:battleDraft.enemySkipped?null:[...battleDraft.enemy],weapons:JSON.parse(JSON.stringify(battleWeaponDraft)),chapterTactics:JSON.parse(JSON.stringify(battleChapterDraft))};
   localStorage.setItem(ROSTER_KEY,JSON.stringify(battleRoster));
   battleDraft=null;
   S.matchTracker={tp:1,initiative:"my",sides:{my:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]},enemy:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]}},log:[]};
@@ -1158,20 +1446,21 @@ function renderBattleSetup(){
   const d=battleDraft,side=d.step===1?"my":"enemy";
   if(d.step===0)return `<div class="battle-setup"><h2>① 選擇本場雙方小隊</h2><p>在這裡決定雙方小隊。進入下一步後就鎖定；若要修改，請按「上一步」回來。</p><div class="battle-team-picker-grid">${battleTeamPicker("my")}${battleTeamPicker("enemy")}</div><button onclick="battleSetupNext()">確認小隊，下一步 →</button> <button onclick="cancelBattleSetup()">取消設定</button></div>`;
   if(d.step===3){
-    return `<div class="battle-setup"><h2>確認本場編隊</h2><p>已檢查基本編成條件，XV26 另檢查主武器二選一及融合砲最多兩把。其他小隊的武器與特殊限制仍須依「編成規則」核對。</p>
+    return `<div class="battle-setup"><h2>確認本場編隊</h2><p>已檢查基本編成條件。${[rosterTeam("my"),rosterTeam("enemy")].includes("xv26")?"XV26 已檢查主武器二選一及融合砲最多兩把。":""}${[rosterTeam("my"),rosterTeam("enemy")].includes("aod")?"死亡天使已檢查目前支援的仲裁者步槍及軍士近戰武器選擇。":""}尚未支援的武器及特殊限制仍須依「編成規則」核對。</p>
     <div class="battle-review-grid">${battleSetupSummarySide("my")}${battleSetupSummarySide("enemy")}</div>
-    <p class="battle-review-note">請確認雙方特工及 XV26 主武器。其他小隊目前顯示完整武器資料，尚未提供武器配置選擇或合法性驗證。</p>
-    <button onclick="battleSetupBack()">返回修改</button> <button onclick="finishBattleSetup()">確認並開始對戰</button> <button onclick="cancelBattleSetup()">取消設定</button></div>`;
+    <div class="battle-review-grid">${chapterTacticsPicker("my")}${chapterTacticsPicker("enemy")}</div>
+    <p class="battle-review-note">請確認雙方特工及已設定的武器。尚未支援配置的職位會顯示預設武器資料，請自行核對合法性。</p>
+    <button onclick="battleSetupBack()">返回修改</button> <button onclick="finishBattleSetup()" ${chapterTacticsError("my")||chapterTacticsError("enemy")?'disabled title="請先完成戰團戰術選擇"':''}>確認並開始對戰</button> <button onclick="cancelBattleSetup()">取消設定</button></div>`;
   }
   const ops=rosterOps(side),chosen=d[side];
   return `<div class="battle-setup"><h2>${d.step===1?"② 選擇我方出戰特工":"③ 選擇敵方出戰特工"}</h2>
   <p>${esc(TEAMS[rosterTeam(side)]?.name||"")} · 已選 ${chosen.length} 名。選擇的是本場快捷名單，不會修改原始資料。</p>
   ${d.step===2?`<label class="battle-skip"><input type="checkbox" ${d.enemySkipped?"checked":""} onchange="skipEnemyRoster()"> 暫不設定敵方特工（保留完整敵方規則查詢）</label>`:""}
   ${rosterRule(side)?`<div class="battle-xv26-tools"><small>${esc(rosterRule(side).note||"請自行選擇出戰特工，系統檢查基本編成條件。")}</small></div>`:""}
-  <div class="battle-compact-layout"><section><h3>可選特工</h3><div class="battle-compact-options">${ops.map(o=>draftVisualCard(side,o)).join("")}</div></section>${battleSelectedList(side)}</div>${battlePickerPanel()}
+  <div class="battle-compact-layout"><section><h3>尚可加入的特工</h3><div class="battle-compact-options">${ops.filter(o=>canDraftAdd(side,o.id)).map(o=>draftVisualCard(side,o)).join("")||`<p class="battle-options-empty">目前沒有其他可加入的特工。需要調整時，請從「已加入隊伍」編輯或移除特工。</p>`}</div></section>${battleSelectedList(side)}</div>${battlePickerPanel()}
   ${rosterError(side)?`<p class="battle-validation">${esc(rosterError(side))}</p>`:""}
-  <p class="battle-note">點擊特工開啟配置，確認後加入隊伍。點擊已加入名單可修改武器或移除特工。XV26 融合砲最多 2 把。</p>
-  <button onclick="battleSetupBack()">上一步</button> <button onclick="battleSetupNext()">下一步 →</button> <button onclick="cancelBattleSetup()">取消設定</button></div>`;
+  <p class="battle-note">點擊特工開啟配置，確認後加入隊伍。點擊已加入名單可修改武器；非固定特工也可移除。已選且不可重複的職位會從可選列表隱藏；允許重複的職位則保留至編成上限。${rosterTeam(side)==="xv26"?"XV26 融合砲最多 2 把。":""}</p>
+  <button onclick="battleSetupBack()">上一步</button> <button onclick="battleSetupNext()" ${!(d.step===2&&d.enemySkipped)&&rosterError(side)?'disabled title="請先完成基本編成"':""}>下一步 →</button> <button onclick="cancelBattleSetup()">取消設定</button></div>`;
 }
 function showRosterSide(side){
   const teamId=rosterTeam(side),t=TEAMS[teamId],ids=battleRoster?.[side];
@@ -1197,7 +1486,7 @@ function renderMatchHub(){
   }else if(S.matchTab==="equipment"){
     body=`<div class="match-equipment-grid">${matchEquipmentSide("my")}${matchEquipmentSide("enemy")}</div>`;
   }else if(S.matchTab==="public"){
-    body=`<div class="match-public"><div class="tracker-toolbar"><div class="tracker-tp"><b>TP ${m.tp}</b><button onclick="nextTurningPoint()" ${m.tp>=4?"disabled":""}>下一轉折點 →</button></div><button class="tracker-reset" onclick="startNewMatch()">開始新對戰</button></div><div class="tracker-sides">${trackerSidePanel("my")}${trackerSidePanel("enemy")}</div></div>`;
+    body=`<div class="match-public"><div class="battle-chapter-public-grid">${liveChapterTacticsPanel("my")}${liveChapterTacticsPanel("enemy")}</div><div class="tracker-toolbar"><div class="tracker-tp"><b>TP ${m.tp}</b><button onclick="nextTurningPoint()" ${m.tp>=4?"disabled":""}>下一轉折點 →</button></div><button class="tracker-reset" onclick="startNewMatch()">開始新對戰</button></div><div class="tracker-sides">${trackerSidePanel("my")}${trackerSidePanel("enemy")}</div></div>`;
   }else{
     const logs=m.log.map(e=>`<div class="battle-log-row"><span class="battle-log-tp">TP${e.tp}</span><div class="battle-log-text">${esc(e.text)}</div><div class="battle-log-meta"><small>${esc(e.at||"")}</small><button class="battle-log-remove" onclick="removeMatchLog('${e.id}')" aria-label="移除這筆紀錄" title="移除紀錄">移除</button></div></div>`).join("");
     body=`<div class="battle-log-summary"><span>我方 ${m.sides.my.vp} VP · ${m.sides.my.cp} CP</span><span>敵方 ${m.sides.enemy.vp} VP · ${m.sides.enemy.cp} CP</span><span>共 ${m.log.length} 筆</span></div><div class="manual-log"><input id="manualMatchLog" maxlength="120" placeholder="手動記錄事件…" onkeydown="if(event.key==='Enter')addManualMatchLog()"><button onclick="addManualMatchLog()">＋ 新增紀錄</button></div><div class="battle-log-list">${logs||'<div class="tracker-empty battle-log-empty">尚無戰鬥紀錄。你可以手動記事，或調整 VP、CP、先手與戰略計謀讓系統自動記錄。</div>'}</div>`;
