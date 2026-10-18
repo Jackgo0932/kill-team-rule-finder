@@ -938,3 +938,8 @@ linear-gradient(110deg,rgba(230,92,43,.18),transparent 42%),linear-gradient(180d
 /* v2.6.7: editable public chapter tactics */
 .battle-chapter-public-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px}
 .battle-chapter-public-grid:empty{display:none}
+
+/* v2.8.0: one independent reference selector, match-side shortcuts below */
+.matchup-pickers.reference-picker{display:block}
+.matchup-pickers.reference-picker .matchup-team{width:100%;max-width:none}
+.matchup-pickers.reference-picker .team-select{width:100%;max-width:none;font-size:14px}

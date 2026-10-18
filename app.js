@@ -11,7 +11,7 @@ const S={
   myTeam:SAVED_MY_TEAM,
   enemyTeam:SAVED_ENEMY_TEAM,
   side:SAVED_SIDE,
-  team:SAVED_SIDE==="enemy"?SAVED_ENEMY_TEAM:SAVED_MY_TEAM,
+  team:LEGACY_TEAM,
   tab:"全部",
   view:"all",
   matchTab:"roster",
@@ -236,7 +236,7 @@ function ensureMatchTracker(){
   return m;
 }
 function saveMatchTracker(){ensureMatchTracker();localStorage.setItem("ktMatchTracker",JSON.stringify(S.matchTracker))}
-function trackerTeamId(side){return side==="my"?S.myTeam:S.enemyTeam}
+function trackerTeamId(side){return battleRoster?.[side+"Team"]||(side==="my"?S.myTeam:S.enemyTeam)}
 function trackerSideName(side){return side==="my"?"我方":"敵方"}
 function trackerTeam(side){return TEAMS[trackerTeamId(side)]}
 function trackerLog(text){
@@ -847,7 +847,7 @@ function openMatchEquipment(side,key){
   });
 }
 function matchEquipmentSide(side){
-  const teamId=side==="enemy"?S.enemyTeam:S.myTeam;
+  const teamId=trackerTeamId(side);
   const t=TEAMS[teamId];
   const bucket=equipmentBucket(side,teamId);
   const items=bucket.map(key=>`<button class="match-equipment-item" onclick="openMatchEquipment('${side}','${key}')"><span>${esc(equipmentNameByKey(teamId,key))}${equipmentOptionSummary(side,teamId,key)}</span><small>查看規則 ›</small></button>`).join("");
@@ -865,14 +865,12 @@ let battleRoster=(()=>{
   try {const x=JSON.parse(localStorage.getItem(ROSTER_KEY)||"null");return x&&typeof x==="object"?x:null}
   catch{return null}
 })();
-if(battleRoster&&TEAMS[battleRoster.myTeam]&&TEAMS[battleRoster.enemyTeam]){
- S.myTeam=battleRoster.myTeam;S.enemyTeam=battleRoster.enemyTeam;
- S.team=S.side==="enemy"?S.enemyTeam:S.myTeam;
-}
+// Rule browsing selections are independent from the saved match roster.
 let battleDraft=null;
+let battleDraftTeams=null;
 let battleWeaponDraft={my:{},enemy:{}};
-function rosterTeam(side){return side==="my"?S.myTeam:S.enemyTeam}
-function teamsLocked(){return (!!battleRoster&&!battleDraft)||!!(battleDraft&&battleDraft.step>0)}
+function rosterTeam(side){return battleDraftTeams?.[side]||(battleRoster?.[side+"Team"])||(side==="my"?S.myTeam:S.enemyTeam)}
+function teamsLocked(){return false}
 function guardTeamChange(){
  if(!teamsLocked())return false;
  alert(battleDraft?"已確認小隊，請返回建立對戰的第一步修改。":"本場對戰已鎖定雙方小隊。請在「本場特工」使用「重新選擇出戰特工」建立新對戰。");
@@ -885,7 +883,7 @@ const TEAM_ROSTER_RULES={
  "rav":{fixed:{prime:1},slots:4,allowed:["felltalon","tremorscythe","venomspitter","warrior","wrecker"],repeat:["warrior"]},
  "ci":{fixed:{superior:1},slots:8,allowed:["abjuror","censor","cremator","denuncia","mortisanctus","reliquarius","warrior"],repeat:["cremator","warrior"],caps:{cremator:2}},
  "ks":{fixed:{sergeant:1},slots:9,allowed:["combat-medic","demo-trooper","gunner","recon-trooper","sharpshooter","trooper","vox-trooper"],repeat:["trooper"],groupCaps:[{ids:["combat-medic","demo-trooper","gunner","recon-trooper","sharpshooter","vox-trooper"],max:4}],note:"砲手武器選項需另行核對。"},
- "cc":{fixed:{geomancer:1,accelerator:1,reanimator:1,warrior:3,"tomb-crawler":2},slots:0,allowed:[],note:"墓穴爬行者武器選擇與跨維隔振器最多 1 個，仍須自行核對。"},
+ "cc":{fixed:{geomancer:1,accelerator:1,reanimator:1,warrior:3,"tomb-crawler":2},slots:0,allowed:[],note:"固定編成 8 名。墓穴爬行者及冥工巨蟲戰士可各自選擇主武器；全隊跨維隔振器最多 1 個。"},
  "leg":{leader:["aspiring-champion","chosen"],slots:5,allowed:["anointed","balefire-acolyte","butcher","gunner","heavy-gunner","icon-bearer","shrivetalon","warrior"],repeat:["warrior"]},
  "wk":{fixed:{"boss-nob":1,"bomb-squig":2},slots:5,allowed:["demolisha","fighter","krusha","gunner","rokkiteer"],repeat:["fighter","gunner"],note:"固定頭目與 2 名炸彈跳跳，另選 5 名特工。頭目近戰武器及砲手火箭武器可於配置視窗選擇。"},
  "mw":{fixed:{"chaos-lord":1},slots:5,allowed:["champion","curseclaw","depredator","huntmaster","raptor","shrieker","skysear","warp-talon"],repeat:["raptor"],note:"標 * 武器合計最多 2 名，需自行核對。"},
@@ -955,6 +953,21 @@ function canDraftAdd(side,id){
 }
 // Wrecka Krew: selectable weapon alternatives; alternate firing profiles stay together.
 function wkOptions(side,op){
+ if(rosterTeam(side)==="ci"&&op.id==="superior")return [
+  {key:"stake",label:"聖物降罪者擲樁器＋聖物爆矢手槍",indices:[1,2,3]},
+  {key:"inferno",label:"獄火手槍",indices:[0,3]}
+ ];
+ if(rosterTeam(side)==="cc"){
+  if(op.id==="warrior")return [
+   {key:"gauss",label:"高斯剖切機",indices:[0,3]},
+   {key:"tesla",label:"特斯拉拋射器",indices:[1,2,3]}
+  ];
+  if(op.id==="tomb-crawler")return [
+   {key:"gauss",label:"雙聯高斯收割砲",indices:[1,2,3]},
+   {key:"phase",label:"跨維隔振器",indices:[0,3]}
+  ];
+  return null;
+ }
  if(rosterTeam(side)!=="wk")return null;
  if(op.id==="boss-nob")return [{key:"single",label:"火箭手砲＋粉碎錘",indices:[0,4]},{key:"dual",label:"雙持火箭手砲＋砍刀",indices:[1,2,3]}];
  if(op.id==="gunner")return [{key:"heavy",label:"重型火箭發射器",indices:[0,2]},{key:"rokkit",label:"火箭發射器",indices:[1,2]}];
@@ -1031,6 +1044,14 @@ function confirmBattlePicker(){
  const {side,id,index}=picker,op=rosterOps(side).find(x=>x.id===id);
  if(!op)return;
  if(index<0&&!canDraftAdd(side,id)){alert("已達編成限制，無法加入此特工。");return;}
+ if(rosterTeam(side)==="cc"&&id==="tomb-crawler"&&picker.wk==="phase"){
+  const used=battleDraft[side].reduce((n,entry,i)=>{
+   if(entry!=="tomb-crawler"||i===index)return n;
+   const other=rosterOps(side).find(o=>o.id===entry);
+   return n+(battleWeaponSelection(side,i,other).includes(0)?1:0);
+  },0);
+  if(used>=1){alert("冥工之環全隊最多只能裝備 1 個跨維隔振器。");return;}
+ }
  const isFusion=xv26CanChoosePrimary(side,op)&&picker.primary==="fusion";
  const wasFusion=index>=0&&battleWeaponSelection(side,index,op).some(i=>xv26PrimaryIndices(op,"fusion").includes(i));
  if(isFusion&&!wasFusion&&xv26FusionCount(side)>=2){alert("XV26 全隊融合砲最多 2 把。");return;}
@@ -1187,6 +1208,7 @@ function battleSelectedList(side){
 function beginBattleSetup(){
   if(battleRoster&&!confirm("重新建立對戰？現有出戰名單會被取代，完成設定時將重置本局紀錄。"))return;
   // Keep the previous match until the replacement is confirmed and finished.
+  battleDraftTeams={my:battleRoster?.myTeam||S.myTeam,enemy:battleRoster?.enemyTeam||S.enemyTeam};
   battleDraft={my:initialDraft("my"),enemy:initialDraft("enemy"),enemySkipped:false,step:0};
   battleWeaponDraft={my:{},enemy:{}};battleChapterDraft={my:{primary:"",secondary:""},enemy:{primary:"",secondary:""}};battlePicker=null;
   S.view="match";render();
@@ -1211,19 +1233,16 @@ function battleSetupNext(){
 function battleSetupBack(){if(battleDraft){battleDraft.step=Math.max(0,battleDraft.step-1);render()}}
 function cancelBattleSetup(){
  if(!battleDraft)return;
- battleDraft=null;battlePicker=null;
+ battleDraft=null;battleDraftTeams=null;battlePicker=null;
  battleWeaponDraft={my:{},enemy:{}};battleChapterDraft={my:{primary:"",secondary:""},enemy:{primary:"",secondary:""}};
- if(battleRoster){
-  S.myTeam=battleRoster.myTeam;S.enemyTeam=battleRoster.enemyTeam;
-  S.team=S.side==="enemy"?S.enemyTeam:S.myTeam;
- }
  render();
 }
 function changeBattleSetupTeam(side,id){
  if(!battleDraft||battleDraft.step!==0||!TEAMS[id])return;
- if(side==="my"){S.myTeam=id;S.team=S.side==="my"?id:S.team;battleDraft.my=initialDraft("my");battleWeaponDraft.my={};battleChapterDraft.my={primary:"",secondary:""};localStorage.setItem("ktMyTeam",id)}
- else{S.enemyTeam=id;S.team=S.side==="enemy"?id:S.team;battleDraft.enemy=initialDraft("enemy");battleWeaponDraft.enemy={};battleChapterDraft.enemy={primary:"",secondary:""};localStorage.setItem("ktEnemyTeam",id)}
- localStorage.setItem("ktTeam",S.team);
+ battleDraftTeams[side]=id;
+ battleDraft[side]=initialDraft(side);
+ battleWeaponDraft[side]={};
+ battleChapterDraft[side]={primary:"",secondary:""};
  render();
 }
 function battleTeamPicker(side){
@@ -1335,6 +1354,18 @@ function battleWeaponValidationError(){
  if(!battleDraft)return "尚未建立編隊。";
  for(const side of ["my","enemy"]){
   if(side==="enemy"&&battleDraft.enemySkipped)continue;
+  if(rosterTeam(side)==="cc"){
+   let phaseCount=0;
+   for(let i=0;i<battleDraft[side].length;i++){
+    const op=rosterOps(side).find(o=>o.id===battleDraft[side][i]);
+    if(!op||!wkOptions(side,op))continue;
+    const chosen=battleWeaponSelection(side,i,op);
+    if(!wkOptions(side,op).some(opt=>opt.indices.length===chosen.length&&opt.indices.every(j=>chosen.includes(j))))
+     return `${side==="my"?"我方":"敵方"} ${op.name} 的武器配置不合法。`;
+    if(op.id==="tomb-crawler"&&chosen.includes(0))phaseCount++;
+   }
+   if(phaseCount>1)return `${side==="my"?"我方":"敵方"} 跨維隔振器最多 1 個。`;
+  }
   if(rosterTeam(side)==="aod"){
    for(let i=0;i<battleDraft[side].length;i++){
     const op=rosterOps(side).find(o=>o.id===battleDraft[side][i]);
@@ -1453,9 +1484,9 @@ function finishBattleSetup(){
     }
    });
   }
-  battleRoster={myTeam:S.myTeam,enemyTeam:S.enemyTeam,my:[...battleDraft.my],enemy:battleDraft.enemySkipped?null:[...battleDraft.enemy],weapons:JSON.parse(JSON.stringify(battleWeaponDraft)),chapterTactics:JSON.parse(JSON.stringify(battleChapterDraft))};
+  battleRoster={myTeam:battleDraftTeams.my,enemyTeam:battleDraftTeams.enemy,my:[...battleDraft.my],enemy:battleDraft.enemySkipped?null:[...battleDraft.enemy],weapons:JSON.parse(JSON.stringify(battleWeaponDraft)),chapterTactics:JSON.parse(JSON.stringify(battleChapterDraft))};
   localStorage.setItem(ROSTER_KEY,JSON.stringify(battleRoster));
-  battleDraft=null;
+  battleDraft=null;battleDraftTeams=null;
   S.matchTracker={tp:1,initiative:"my",sides:{my:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]},enemy:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]}},log:[]};
   saveMatchTracker();S.matchTab="roster";render();
 }
@@ -1517,14 +1548,16 @@ function render(){
   document.querySelector(".sticky").classList.toggle("flow-hidden",isFlow||isMatch);
   document.querySelector(".matchup").classList.toggle("flow-hidden",isMatch);
   document.querySelector("#tabs").classList.toggle("flow-hidden",isFlow||isMatch);
-  document.querySelector("#myTeamSelect").disabled=teamsLocked();
-  document.querySelector("#enemyTeamSelect").disabled=teamsLocked();
-  document.querySelector("#swapTeams").disabled=teamsLocked();
-  document.querySelector("#myTeamSelect").value=S.myTeam;
-  document.querySelector("#enemyTeamSelect").value=S.enemyTeam;
-  document.querySelector("#myTeamName").textContent=TEAMS[S.myTeam].name;
-  document.querySelector("#enemyTeamName").textContent=TEAMS[S.enemyTeam].name;
-  document.querySelectorAll("#sideSwitch button").forEach(b=>b.classList.toggle("on",b.dataset.side===S.side));
+  const myReferenceTeam=battleRoster?.myTeam||S.myTeam;
+  const enemyReferenceTeam=battleRoster?.enemyTeam||S.enemyTeam;
+  document.querySelector("#referenceTeamSelect").value=S.team;
+  document.querySelector("#myTeamName").textContent=TEAMS[myReferenceTeam]?.name||myReferenceTeam;
+  document.querySelector("#enemyTeamName").textContent=TEAMS[enemyReferenceTeam]?.name||enemyReferenceTeam;
+  document.querySelectorAll("#sideSwitch button").forEach(b=>{
+    const target=b.dataset.side==="my"?myReferenceTeam:enemyReferenceTeam;
+    b.classList.toggle("on",S.team===target);
+    b.setAttribute("aria-pressed",String(S.team===target));
+  });
   document.querySelector("#navTeamName").textContent=team().name;
   if(isFlow){ renderFlow(); return; }
   if(isMatch){ renderMatchHub(); return; }
@@ -1586,13 +1619,10 @@ function fav(id){const k=S.team+":"+id;S.fav.has(k)?S.fav.delete(k):S.fav.add(k)
 
 function setActiveSide(side,{resetOpen=true}={}){
   S.side=side==="enemy"?"enemy":"my";
-  S.team=S.side==="enemy"?S.enemyTeam:S.myTeam;
+  S.team=(battleRoster?.[S.side+"Team"])||(S.side==="enemy"?S.enemyTeam:S.myTeam);
   localStorage.setItem("ktSide",S.side);
-  localStorage.setItem("ktTeam",S.team); // 舊版相容：記住最後正在看的小隊
-  if(resetOpen){
-    S.open.clear();
-    S.flowOpen.clear();
-  }
+  localStorage.setItem("ktTeam",S.team);
+  if(resetOpen){S.open.clear();S.flowOpen.clear();}
   render();
 }
 
@@ -1602,43 +1632,14 @@ function bindUI(){
     const card=e.target.closest(".card[data-result-id]");
     if(card) rememberViewed(card.dataset.resultId,card.dataset.resultTitle,card.dataset.resultSource);
   });
-  document.querySelector("#myTeamSelect").addEventListener("change",e=>{
-    if(guardTeamChange())return;
-    S.myTeam=e.target.value;
-    if(battleDraft){battleDraft.my=initialDraft("my");battleWeaponDraft.my={}}
-    localStorage.setItem("ktMyTeam",S.myTeam);
-    if(S.side==="my") S.team=S.myTeam;
+  document.querySelector("#referenceTeamSelect").addEventListener("change",e=>{
+    S.team=e.target.value;
     localStorage.setItem("ktTeam",S.team);
-    maybeStartNewMatchForTeamChange();
-    S.open.clear();
-    S.flowOpen.clear();
-    render();
-  });
-  document.querySelector("#enemyTeamSelect").addEventListener("change",e=>{
-    if(guardTeamChange())return;
-    S.enemyTeam=e.target.value;
-    if(battleDraft){battleDraft.enemy=initialDraft("enemy");battleWeaponDraft.enemy={}}
-    localStorage.setItem("ktEnemyTeam",S.enemyTeam);
-    if(S.side==="enemy") S.team=S.enemyTeam;
-    localStorage.setItem("ktTeam",S.team);
-    maybeStartNewMatchForTeamChange();
     S.open.clear();
     S.flowOpen.clear();
     render();
   });
   document.querySelectorAll("#sideSwitch button").forEach(b=>b.addEventListener("click",()=>setActiveSide(b.dataset.side)));
-  document.querySelector("#swapTeams").addEventListener("click",()=>{
-    if(guardTeamChange())return;
-    [S.myTeam,S.enemyTeam]=[S.enemyTeam,S.myTeam];
-    localStorage.setItem("ktMyTeam",S.myTeam);
-    localStorage.setItem("ktEnemyTeam",S.enemyTeam);
-    S.team=S.side==="enemy"?S.enemyTeam:S.myTeam;
-    localStorage.setItem("ktTeam",S.team);
-    maybeStartNewMatchForTeamChange();
-    S.open.clear();
-    S.flowOpen.clear();
-    render();
-  });
   document.querySelectorAll(".nav").forEach(b=>b.onclick=()=>{
     document.querySelectorAll(".nav").forEach(x=>x.classList.remove("on"));
     b.classList.add("on");
