@@ -887,7 +887,7 @@ const TEAM_ROSTER_RULES={
  "ks":{fixed:{sergeant:1},slots:9,allowed:["combat-medic","demo-trooper","gunner","recon-trooper","sharpshooter","trooper","vox-trooper"],repeat:["trooper"],groupCaps:[{ids:["combat-medic","demo-trooper","gunner","recon-trooper","sharpshooter","vox-trooper"],max:4}],note:"砲手武器選項需另行核對。"},
  "cc":{fixed:{geomancer:1,accelerator:1,reanimator:1,warrior:3,"tomb-crawler":2},slots:0,allowed:[],note:"墓穴爬行者武器選擇與跨維隔振器最多 1 個，仍須自行核對。"},
  "leg":{leader:["aspiring-champion","chosen"],slots:5,allowed:["anointed","balefire-acolyte","butcher","gunner","heavy-gunner","icon-bearer","shrivetalon","warrior"],repeat:["warrior"]},
- "wk":{fixed:{"boss-nob":1,"bomb-squig":2},slots:5,allowed:["demolisha","fighter","krusha","gunner","rokkiteer"],repeat:["fighter","gunner"]},
+ "wk":{fixed:{"boss-nob":1,"bomb-squig":2},slots:5,allowed:["demolisha","fighter","krusha","gunner","rokkiteer"],repeat:["fighter","gunner"],note:"固定頭目與 2 名炸彈跳跳，另選 5 名特工。頭目近戰武器及砲手火箭武器可於配置視窗選擇。"},
  "mw":{fixed:{"chaos-lord":1},slots:5,allowed:["champion","curseclaw","depredator","huntmaster","raptor","shrieker","skysear","warp-talon"],repeat:["raptor"],note:"標 * 武器合計最多 2 名，需自行核對。"},
  "pm":{fixed:{champion:1},slots:5,allowed:["bombardier","fighter","heavy","icon","caster","warrior"],repeat:[]},
  "aod":{leader:["captain","assault-sergeant","intercessor-sergeant"],slots:5,allowed:["grenadier","assault-warrior","heavy-gunner","intercessor-gunner","intercessor-warrior","eliminator"],repeat:["assault-warrior","intercessor-warrior"]},
@@ -953,6 +953,17 @@ function canDraftAdd(side,id){
  if(r.caps?.[id]&&count>=r.caps[id])return false;
  return !r.groupCaps?.some(g=>g.ids.includes(id)&&a.filter(x=>g.ids.includes(x)).length>=g.max);
 }
+// Wrecka Krew: selectable weapon alternatives; alternate firing profiles stay together.
+function wkOptions(side,op){
+ if(rosterTeam(side)!=="wk")return null;
+ if(op.id==="boss-nob")return [{key:"single",label:"火箭手砲＋粉碎錘",indices:[0,4]},{key:"dual",label:"雙持火箭手砲＋砍刀",indices:[1,2,3]}];
+ if(op.id==="gunner")return [{key:"heavy",label:"重型火箭發射器",indices:[0,2]},{key:"rokkit",label:"火箭發射器",indices:[1,2]}];
+ if(op.id==="rokkiteer")return [{key:"pulsa",label:"脈衝飛彈",indices:[0,1,3]},{key:"rack",label:"火箭掛架",indices:[1,2,3]}];
+ return null;
+}
+function wkIndices(side,op,kind){const opts=wkOptions(side,op);return opts?(opts.find(o=>o.key===kind)||opts[0]).indices:(op.weapons||[]).map((_,i)=>i)}
+function wkSavedKind(side,op,selected){const opts=wkOptions(side,op);return opts?(opts.find(o=>o.indices.every(i=>selected?.includes(i))&&selected?.length===o.indices.length)||opts[0]).key:null}
+function chooseBattlePickerWk(kind){if(!battlePicker)return;const op=rosterOps(battlePicker.side).find(o=>o.id===battlePicker.id);if(!wkOptions(battlePicker.side,op)?.some(o=>o.key===kind))return;battlePicker.wk=kind;renderBattlePickerPreservingState()}
 function openBattlePicker(side,id,index=-1){
  const op=rosterOps(side).find(x=>x.id===id);
  if(!battleDraft||!op)return;
@@ -961,7 +972,7 @@ function openBattlePicker(side,id,index=-1){
  const selected=index>=0?battleWeaponSelection(side,index,op):null;
  battlePicker={side,id,index,primary:selected&&selected.some(i=>xv26PrimaryIndices(op,"fusion").includes(i))?"fusion":"rapid",
  rifle:index>=0&&aodRifleConfigurable(side,op)?aodRifleKind(side,index,op):"auto",
- melee:index>=0&&aodSergeantConfigurable(side,op)?aodSergeantMeleeKind(side,index,op):AOD_INTERCESSOR_MELEE[0], assault:index>=0&&aodAssaultConfigurable(side,op)?aodAssaultKind(side,index,op):"heavy", assaultMelee:index>=0&&aodAssaultConfigurable(side,op)?aodAssaultMeleeKind(side,index,op):"鏈鋸劍", expandedRule:null};
+ melee:index>=0&&aodSergeantConfigurable(side,op)?aodSergeantMeleeKind(side,index,op):AOD_INTERCESSOR_MELEE[0], assault:index>=0&&aodAssaultConfigurable(side,op)?aodAssaultKind(side,index,op):"heavy", assaultMelee:index>=0&&aodAssaultConfigurable(side,op)?aodAssaultMeleeKind(side,index,op):"鏈鋸劍", wk:wkSavedKind(side,op,selected),expandedRule:null};
  render();
  document.addEventListener("keydown",battlePickerHandleKeydown);
  document.querySelector(".battle-config-header button")?.focus();
@@ -1029,6 +1040,7 @@ function confirmBattlePicker(){
   const all=(op.weapons||[]).map((_,i)=>i),exclude=new Set([...xv26PrimaryIndices(op,"fusion"),...xv26PrimaryIndices(op,"rapid")]);
   battleWeaponDraft[side][battleWeaponKey(side,target)]=[...all.filter(i=>!exclude.has(i)),...xv26PrimaryIndices(op,picker.primary)];
  }
+ if(wkOptions(side,op)){battleWeaponDraft[side][battleWeaponKey(side,target)]=wkIndices(side,op,picker.wk);}
  if(aodAssaultConfigurable(side,op)){
   battleWeaponDraft[side][battleWeaponKey(side,target)]=configuredAodAssaultWeapons(op,picker.assault,picker.assaultMelee);
  }
@@ -1051,6 +1063,7 @@ function removeBattleRosterEntry(side,index){
  battlePicker=null;render();
 }
 function battlePickerPreviewIndices(side,op,picker){
+ if(wkOptions(side,op))return wkIndices(side,op,picker.wk);
  if(aodAssaultConfigurable(side,op))return configuredAodAssaultWeapons(op,picker.assault,picker.assaultMelee);
  if(aodSergeantConfigurable(side,op))return configuredAodSergeantWeapons(op,picker.rifle,picker.melee).filter(i=>i>=0);
  if(aodRifleConfigurable(side,op))return configuredAodWeapons(op,picker.rifle);
@@ -1117,6 +1130,7 @@ function battlePickerPanel(){
  const primary=xv26CanChoosePrimary(x.side,op),fixed=x.index>=0&&!!rosterRule(x.side)?.fixed?.[x.id];
  return `<div class="battle-config-overlay" onclick="if(event.target===this)closeBattlePicker()"><section class="battle-config-panel" role="dialog" aria-modal="true" aria-label="配置特工"><div class="battle-config-header"><h3>${esc(op.name)}</h3><button type="button" onclick="closeBattlePicker()" aria-label="關閉">✕</button></div>
  <p>${esc(op.role||"")}</p>${op.image?`<img class="battle-config-image" src="${esc(op.image)}" alt="">`:""}
+ ${wkOptions(x.side,op)?`<fieldset class="battle-config-weapons"><legend>選擇配備武器</legend>${wkOptions(x.side,op).map(item=>`<label><input type="radio" name="battle-wk-weapon" value="${item.key}" ${x.wk===item.key?"checked":""} onchange="chooseBattlePickerWk('${item.key}')">${item.label}</label>`).join("")}</fieldset>`:""}
  ${aodRifleConfigurable(x.side,op)?`<fieldset class="battle-config-weapons"><legend>選擇主武器</legend>
  ${AOD_RIFLE_OPTIONS.map(item=>`<label><input type="radio" name="battle-config-rifle" value="${item.key}" ${x.rifle===item.key?"checked":""} onchange="chooseBattlePickerRifle('${item.key}')">${item.label}</label>`).join("")}
  <small>其他已配備武器會保留；追獵者步槍的射擊模式會一併顯示。</small></fieldset>`:""}
@@ -1153,7 +1167,7 @@ function battleSelectedList(side){
   const chosen=battleWeaponSelection(side,index,op);
   const configurable=xv26CanChoosePrimary(side,op);
   const fusion=configurable&&chosen.some(i=>xv26PrimaryIndices(op,"fusion").includes(i));
-  const weapon=aodAssaultConfigurable(side,op)?`${({flamer:"噴火手槍",heavy:"重型爆矢手槍",plasma:"等離子手槍"})[aodAssaultKind(side,index,op)]} · ${aodAssaultMeleeKind(side,index,op)}`:configurable?(fusion?"融合砲":"速射砲"):aodRifleConfigurable(side,op)?`${AOD_RIFLE_OPTIONS.find(x=>x.key===aodRifleKind(side,index,op))?.label||"爆矢步槍"}${aodSergeantConfigurable(side,op)?" · "+aodSergeantMeleeKind(side,index,op):""}`:rosterTeam(side)==="rav"?"固定武器配置":"預設武器";
+  const weapon=wkOptions(side,op)?wkOptions(side,op).find(o=>o.key===wkSavedKind(side,op,chosen))?.label:aodAssaultConfigurable(side,op)?`${({flamer:"噴火手槍",heavy:"重型爆矢手槍",plasma:"等離子手槍"})[aodAssaultKind(side,index,op)]} · ${aodAssaultMeleeKind(side,index,op)}`:configurable?(fusion?"融合砲":"速射砲"):aodRifleConfigurable(side,op)?`${AOD_RIFLE_OPTIONS.find(x=>x.key===aodRifleKind(side,index,op))?.label||"爆矢步槍"}${aodSergeantConfigurable(side,op)?" · "+aodSergeantMeleeKind(side,index,op):""}`:rosterTeam(side)==="rav"?"固定武器配置":"預設武器";
   const isFixed=!!rule?.fixed?.[id];
   return `<button type="button" class="battle-selected-item" onclick="openBattlePicker('${side}','${id}',${index})">
    ${op.image?`<img class="battle-selected-portrait" src="${esc(op.image)}" alt="" loading="lazy">`:""}
@@ -1289,6 +1303,7 @@ function battleWeaponSelection(side,index,op){
  const key=battleWeaponKey(side,index),saved=battleWeaponDraft[side][key];
  if(Array.isArray(saved))return saved;
  const all=(op.weapons||[]).map((_,i)=>i);
+ if(wkOptions(side,op))return wkIndices(side,op,wkOptions(side,op)[0].key);
  if(aodAssaultConfigurable(side,op))return configuredAodAssaultWeapons(op,"heavy","鏈鋸劍");
  if(aodSergeantConfigurable(side,op))return configuredAodSergeantWeapons(op,"auto",AOD_INTERCESSOR_MELEE[0]);
  if(aodRifleConfigurable(side,op))return configuredAodWeapons(op,"auto");
@@ -1414,7 +1429,7 @@ function battleSetupSummarySide(side){
   const weapons=chosen.map(i=>op.weapons?.[i]?.[0]).filter(Boolean);
   const isXv=xv26CanChoosePrimary(side,op);
   const fusion=isXv&&chosen.some(i=>xv26PrimaryIndices(op,"fusion").includes(i));
-  const main=isXv?`<strong>${fusion?"融合砲":"速射砲"}</strong>`:
+  const main=wkOptions(side,op)?`<strong>${esc(wkOptions(side,op).find(o=>o.key===wkSavedKind(side,op,chosen))?.label||"")}</strong>`:isXv?`<strong>${fusion?"融合砲":"速射砲"}</strong>`:
     aodAssaultConfigurable(side,op)?`<strong>${esc(({flamer:"噴火手槍",heavy:"重型爆矢手槍",plasma:"等離子手槍"})[aodAssaultKind(side,index,op)]+" · "+aodAssaultMeleeKind(side,index,op))}</strong>`:
     aodRifleConfigurable(side,op)?`<strong>${esc((AOD_RIFLE_OPTIONS.find(x=>x.key===aodRifleKind(side,index,op))?.label||"")+(aodSergeantConfigurable(side,op)?" · "+aodSergeantMeleeKind(side,index,op):""))}</strong>`:
     `<span>預設武器資料</span>`;
