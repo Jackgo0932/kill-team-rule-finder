@@ -504,8 +504,9 @@ function markedProse(text,scope){
   // Preserve authored line breaks in rule prose after escaping/link expansion.
   out=out.replace(/\n/g,"<br>");
   let explain="";
-  for(const ref of refs){
-    if(!S.open.has(S.team+":"+ref.instance))continue;
+  const selectedRef=refs.find(ref=>ref.kind!=="weapon-profile"&&S.open.has(S.team+":"+ref.instance))
+    ||refs.find(ref=>S.open.has(S.team+":"+ref.instance));
+  for(const ref of selectedRef?[selectedRef]:[]){
     if(ref.kind==="weapon-profile"){
       const p=(window.KT_WEAPON_PROFILES||{})[ref.id];
       if(p){
@@ -886,7 +887,7 @@ const TEAM_ROSTER_RULES={
  "cc":{fixed:{geomancer:1,accelerator:1,reanimator:1,warrior:3,"tomb-crawler":2},slots:0,allowed:[],note:"固定編成 8 名。墓穴爬行者及冥工巨蟲戰士可各自選擇主武器；全隊跨維隔振器最多 1 個。"},
  "leg":{leader:["aspiring-champion","chosen"],slots:5,allowed:["anointed","balefire-acolyte","butcher","gunner","heavy-gunner","icon-bearer","shrivetalon","warrior"],repeat:["warrior"]},
  "wk":{fixed:{"boss-nob":1,"bomb-squig":2},slots:5,allowed:["demolisha","fighter","krusha","gunner","rokkiteer"],repeat:["fighter","gunner"],note:"固定頭目與 2 名炸彈跳跳，另選 5 名特工。頭目近戰武器及砲手火箭武器可於配置視窗選擇。"},
- "mw":{fixed:{"chaos-lord":1},slots:5,allowed:["champion","curseclaw","depredator","huntmaster","raptor","shrieker","skysear","warp-talon"],repeat:["raptor"],note:"標 * 武器合計最多 2 名，需自行核對。"},
+ "mw":{fixed:{"chaos-lord":1},slots:5,allowed:["champion","curseclaw","depredator","huntmaster","raptor","shrieker","skysear","warp-talon"],repeat:["raptor"],note:"固定 1 名混沌領主，另選 5 名（僅猛禽可重複）。全隊選用等離子手槍、熱熔槍或等離子槍的特工合計最多 2 名。"},
  "pm":{fixed:{champion:1},slots:5,allowed:["bombardier","fighter","heavy","icon","caster","warrior"],repeat:[]},
  "aod":{leader:["captain","assault-sergeant","intercessor-sergeant"],slots:5,allowed:["grenadier","assault-warrior","heavy-gunner","intercessor-gunner","intercessor-warrior","eliminator"],repeat:["assault-warrior","intercessor-warrior"]},
  "dw":{slots:5,allowed:["watch-sergeant","aegis","blademaster","bombard","breacher","demolisher","disruptor","gunner","headtaker","horde-slayer","marksman"],repeat:[],groupCaps:[{ids:["bombard","breacher","horde-slayer"],max:1}],note:"從守望軍士及各類老兵中任選 5 名，不強制選守望軍士；同職位不可重複，重裝型裝甲特工最多 1 名。"}
@@ -952,7 +953,44 @@ function canDraftAdd(side,id){
  return !r.groupCaps?.some(g=>g.ids.includes(id)&&a.filter(x=>g.ids.includes(x)).length>=g.max);
 }
 // Wrecka Krew: selectable weapon alternatives; alternate firing profiles stay together.
+function mwSpecialCount(side,skipIndex=-1){
+ return (battleDraft?.[side]||[]).reduce((n,id,i)=>{
+  if(i===skipIndex)return n;
+  const op=rosterOps(side).find(o=>o.id===id);
+  if(!op)return n;
+  const selected=battleWeaponSelection(side,i,op);
+  const marked=op.weapons?.some((w,j)=>selected.includes(j)&&(/等離子手槍|熱熔槍|等離子槍/.test(w[0])));
+  return n+(marked?1:0);
+ },0);
+}
+function mwOptionMarked(op,indices){return indices.some(i=>/等離子手槍|熱熔槍|等離子槍/.test(op.weapons?.[i]?.[0]||""))}
 function wkOptions(side,op){
+ if(rosterTeam(side)==="mw"){
+  if(op.id==="chaos-lord"){
+   const result=[];
+   for(const pistol of [{key:"bolt",label:"爆矢手槍",indices:[0]},{key:"plasma",label:"等離子手槍",indices:[1,2]}]){
+    for(const melee of [{key:"claw",label:"閃電爪",indices:[3]},{key:"fist",label:"動力拳",indices:[4]},{key:"power",label:"動力武器",indices:[5]}])result.push({key:pistol.key+"-"+melee.key,label:pistol.label+"＋"+melee.label,indices:[...pistol.indices,...melee.indices]});
+   }
+   result.push({key:"relic",label:"聖物閃電雙爪",indices:[6]});
+   return result;
+  }
+  if(op.id==="champion")return [
+   {key:"bolt-fist",label:"爆矢手槍＋動力拳",indices:[0,3]},
+   {key:"bolt-power",label:"爆矢手槍＋動力武器",indices:[0,4]},
+   {key:"plasma-fist",label:"等離子手槍＋動力拳",indices:[1,2,3]},
+   {key:"plasma-power",label:"等離子手槍＋動力武器",indices:[1,2,4]}
+  ];
+  if(op.id==="raptor")return [
+   {key:"bolt",label:"爆矢手槍",indices:[0,3]},
+   {key:"plasma",label:"等離子手槍",indices:[1,2,3]}
+  ];
+  if(op.id==="skysear")return [
+   {key:"flamer",label:"火焰噴射器",indices:[0,1,5]},
+   {key:"melta",label:"熱熔槍",indices:[0,2,5]},
+   {key:"plasma",label:"等離子槍",indices:[0,3,4,5]}
+  ];
+  return null;
+ }
  if(rosterTeam(side)==="ci"&&op.id==="superior")return [
   {key:"stake",label:"聖物降罪者擲樁器＋聖物爆矢手槍",indices:[1,2,3]},
   {key:"inferno",label:"獄火手槍",indices:[0,3]}
@@ -976,6 +1014,12 @@ function wkOptions(side,op){
 }
 function wkIndices(side,op,kind){const opts=wkOptions(side,op);return opts?(opts.find(o=>o.key===kind)||opts[0]).indices:(op.weapons||[]).map((_,i)=>i)}
 function wkSavedKind(side,op,selected){const opts=wkOptions(side,op);return opts?(opts.find(o=>o.indices.every(i=>selected?.includes(i))&&selected?.length===o.indices.length)||opts[0]).key:null}
+function chooseBattlePickerMwChampion(slot,kind){
+ if(!battlePicker||rosterTeam(battlePicker.side)!=="mw"||battlePicker.id!=="champion")return;
+ const [pistol,melee]=(battlePicker.wk||"bolt-fist").split("-");
+ const next=slot==="pistol"?kind+"-"+melee:pistol+"-"+kind;
+ chooseBattlePickerWk(next);
+}
 function chooseBattlePickerWk(kind){if(!battlePicker)return;const op=rosterOps(battlePicker.side).find(o=>o.id===battlePicker.id);if(!wkOptions(battlePicker.side,op)?.some(o=>o.key===kind))return;battlePicker.wk=kind;renderBattlePickerPreservingState()}
 function openBattlePicker(side,id,index=-1){
  const op=rosterOps(side).find(x=>x.id===id);
@@ -1051,6 +1095,12 @@ function confirmBattlePicker(){
    return n+(battleWeaponSelection(side,i,other).includes(0)?1:0);
   },0);
   if(used>=1){alert("冥工之環全隊最多只能裝備 1 個跨維隔振器。");return;}
+ }
+ if(rosterTeam(side)==="mw"&&wkOptions(side,op)){
+  const indices=wkIndices(side,op,picker.wk);
+  if(mwOptionMarked(op,indices)&&mwSpecialCount(side,index)>=2){
+   alert("屠戮之翼：全隊裝備等離子手槍、熱熔槍或等離子槍的特工合計最多 2 名。");return;
+  }
  }
  const isFusion=xv26CanChoosePrimary(side,op)&&picker.primary==="fusion";
  const wasFusion=index>=0&&battleWeaponSelection(side,index,op).some(i=>xv26PrimaryIndices(op,"fusion").includes(i));
@@ -1151,7 +1201,12 @@ function battlePickerPanel(){
  const primary=xv26CanChoosePrimary(x.side,op),fixed=x.index>=0&&!!rosterRule(x.side)?.fixed?.[x.id];
  return `<div class="battle-config-overlay" onclick="if(event.target===this)closeBattlePicker()"><section class="battle-config-panel" role="dialog" aria-modal="true" aria-label="配置特工"><div class="battle-config-header"><h3>${esc(op.name)}</h3><button type="button" onclick="closeBattlePicker()" aria-label="關閉">✕</button></div>
  <p>${esc(op.role||"")}</p>${op.image?`<img class="battle-config-image" src="${esc(op.image)}" alt="">`:""}
- ${wkOptions(x.side,op)?`<fieldset class="battle-config-weapons"><legend>選擇配備武器</legend>${wkOptions(x.side,op).map(item=>`<label><input type="radio" name="battle-wk-weapon" value="${item.key}" ${x.wk===item.key?"checked":""} onchange="chooseBattlePickerWk('${item.key}')">${item.label}</label>`).join("")}</fieldset>`:""}
+ ${rosterTeam(x.side)==="mw"&&op.id==="champion"?`
+ <fieldset class="battle-config-weapons"><legend>選擇手槍</legend>
+ ${[{key:"bolt",label:"爆矢手槍"},{key:"plasma",label:"等離子手槍"}].map(item=>`<label><input type="radio" name="battle-mw-champion-pistol" value="${item.key}" ${(x.wk||"bolt-fist").startsWith(item.key+"-")?"checked":""} onchange="chooseBattlePickerMwChampion('pistol','${item.key}')">${item.label}</label>`).join("")}</fieldset>
+ <fieldset class="battle-config-weapons"><legend>選擇近戰武器</legend>
+ ${[{key:"fist",label:"動力拳"},{key:"power",label:"動力武器"}].map(item=>`<label><input type="radio" name="battle-mw-champion-melee" value="${item.key}" ${(x.wk||"bolt-fist").endsWith("-"+item.key)?"checked":""} onchange="chooseBattlePickerMwChampion('melee','${item.key}')">${item.label}</label>`).join("")}</fieldset>`:
+ wkOptions(x.side,op)?`<fieldset class="battle-config-weapons"><legend>選擇配備武器</legend>${wkOptions(x.side,op).map(item=>`<label><input type="radio" name="battle-wk-weapon" value="${item.key}" ${x.wk===item.key?"checked":""} onchange="chooseBattlePickerWk('${item.key}')">${item.label}</label>`).join("")}</fieldset>`:""}
  ${aodRifleConfigurable(x.side,op)?`<fieldset class="battle-config-weapons"><legend>選擇主武器</legend>
  ${AOD_RIFLE_OPTIONS.map(item=>`<label><input type="radio" name="battle-config-rifle" value="${item.key}" ${x.rifle===item.key?"checked":""} onchange="chooseBattlePickerRifle('${item.key}')">${item.label}</label>`).join("")}
  <small>其他已配備武器會保留；追獵者步槍的射擊模式會一併顯示。</small></fieldset>`:""}
@@ -1354,6 +1409,17 @@ function battleWeaponValidationError(){
  if(!battleDraft)return "尚未建立編隊。";
  for(const side of ["my","enemy"]){
   if(side==="enemy"&&battleDraft.enemySkipped)continue;
+  if(rosterTeam(side)==="mw"){
+   let marked=0;
+   for(let i=0;i<battleDraft[side].length;i++){
+    const op=rosterOps(side).find(o=>o.id===battleDraft[side][i]);
+    if(!op)continue;
+    const chosen=battleWeaponSelection(side,i,op),opts=wkOptions(side,op);
+    if(opts&&!opts.some(o=>o.indices.length===chosen.length&&o.indices.every(j=>chosen.includes(j))))return `${side==="my"?"我方":"敵方"} ${op.name} 武器配置不合法。`;
+    if(mwOptionMarked(op,chosen))marked++;
+   }
+   if(marked>2)return `${side==="my"?"我方":"敵方"} 屠戮之翼特殊武器特工最多 2 名。`;
+  }
   if(rosterTeam(side)==="cc"){
    let phaseCount=0;
    for(let i=0;i<battleDraft[side].length;i++){
@@ -1596,24 +1662,24 @@ function render(){
 function tab(t){S.tab=t;S.subtab="全部";S.open.clear();render()}
 function subtab(t){S.subtab=t;S.open.clear();render()}
 function openRule(instance){
-  const k=S.team+":"+instance;
-
-  // 武器資料卡內再點「範圍／穿刺／爆炸…」時，必須保留外層武器資料卡開啟。
-  // 這是兩層展開：weapon-profile parent + wp:* child。
-  if(instance.startsWith("wp:")){
-    const prefix=S.team+":wp:";
-    for(const openKey of [...S.open]){
-      if(openKey.startsWith(prefix) && openKey!==k) S.open.delete(openKey);
-    }
-    if(S.open.has(k)) S.open.delete(k);
-    else S.open.add(k);
-    render();
-    return;
+  // Every explanation uses one shared selection state. A weapon profile is
+  // the only permitted parent; at most one nested rule may be expanded.
+  const expanded=[...document.querySelectorAll("#content details.battle-operative-fold")]
+    .map((node,index)=>node.open?index:-1).filter(index=>index>=0);
+  const key=S.team+":"+instance;
+  const wasOpen=S.open.has(key);
+  const isProfile=instance.startsWith("weapon-profile:");
+  const parent=(!isProfile&&instance.startsWith("wp:"))?[...S.open].find(x=>x.startsWith(S.team+":weapon-profile:")):null;
+  S.open.clear();
+  if(isProfile){
+    if(!wasOpen)S.open.add(key);
+  }else{
+    if(parent)S.open.add(parent);
+    if(!wasOpen)S.open.add(key);
   }
-
-  if(S.open.has(k)) S.open.clear();
-  else { S.open.clear(); S.open.add(k); }
   render();
+  const cards=document.querySelectorAll("#content details.battle-operative-fold");
+  expanded.forEach(index=>{if(cards[index])cards[index].open=true;});
 }
 function fav(id){const k=S.team+":"+id;S.fav.has(k)?S.fav.delete(k):S.fav.add(k);localStorage.setItem("ktFav",JSON.stringify([...S.fav]));render()}
 
