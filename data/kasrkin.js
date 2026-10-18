@@ -1,7 +1,7 @@
 window.KT_KASRKIN = {
   "name":"卡舍津",
   "en":"KASRKIN",
-  "composition":"選擇 1 名卡舍津軍士，裝備以下一種：爆矢手槍＋動力武器；高能激光槍＋槍托；高能激光手槍＋動力武器；等離子手槍＋鏈鋸劍。再選擇 9 名卡舍津特工：戰鬥醫療兵、爆破兵、砲手（火焰噴射器／榴彈發射器／高能齊射槍／熱熔槍／等離子槍）、偵察兵、神射手、士兵、通訊兵。除士兵外，每種特工最多 1 名；上述專家合計最多 4 名。",
+  "composition":"選擇 1 名卡舍津軍士，裝備以下一種：爆矢手槍＋動力武器；高能激光槍＋槍托；高能激光手槍＋動力武器；等離子手槍＋鏈鋸劍。再選擇 9 名卡舍津特工：戰鬥醫療兵、爆破兵、砲手（火焰噴射器／榴彈發射器／高能齊射槍／熱熔槍／等離子槍）、偵察兵、神射手、士兵、通訊兵。除士兵外，每個列出的特工選項最多 1 名；五種不同武器的砲手與神射手合計最多 4 名。",
   "archetypes":["安全保護","搜索與摧毀"],
   "weaponRules":{
     "concealed-position":["隱匿位置","Concealed Position","此特工只有在本場戰鬥第一次執行射擊行動時，才可以使用此武器。"]
@@ -95,3 +95,21 @@ window.KT_KASRKIN = {
     ]}
   ]
 };
+// The five GUNNER loadouts are distinct operative selections under official team selection.
+// Keep their shared data card stats, but expose only the equipped weapon profiles.
+(function(){
+ const team=window.KT_KASRKIN;
+ const base=team.operatives.find(op=>op.id==="gunner");
+ if(!base)return;
+ const loadouts=[
+  ["gunner-flamer","卡舍津砲手（火焰噴射器）",[0,8]],
+  ["gunner-grenade","卡舍津砲手（榴彈發射器）",[1,2,8]],
+  ["gunner-volley","卡舍津砲手（高能齊射槍）",[3,4,8]],
+  ["gunner-melta","卡舍津砲手（熱熔槍）",[5,8]],
+  ["gunner-plasma","卡舍津砲手（等離子槍）",[6,7,8]]
+ ];
+ const variants=loadouts.map(([id,name,indices])=>({
+  ...base,id,name,weapons:indices.map(i=>base.weapons[i])
+ }));
+ team.operatives.splice(team.operatives.indexOf(base),1,...variants);
+})();

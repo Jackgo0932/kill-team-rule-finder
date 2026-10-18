@@ -883,7 +883,7 @@ const TEAM_ROSTER_RULES={
  "xv26":{fixed:{shasvre:1,"marker-drone":1,"gun-drone":1},slots:4,allowed:["designator","infiltrator","liberator","lodestar","neutraliser"],repeat:["infiltrator"],note:"融合砲全隊最多 2 把，需自行核對武器配置。"},
  "rav":{fixed:{prime:1},slots:4,allowed:["felltalon","tremorscythe","venomspitter","warrior","wrecker"],repeat:["warrior"]},
  "ci":{fixed:{superior:1},slots:8,allowed:["abjuror","censor","cremator","denuncia","mortisanctus","reliquarius","warrior"],repeat:["cremator","warrior"],caps:{cremator:2}},
- "ks":{fixed:{sergeant:1},slots:9,allowed:["combat-medic","demo-trooper","gunner","recon-trooper","sharpshooter","trooper","vox-trooper"],repeat:["trooper"],groupCaps:[{ids:["combat-medic","demo-trooper","gunner","recon-trooper","sharpshooter","vox-trooper"],max:4}],note:"砲手武器選項需另行核對。"},
+ "ks":{fixed:{sergeant:1},slots:9,allowed:["combat-medic","demo-trooper","gunner-flamer","gunner-grenade","gunner-volley","gunner-melta","gunner-plasma","recon-trooper","sharpshooter","trooper","vox-trooper"],repeat:["trooper"],groupCaps:[{ids:["gunner-flamer","gunner-grenade","gunner-volley","gunner-melta","gunner-plasma","sharpshooter"],max:4}],note:"固定 1 名軍士，再選擇 9 名特工。五種不同主武器的砲手各視為一種獨立特工，與神射手合計最多 4 名；同一種砲手配置不得重複。醫療兵、爆破兵、偵察兵、通訊兵各最多 1 名，不計入上述 4 名限制；士兵可重複。"},
  "cc":{fixed:{geomancer:1,accelerator:1,reanimator:1,warrior:3,"tomb-crawler":2},slots:0,allowed:[],note:"固定編成 8 名。墓穴爬行者及冥工巨蟲戰士可各自選擇主武器；全隊跨維隔振器最多 1 個。"},
  "leg":{leader:["aspiring-champion","chosen"],slots:5,allowed:["anointed","balefire-acolyte","butcher","gunner","heavy-gunner","icon-bearer","shrivetalon","warrior"],repeat:["warrior"]},
  "wk":{fixed:{"boss-nob":1,"bomb-squig":2},slots:5,allowed:["demolisha","fighter","krusha","gunner","rokkiteer"],repeat:["fighter","gunner"],note:"固定頭目與 2 名炸彈跳跳，另選 5 名特工。頭目近戰武器及砲手火箭武器可於配置視窗選擇。"},
@@ -909,7 +909,7 @@ function rosterError(side){
  if(extras.some(id=>!r.allowed.includes(id)))return "存在不符合編成的職位。";
  for(const id of new Set(extras))if(!r.repeat.includes(id)&&selectedCount(extras,id)>1)return "不可重複編入："+id;
  for(const [id,n] of Object.entries(r.caps||{}))if(selectedCount(a,id)>n)return `${id} 最多 ${n} 名。`;
- for(const g of r.groupCaps||[])if(a.filter(id=>g.ids.includes(id)).length>g.max)return rosterTeam(side)==="dw"?`重裝型裝甲特工最多 ${g.max} 名。`:`專家類特工最多 ${g.max} 名。`;
+ for(const g of r.groupCaps||[])if(a.filter(id=>g.ids.includes(id)).length>g.max)return rosterTeam(side)==="dw"?`重裝型裝甲特工最多 ${g.max} 名。`:`砲手與神射手合計最多 ${g.max} 名。`;
  return "";
 }
 function changeDraftCount(side,id,delta){
@@ -965,6 +965,15 @@ function mwSpecialCount(side,skipIndex=-1){
 }
 function mwOptionMarked(op,indices){return indices.some(i=>/等離子手槍|熱熔槍|等離子槍/.test(op.weapons?.[i]?.[0]||""))}
 function wkOptions(side,op){
+ if(rosterTeam(side)==="ks"){
+  if(op.id==="sergeant")return [
+   {key:"bolt-power",label:"爆矢手槍＋動力武器",indices:[0,7]},
+   {key:"hotshot-stock",label:"高能激光槍＋槍托",indices:[1,6]},
+   {key:"hotshot-pistol",label:"高能激光手槍＋動力武器",indices:[2,7]},
+   {key:"plasma-chainsword",label:"等離子手槍＋鏈鋸劍",indices:[3,4,5]}
+  ];
+  return null;
+ }
  if(rosterTeam(side)==="mw"){
   if(op.id==="chaos-lord"){
    const result=[];
@@ -1420,6 +1429,17 @@ function battleWeaponValidationError(){
    }
    if(marked>2)return `${side==="my"?"我方":"敵方"} 屠戮之翼特殊武器特工最多 2 名。`;
   }
+  if(rosterTeam(side)==="ks"){
+   for(let i=0;i<battleDraft[side].length;i++){
+    const op=rosterOps(side).find(o=>o.id===battleDraft[side][i]);
+    if(!op)continue;
+    const opts=wkOptions(side,op);
+    if(!opts)continue;
+    const chosen=battleWeaponSelection(side,i,op);
+    if(!opts.some(o=>o.indices.length===chosen.length&&o.indices.every(j=>chosen.includes(j))))
+     return `${side==="my"?"我方":"敵方"} ${op.name} 的武器配置不合法。`;
+   }
+  }
   if(rosterTeam(side)==="cc"){
    let phaseCount=0;
    for(let i=0;i<battleDraft[side].length;i++){
@@ -1570,7 +1590,7 @@ function renderBattleSetup(){
   return `<div class="battle-setup"><h2>${d.step===1?"② 選擇我方出戰特工":"③ 選擇敵方出戰特工"}</h2>
   <p>${esc(TEAMS[rosterTeam(side)]?.name||"")} · 已選 ${chosen.length} 名。選擇的是本場快捷名單，不會修改原始資料。</p>
   ${d.step===2?`<label class="battle-skip"><input type="checkbox" ${d.enemySkipped?"checked":""} onchange="skipEnemyRoster()"> 暫不設定敵方特工（保留完整敵方規則查詢）</label>`:""}
-  ${rosterRule(side)?`<div class="battle-xv26-tools"><small>${esc(rosterRule(side).note||"請自行選擇出戰特工，系統檢查基本編成條件。")}</small></div>`:""}
+  ${rosterRule(side)?`<div class="battle-xv26-tools"><small>${esc(rosterRule(side).note||"請自行選擇出戰特工，系統檢查基本編成條件。")}${rosterTeam(side)==="ks"?`<br><strong>砲手／神射手：${(battleDraft?.[side]||[]).filter(id=>["gunner-flamer","gunner-grenade","gunner-volley","gunner-melta","gunner-plasma","sharpshooter"].includes(id)).length} / 4</strong>`:""}</small></div>`:""}
   <div class="battle-compact-layout"><section><h3>尚可加入的特工</h3><div class="battle-compact-options">${ops.filter(o=>canDraftAdd(side,o.id)).map(o=>draftVisualCard(side,o)).join("")||`<p class="battle-options-empty">目前沒有其他可加入的特工。需要調整時，請從「已加入隊伍」編輯或移除特工。</p>`}</div></section>${battleSelectedList(side)}</div>${battlePickerPanel()}
   ${rosterError(side)?`<p class="battle-validation">${esc(rosterError(side))}</p>`:""}
   <p class="battle-note">點擊特工開啟配置，確認後加入隊伍。點擊已加入名單可修改武器；非固定特工也可移除。已選且不可重複的職位會從可選列表隱藏；允許重複的職位則保留至編成上限。${rosterTeam(side)==="xv26"?"XV26 融合砲最多 2 把。":""}</p>
