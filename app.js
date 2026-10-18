@@ -886,7 +886,7 @@ const TEAM_ROSTER_RULES={
  "ci":{fixed:{superior:1},slots:8,allowed:["abjuror","censor","cremator","denuncia","mortisanctus","reliquarius","warrior"],repeat:["cremator","warrior"],caps:{cremator:2}},
  "ks":{fixed:{sergeant:1},slots:9,allowed:["combat-medic","demo-trooper","gunner-flamer","gunner-grenade","gunner-volley","gunner-melta","gunner-plasma","recon-trooper","sharpshooter","trooper","vox-trooper"],repeat:["trooper"],groupCaps:[{ids:["gunner-flamer","gunner-grenade","gunner-volley","gunner-melta","gunner-plasma","sharpshooter"],max:4}],note:"固定 1 名軍士，再選擇 9 名特工。五種不同主武器的砲手各視為一種獨立特工，與神射手合計最多 4 名；同一種砲手配置不得重複。醫療兵、爆破兵、偵察兵、通訊兵各最多 1 名，不計入上述 4 名限制；士兵可重複。"},
  "cc":{fixed:{geomancer:1,accelerator:1,reanimator:1,warrior:3,"tomb-crawler":2},slots:0,allowed:[],note:"固定編成 8 名。墓穴爬行者及冥工巨蟲戰士可各自選擇主武器；全隊跨維隔振器最多 1 個。"},
- "leg":{leader:["aspiring-champion","chosen"],slots:5,allowed:["anointed","balefire-acolyte","butcher","gunner","heavy-gunner","icon-bearer","shrivetalon","warrior"],repeat:["warrior"]},
+ "leg":{leader:["aspiring-champion","chosen"],slots:5,allowed:["anointed","balefire-acolyte","butcher","gunner","heavy-gunner","icon-bearer","shrivetalon","warrior"],repeat:["warrior"],note:"每名特工都必須選擇混沌印記；邪焰侍僧不可選恐虐。印記在本工具中作為規則速查標籤，不會自動修改武器數值或計算效果。"},
  "wk":{fixed:{"boss-nob":1,"bomb-squig":2},slots:5,allowed:["demolisha","fighter","krusha","gunner","rokkiteer"],repeat:["fighter","gunner"],note:"固定頭目與 2 名炸彈跳跳，另選 5 名特工。頭目近戰武器及砲手火箭武器可於配置視窗選擇。"},
  "mw":{fixed:{"chaos-lord":1},slots:5,allowed:["champion","curseclaw","depredator","huntmaster","raptor","shrieker","skysear","warp-talon"],repeat:["raptor"],note:"固定 1 名混沌領主，另選 5 名（僅猛禽可重複）。全隊選用等離子手槍、熱熔槍或等離子槍的特工合計最多 2 名。"},
  "pm":{fixed:{champion:1},slots:5,allowed:["bombardier","fighter","heavy","icon","caster","warrior"],repeat:[]},
@@ -924,6 +924,7 @@ function changeDraftCount(side,id,delta){
    a.splice(idx,1);
    for(let n=oldCount-1;n>=(a.filter(x=>x===id).length);n--){
     delete battleWeaponDraft[side][`${id}#${n}`];
+    delete battleMarkDraft[side][`${id}#${n}`];
    }
   }
  }else{
@@ -1071,7 +1072,7 @@ function openBattlePicker(side,id,index=-1){
  const selected=index>=0?battleWeaponSelection(side,index,op):null;
  battlePicker={side,id,index,primary:selected&&selected.some(i=>xv26PrimaryIndices(op,"fusion").includes(i))?"fusion":"rapid",
  rifle:index>=0&&aodRifleConfigurable(side,op)?aodRifleKind(side,index,op):"auto",
- melee:index>=0&&aodSergeantConfigurable(side,op)?aodSergeantMeleeKind(side,index,op):AOD_INTERCESSOR_MELEE[0], assault:index>=0&&aodAssaultConfigurable(side,op)?aodAssaultKind(side,index,op):"heavy", assaultMelee:index>=0&&aodAssaultConfigurable(side,op)?aodAssaultMeleeKind(side,index,op):"鏈鋸劍", wk:wkSavedKind(side,op,selected),mark:index>=0?(battleMarkDraft[side][legMarkKey(side,index)]||battleRoster?.marks?.[side]?.[legMarkKey(side,index)]||"undivided"):"undivided",expandedRule:null};
+ melee:index>=0&&aodSergeantConfigurable(side,op)?aodSergeantMeleeKind(side,index,op):AOD_INTERCESSOR_MELEE[0], assault:index>=0&&aodAssaultConfigurable(side,op)?aodAssaultKind(side,index,op):"heavy", assaultMelee:index>=0&&aodAssaultConfigurable(side,op)?aodAssaultMeleeKind(side,index,op):"鏈鋸劍", wk:wkSavedKind(side,op,selected),mark:index>=0?(battleMarkDraft[side][legMarkKey(side,index)]||"undivided"):"undivided",expandedRule:null};
  render();
  document.addEventListener("keydown",battlePickerHandleKeydown);
  document.querySelector(".battle-config-header button")?.focus();
@@ -1293,7 +1294,7 @@ function battleSelectedList(side){
   const configurable=xv26CanChoosePrimary(side,op);
   const fusion=configurable&&chosen.some(i=>xv26PrimaryIndices(op,"fusion").includes(i));
   const weapon=wkOptions(side,op)?wkOptions(side,op).find(o=>o.key===wkSavedKind(side,op,chosen))?.label:aodAssaultConfigurable(side,op)?`${({flamer:"噴火手槍",heavy:"重型爆矢手槍",plasma:"等離子手槍"})[aodAssaultKind(side,index,op)]} · ${aodAssaultMeleeKind(side,index,op)}`:configurable?(fusion?"融合砲":"速射砲"):aodRifleConfigurable(side,op)?`${AOD_RIFLE_OPTIONS.find(x=>x.key===aodRifleKind(side,index,op))?.label||"爆矢步槍"}${aodSergeantConfigurable(side,op)?" · "+aodSergeantMeleeKind(side,index,op):""}`:rosterTeam(side)==="rav"?"固定武器配置":"預設武器";
-  const markLabel=rosterTeam(side)==="leg"?" · "+legMarkName(battleMarkDraft[side][legMarkKey(side,index)]||battleRoster?.marks?.[side]?.[legMarkKey(side,index)]||"undivided"):"";
+  const markLabel=rosterTeam(side)==="leg"?" · "+legMarkName(battleMarkDraft[side][legMarkKey(side,index)]||"undivided"):"";
   const isFixed=!!rule?.fixed?.[id];
   return `<button type="button" class="battle-selected-item" onclick="openBattlePicker('${side}','${id}',${index})">
    ${op.image?`<img class="battle-selected-portrait" src="${esc(op.image)}" alt="" loading="lazy">`:""}
@@ -1460,6 +1461,17 @@ function battleWeaponValidationError(){
  if(!battleDraft)return "尚未建立編隊。";
  for(const side of ["my","enemy"]){
   if(side==="enemy"&&battleDraft.enemySkipped)continue;
+  if(rosterTeam(side)==="wk"){
+   for(let i=0;i<battleDraft[side].length;i++){
+    const op=rosterOps(side).find(o=>o.id===battleDraft[side][i]);
+    if(!op)continue;
+    const opts=wkOptions(side,op);
+    if(!opts)continue;
+    const chosen=battleWeaponSelection(side,i,op);
+    if(!opts.some(opt=>opt.indices.length===chosen.length&&opt.indices.every(j=>chosen.includes(j))))
+     return `${side==="my"?"我方":"敵方"} ${op.name} 的武器配置不合法。`;
+   }
+  }
   if(rosterTeam(side)==="mw"){
    let marked=0;
    for(let i=0;i<battleDraft[side].length;i++){

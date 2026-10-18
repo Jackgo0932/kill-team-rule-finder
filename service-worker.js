@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-2.9.7-xv26-tacops";
+const CACHE = "kt-rule-finder-2.10.3-xv26-tacops";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -13,6 +13,7 @@ const APP_SHELL = [
   "./data/core_rules.js",
   "./data/weapon_rules.js",
   "./data/universal_equipment.js",
+  "./data/choice_options.js",
   "./data/tac_ops.js",
   "./data/mission_ops.js",
   "./data/approved_ops.js",
