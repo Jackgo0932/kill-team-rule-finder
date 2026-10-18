@@ -891,7 +891,7 @@ const TEAM_ROSTER_RULES={
  "mw":{fixed:{"chaos-lord":1},slots:5,allowed:["champion","curseclaw","depredator","huntmaster","raptor","shrieker","skysear","warp-talon"],repeat:["raptor"],note:"標 * 武器合計最多 2 名，需自行核對。"},
  "pm":{fixed:{champion:1},slots:5,allowed:["bombardier","fighter","heavy","icon","caster","warrior"],repeat:[]},
  "aod":{leader:["captain","assault-sergeant","intercessor-sergeant"],slots:5,allowed:["grenadier","assault-warrior","heavy-gunner","intercessor-gunner","intercessor-warrior","eliminator"],repeat:["assault-warrior","intercessor-warrior"]},
- "dw":{slots:5,allowed:["watch-sergeant","aegis","blademaster","bombard","breacher","demolisher","disruptor","gunner","headtaker","horde-slayer","marksman"],repeat:[],note:"重裝型裝甲（GRAVIS）特工最多 1 名，需核對裝甲關鍵字。"}
+ "dw":{slots:5,allowed:["watch-sergeant","aegis","blademaster","bombard","breacher","demolisher","disruptor","gunner","headtaker","horde-slayer","marksman"],repeat:[],groupCaps:[{ids:["bombard","breacher","horde-slayer"],max:1}],note:"從守望軍士及各類老兵中任選 5 名，不強制選守望軍士；同職位不可重複，重裝型裝甲特工最多 1 名。"}
 };
 function rosterRule(side){return TEAM_ROSTER_RULES[rosterTeam(side)]||null}
 function fixedIds(rule){return Object.entries(rule.fixed||{}).flatMap(([id,n])=>Array(n).fill(id))}
@@ -910,7 +910,7 @@ function rosterError(side){
  if(extras.some(id=>!r.allowed.includes(id)))return "存在不符合編成的職位。";
  for(const id of new Set(extras))if(!r.repeat.includes(id)&&selectedCount(extras,id)>1)return "不可重複編入："+id;
  for(const [id,n] of Object.entries(r.caps||{}))if(selectedCount(a,id)>n)return `${id} 最多 ${n} 名。`;
- for(const g of r.groupCaps||[])if(a.filter(id=>g.ids.includes(id)).length>g.max)return `專家類特工最多 ${g.max} 名。`;
+ for(const g of r.groupCaps||[])if(a.filter(id=>g.ids.includes(id)).length>g.max)return rosterTeam(side)==="dw"?`重裝型裝甲特工最多 ${g.max} 名。`:`專家類特工最多 ${g.max} 名。`;
  return "";
 }
 function changeDraftCount(side,id,delta){
