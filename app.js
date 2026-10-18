@@ -919,7 +919,13 @@ function changeDraftCount(side,id,delta){
  if(!rosterOps(side).some(o=>o.id===id))return;
  if(delta<0){
   if(r?.fixed?.[id]&&selectedCount(a,id)<=r.fixed[id])return;
-  if(idx>=0)a.splice(idx,1);
+  if(idx>=0){
+   const oldCount=selectedCount(a,id);
+   a.splice(idx,1);
+   for(let n=oldCount-1;n>=(a.filter(x=>x===id).length);n--){
+    delete battleWeaponDraft[side][`${id}#${n}`];
+   }
+  }
  }else{
   if(r){
    if(r.fixed?.[id])return;
@@ -936,25 +942,79 @@ function changeDraftCount(side,id,delta){
  }
  render();
 }
+let battlePicker=null;
+function canDraftAdd(side,id){
+ const r=rosterRule(side),a=battleDraft[side],count=selectedCount(a,id);
+ if(!r)return !count;
+ if(r.fixed?.[id])return false;
+ if(r.leader?.includes(id))return !r.leader.some(x=>a.includes(x));
+ if(!r.allowed.includes(id)||a.filter(x=>r.allowed.includes(x)).length>=r.slots)return false;
+ if(!r.repeat.includes(id)&&count)return false;
+ if(r.caps?.[id]&&count>=r.caps[id])return false;
+ return !r.groupCaps?.some(g=>g.ids.includes(id)&&a.filter(x=>g.ids.includes(x)).length>=g.max);
+}
+function openBattlePicker(side,id,index=-1){
+ const op=rosterOps(side).find(x=>x.id===id);
+ if(!battleDraft||!op)return;
+ if(index<0&&!canDraftAdd(side,id))return;
+ if(index>=0&&battleDraft[side][index]!==id)return;
+ const selected=index>=0?battleWeaponSelection(side,index,op):null;
+ battlePicker={side,id,index,primary:selected&&selected.some(i=>xv26PrimaryIndices(op,"fusion").includes(i))?"fusion":"rapid"};
+ render();
+}
+function closeBattlePicker(){battlePicker=null;render()}
+function chooseBattlePickerPrimary(kind){if(battlePicker){battlePicker.primary=kind;render()}}
+function confirmBattlePicker(){
+ const picker=battlePicker;if(!picker)return;
+ const {side,id,index}=picker,op=rosterOps(side).find(x=>x.id===id);
+ if(!op)return;
+ if(index<0&&!canDraftAdd(side,id)){alert("已達編成限制，無法加入此特工。");return;}
+ const isFusion=xv26CanChoosePrimary(side,op)&&picker.primary==="fusion";
+ const wasFusion=index>=0&&battleWeaponSelection(side,index,op).some(i=>xv26PrimaryIndices(op,"fusion").includes(i));
+ if(isFusion&&!wasFusion&&xv26FusionCount(side)>=2){alert("XV26 全隊融合砲最多 2 把。");return;}
+ let target=index;
+ if(target<0){battleDraft[side].push(id);target=battleDraft[side].length-1;}
+ if(xv26CanChoosePrimary(side,op)){
+  const all=(op.weapons||[]).map((_,i)=>i),exclude=new Set([...xv26PrimaryIndices(op,"fusion"),...xv26PrimaryIndices(op,"rapid")]);
+  battleWeaponDraft[side][battleWeaponKey(side,target)]=[...all.filter(i=>!exclude.has(i)),...xv26PrimaryIndices(op,picker.primary)];
+ }
+ battlePicker=null;render();
+}
+function removeBattleRosterEntry(side,index){
+ if(!battleDraft||index<0)return;
+ const a=battleDraft[side],id=a[index],r=rosterRule(side);
+ if(!id||r?.fixed?.[id]&&selectedCount(a,id)<=r.fixed[id])return;
+ const before=a.map((value,i)=>({value,chosen:battleWeaponDraft[side][battleWeaponKey(side,i)]}));
+ before.splice(index,1);a.splice(index,1);battleWeaponDraft[side]={};
+ before.forEach((item,i)=>{if(Array.isArray(item.chosen))battleWeaponDraft[side][battleWeaponKey(side,i)]=item.chosen});
+ battlePicker=null;render();
+}
+function battlePickerPanel(){
+ const x=battlePicker;if(!x)return "";
+ const op=rosterOps(x.side).find(o=>o.id===x.id);if(!op)return "";
+ const primary=xv26CanChoosePrimary(x.side,op),fixed=x.index>=0&&!!rosterRule(x.side)?.fixed?.[x.id];
+ return `<div class="battle-config-overlay"><section class="battle-config-panel" role="dialog" aria-modal="true" aria-label="配置特工"><div class="battle-config-header"><h3>${esc(op.name)}</h3><button type="button" onclick="closeBattlePicker()" aria-label="關閉">✕</button></div>
+ <p>${esc(op.role||"")}</p>${op.image?`<img class="battle-config-image" src="${esc(op.image)}" alt="">`:""}
+ ${primary?`<fieldset class="battle-config-weapons"><legend>選擇主武器</legend><label><input type="radio" name="battle-config-primary" value="rapid" ${x.primary==="rapid"?"checked":""} onchange="chooseBattlePickerPrimary('rapid')">速射砲</label><label><input type="radio" name="battle-config-primary" value="fusion" ${x.primary==="fusion"?"checked":""} onchange="chooseBattlePickerPrimary('fusion')">融合砲</label><small>全隊融合砲 ${xv26FusionCount(x.side)}/2</small></fieldset>`:`<div class="battle-config-info"><strong>武器資料</strong><p>此特工目前尚無可配置的武器選項，加入後顯示完整武器數據。</p>${(op.weapons||[]).map(w=>`<span>${esc(w[0])}</span>`).join("")}</div>`}
+ <div class="battle-config-actions"><button type="button" onclick="closeBattlePicker()">取消</button>${x.index>=0&&!fixed?`<button type="button" onclick="removeBattleRosterEntry('${x.side}',${x.index})">移出隊伍</button>`:""}<button type="button" onclick="confirmBattlePicker()">${x.index>=0?"確認配置":"確認加入隊伍"}</button></div></section></div>`;
+}
 function draftVisualCard(side,o){
- const a=battleDraft[side],r=rosterRule(side),count=selectedCount(a,o.id);
- const fixed=!!r?.fixed?.[o.id],canAdd=()=>{
-  if(!r)return !count;
-  if(fixed)return false;
-  if(r.leader?.includes(o.id))return !r.leader.some(id=>a.includes(id));
-  if(!r.allowed.includes(o.id)||a.filter(id=>r.allowed.includes(id)).length>=r.slots)return false;
-  if(!r.repeat.includes(o.id)&&count)return false;
-  if(r.caps?.[o.id]&&count>=r.caps[o.id])return false;
-  return !r.groupCaps?.some(g=>g.ids.includes(o.id)&&a.filter(id=>g.ids.includes(id)).length>=g.max);
- };
- return `<div class="battle-pick-card">${o.image?`<img src="${esc(o.image)}" alt="${esc(o.name)}" loading="lazy">`:""}<div><b>${esc(o.name)}</b><small>${esc(o.role||"")}</small><div class="battle-pick-controls"><button onclick="changeDraftCount('${side}','${o.id}',-1)" ${fixed||!count?"disabled":""}>−</button><span>${count}${fixed?" · 固定":""}</span><button onclick="changeDraftCount('${side}','${o.id}',1)" ${canAdd()?"":"disabled"}>＋</button></div></div></div>`;
+ const a=battleDraft[side],count=selectedCount(a,o.id),fixed=!!rosterRule(side)?.fixed?.[o.id];
+ return `<button type="button" class="battle-compact-option ${count?"is-selected":""}" onclick="openBattlePicker('${side}','${o.id}')" ${canDraftAdd(side,o.id)?"":"disabled"}>${o.image?`<img src="${esc(o.image)}" alt="" loading="lazy">`:""}<span><b>${esc(o.name)}</b><small>${esc(o.role||"")}</small></span><em>${count?`已選 ${count}`:"＋ 加入"}</em></button>`;
+}
+function battleSelectedList(side){
+ const a=battleDraft[side];return `<section class="battle-selected-list"><h3>已加入隊伍 <small>${a.length} 名</small></h3>${a.length?`<div class="battle-selected-items">${a.map((id,index)=>{
+ const op=rosterOps(side).find(o=>o.id===id);if(!op)return "";
+ const chosen=battleWeaponSelection(side,index,op),fusion=xv26CanChoosePrimary(side,op)&&chosen.some(i=>xv26PrimaryIndices(op,"fusion").includes(i));
+ const weapon=xv26CanChoosePrimary(side,op)?fusion?"融合砲":"速射砲":"預設武器";
+ return `<button type="button" class="battle-selected-item" onclick="openBattlePicker('${side}','${id}',${index})"><span>${esc(op.name)}</span><small>${esc(weapon)}</small><span>編輯 ›</span></button>`;
+ }).join("")}</div>`:`<p>尚未選擇特工。</p>`}</section>`;
 }
 function beginBattleSetup(){
   if(battleRoster&&!confirm("重新建立對戰？現有出戰名單會被取代，完成設定時將重置本局紀錄。"))return;
-  battleRoster=null;
-  localStorage.removeItem(ROSTER_KEY);
+  // Keep the previous match until the replacement is confirmed and finished.
   battleDraft={my:initialDraft("my"),enemy:initialDraft("enemy"),enemySkipped:false,step:0};
-  battleWeaponDraft={my:{},enemy:{}};
+  battleWeaponDraft={my:{},enemy:{}};battlePicker=null;
   S.view="match";render();
 }
 function toggleDraftOperative(side,id){
@@ -967,10 +1027,24 @@ function battleSetupNext(){
   if(!battleDraft)return;
   if(battleDraft.step===1&&(!battleDraft.my.length||rosterError("my"))){alert(rosterError("my")||"請至少選擇一名我方特工。");return}
   if(battleDraft.step===2&&!battleDraft.enemySkipped&&(!battleDraft.enemy.length||rosterError("enemy"))){alert(rosterError("enemy")||"請選擇敵方特工，或勾選略過敵方編隊。");return}
-  if(battleDraft.step<4)battleDraft.step++;
+  if(battleDraft.step===2){
+   const error=battleWeaponValidationError();
+   if(error){alert(error);return;}
+  }
+  if(battleDraft.step<3)battleDraft.step++;
   render();
 }
 function battleSetupBack(){if(battleDraft){battleDraft.step=Math.max(0,battleDraft.step-1);render()}}
+function cancelBattleSetup(){
+ if(!battleDraft)return;
+ battleDraft=null;battlePicker=null;
+ battleWeaponDraft={my:{},enemy:{}};
+ if(battleRoster){
+  S.myTeam=battleRoster.myTeam;S.enemyTeam=battleRoster.enemyTeam;
+  S.team=S.side==="enemy"?S.enemyTeam:S.myTeam;
+ }
+ render();
+}
 function changeBattleSetupTeam(side,id){
  if(!battleDraft||battleDraft.step!==0||!TEAMS[id])return;
  if(side==="my"){S.myTeam=id;S.team=S.side==="my"?id:S.team;battleDraft.my=initialDraft("my");battleWeaponDraft.my={};localStorage.setItem("ktMyTeam",id)}
@@ -983,30 +1057,97 @@ function battleTeamPicker(side){
  return `<label class="battle-team-picker"><b>${side==="my"?"我方小隊":"敵方小隊"}</b><select aria-label="${side==="my"?"選擇我方小隊":"選擇敵方小隊"}" onchange="changeBattleSetupTeam('${side}',this.value)">${Object.keys(TEAMS).map(id=>`<option value="${esc(id)}" ${id===selected?"selected":""}>${esc(TEAMS[id].name)}</option>`).join("")}</select></label>`;
 }
 function skipEnemyRoster(){if(battleDraft){battleDraft.enemySkipped=!battleDraft.enemySkipped;render()}}
-function setBattleWeapon(side,index,weaponIndex,checked){
- const k=String(index),teamId=rosterTeam(side),id=battleDraft?.[side]?.[index];
- const op=TEAMS[teamId]?.operatives?.find(o=>o.id===id);
- if(!op)return;
- let chosen=battleWeaponDraft[side][k];
- if(!Array.isArray(chosen))chosen=op.weapons.map((_,i)=>i);
- chosen=checked?[...new Set([...chosen,weaponIndex])]:chosen.filter(i=>i!==weaponIndex);
- battleWeaponDraft[side][k]=chosen;
- // Keep the currently open details element and scroll position intact.
-
+function battleWeaponKey(side,index){
+ const ids=battleDraft?.[side]||[],id=ids[index];
+ return `${id}#${ids.slice(0,index).filter(x=>x===id).length}`;
 }
-function renderBattleWeapons(side){
- return `<div class="battle-weapon-config">${battleDraft[side].map((id,index)=>{
-  const op=rosterOps(side).find(o=>o.id===id);if(!op)return "";
-  const selected=battleWeaponDraft[side][String(index)];
-  return `<details class="battle-weapon-unit"><summary>${op.image?`<img src="${esc(op.image)}" alt="">`:""}<b>${esc(op.name)}</b><span>武器顯示設定</span></summary>
-    <p>${esc(op.loadout||"請依官方編成規則選擇武器；此設定僅控制本場數據卡顯示。")}</p>
-    ${(op.weapons||[]).map((w,i)=>`<label><input type="checkbox" ${!selected||selected.includes(i)?"checked":""} onchange="setBattleWeapon('${side}',${index},${i},this.checked)"> ${esc(w[0])}（${esc(w[1])}）</label>`).join("")}
-  </details>`;
- }).join("")}</div>`;
+function xv26PrimaryIndices(op,kind){
+ const match=kind==="fusion"?"融合砲":"速射砲";
+ return (op.weapons||[]).flatMap((w,i)=>String(w[0]).includes(match)?[i]:[]);
+}
+function xv26CanChoosePrimary(side,op){
+ return rosterTeam(side)==="xv26" &&
+  ["shasvre","designator","infiltrator","liberator","lodestar","neutraliser"].includes(op.id) &&
+  xv26PrimaryIndices(op,"fusion").length>0 && xv26PrimaryIndices(op,"rapid").length>0;
+}
+function battleWeaponSelection(side,index,op){
+ const key=battleWeaponKey(side,index),saved=battleWeaponDraft[side][key];
+ if(Array.isArray(saved))return saved;
+ const all=(op.weapons||[]).map((_,i)=>i);
+ return xv26CanChoosePrimary(side,op)?all.filter(i=>!xv26PrimaryIndices(op,"fusion").includes(i)):all;
+}
+function xv26FusionCount(side){
+ return (battleDraft?.[side]||[]).reduce((count,id,index)=>{
+  const op=rosterOps(side).find(o=>o.id===id);
+  return count+(op&&xv26CanChoosePrimary(side,op)&&battleWeaponSelection(side,index,op).some(i=>xv26PrimaryIndices(op,"fusion").includes(i))?1:0);
+ },0);
+}
+function setXv26Primary(side,index,kind){
+ const id=battleDraft?.[side]?.[index],op=rosterOps(side).find(o=>o.id===id);
+ if(!op||!xv26CanChoosePrimary(side,op))return;
+ const old=battleWeaponSelection(side,index,op);
+ const alreadyFusion=old.some(i=>xv26PrimaryIndices(op,"fusion").includes(i));
+ if(kind==="fusion"&&!alreadyFusion&&xv26FusionCount(side)>=2){
+  alert("XV26 全隊融合砲最多 2 把，請先更換其他特工的主武器。");
+  document.querySelectorAll(`input[name="xv-primary-${side}-${index}"]`).forEach(r=>r.checked=r.value==="rapid");
+  return;
+ }
+ const remove=new Set([...xv26PrimaryIndices(op,"fusion"),...xv26PrimaryIndices(op,"rapid")]);
+ battleWeaponDraft[side][battleWeaponKey(side,index)]=[
+  ...old.filter(i=>!remove.has(i)),...xv26PrimaryIndices(op,kind)
+ ];
+ render();
+}
+function battleWeaponValidationError(){
+ if(!battleDraft)return "尚未建立編隊。";
+ for(const side of ["my","enemy"]){
+  if(side==="enemy"&&battleDraft.enemySkipped)continue;
+  if(rosterTeam(side)!=="xv26")continue;
+  const count=xv26FusionCount(side);
+  if(count>2)return `${side==="my"?"我方":"敵方"} XV26 融合砲 ${count} 把，超過最多 2 把的限制。`;
+  for(let i=0;i<battleDraft[side].length;i++){
+   const op=rosterOps(side).find(o=>o.id===battleDraft[side][i]);
+   if(!op||!xv26CanChoosePrimary(side,op))continue;
+   const selected=battleWeaponSelection(side,i,op);
+   const rapid=selected.some(j=>xv26PrimaryIndices(op,"rapid").includes(j));
+   const fusion=selected.some(j=>xv26PrimaryIndices(op,"fusion").includes(j));
+   if(rapid===fusion)return `${side==="my"?"我方":"敵方"} ${op.name} 必須且只能選擇一種主武器。`;
+  }
+ }
+ return "";
+}
+function battleSetupSummarySide(side){
+ const team=TEAMS[rosterTeam(side)],ids=battleDraft[side];
+ if(side==="enemy"&&battleDraft.enemySkipped)
+  return `<section class="battle-review-side"><h3>敵方 · ${esc(team?.name||"")}</h3><p>未建立敵方出戰名單；仍可查閱完整敵方規則。</p></section>`;
+ const cards=ids.map((id,index)=>{
+  const op=rosterOps(side).find(o=>o.id===id);
+  if(!op)return `<li>${esc(id)}（資料缺失）</li>`;
+  const chosen=battleWeaponSelection(side,index,op);
+  const weapons=chosen.map(i=>op.weapons?.[i]?.[0]).filter(Boolean);
+  const isXv=xv26CanChoosePrimary(side,op);
+  const fusion=isXv&&chosen.some(i=>xv26PrimaryIndices(op,"fusion").includes(i));
+  const main=isXv?`<strong>${fusion?"融合砲":"速射砲"}</strong>`:
+    `<span>預設武器資料</span>`;
+  return `<li><span>${esc(op.name)}</span>${main}</li>`;
+ }).join("");
+ return `<section class="battle-review-side"><h3>${side==="my"?"我方":"敵方"} · ${esc(team?.name||"")}</h3><p>共 ${ids.length} 名${rosterTeam(side)==="xv26"?` · 融合砲 ${xv26FusionCount(side)}/2`:""}</p><ul>${cards}</ul></section>`;
 }
 function finishBattleSetup(){
   if(!battleDraft||!battleDraft.my.length||rosterError("my")||(!battleDraft.enemySkipped&&rosterError("enemy")))return;
+  const weaponError=battleWeaponValidationError();
+  if(weaponError){alert(weaponError);return;}
   if(!confirm("開始對戰並重置本局 TP、VP、CP 與戰鬥紀錄？"))return;
+  for(const side of ["my","enemy"]){
+   (battleDraft[side]||[]).forEach((id,index)=>{
+    const op=rosterOps(side).find(o=>o.id===id);
+    if(op){
+     const key=battleWeaponKey(side,index);
+     if(!Array.isArray(battleWeaponDraft[side][key]))
+      battleWeaponDraft[side][key]=battleWeaponSelection(side,index,op);
+    }
+   });
+  }
   battleRoster={myTeam:S.myTeam,enemyTeam:S.enemyTeam,my:[...battleDraft.my],enemy:battleDraft.enemySkipped?null:[...battleDraft.enemy],weapons:JSON.parse(JSON.stringify(battleWeaponDraft))};
   localStorage.setItem(ROSTER_KEY,JSON.stringify(battleRoster));
   battleDraft=null;
@@ -1015,34 +1156,31 @@ function finishBattleSetup(){
 }
 function renderBattleSetup(){
   const d=battleDraft,side=d.step===1?"my":"enemy";
-  if(d.step===0)return `<div class="battle-setup"><h2>① 選擇本場雙方小隊</h2><p>在這裡決定雙方小隊。進入下一步後就鎖定；若要修改，請按「上一步」回來。</p><div class="battle-team-picker-grid">${battleTeamPicker("my")}${battleTeamPicker("enemy")}</div><button onclick="battleSetupNext()">確認小隊，下一步 →</button></div>`;
-  if(d.step===4){
-    return `<div class="battle-setup"><h2>確認本場編隊</h2><p>已檢查目前已建模的基本編成條件；武器配置與未建模的特殊限制仍須依「編成規則」核對。</p>
-    <p>我方：${d.my.length} 名 · 敵方：${d.enemySkipped?"未設定":d.enemy.length+" 名"}</p>
-    <button onclick="battleSetupBack()">返回修改</button> <button onclick="finishBattleSetup()">確認並開始對戰</button></div>`;
+  if(d.step===0)return `<div class="battle-setup"><h2>① 選擇本場雙方小隊</h2><p>在這裡決定雙方小隊。進入下一步後就鎖定；若要修改，請按「上一步」回來。</p><div class="battle-team-picker-grid">${battleTeamPicker("my")}${battleTeamPicker("enemy")}</div><button onclick="battleSetupNext()">確認小隊，下一步 →</button> <button onclick="cancelBattleSetup()">取消設定</button></div>`;
+  if(d.step===3){
+    return `<div class="battle-setup"><h2>確認本場編隊</h2><p>已檢查基本編成條件，XV26 另檢查主武器二選一及融合砲最多兩把。其他小隊的武器與特殊限制仍須依「編成規則」核對。</p>
+    <div class="battle-review-grid">${battleSetupSummarySide("my")}${battleSetupSummarySide("enemy")}</div>
+    <p class="battle-review-note">請確認雙方特工及 XV26 主武器。其他小隊目前顯示完整武器資料，尚未提供武器配置選擇或合法性驗證。</p>
+    <button onclick="battleSetupBack()">返回修改</button> <button onclick="finishBattleSetup()">確認並開始對戰</button> <button onclick="cancelBattleSetup()">取消設定</button></div>`;
   }
-  if(d.step===3)return `<div class="battle-setup"><h2>④ 設定本場武器顯示</h2>
-    <p>取消勾選不使用的武器，讓本場數據卡更精簡。這不是武器編成合法性驗證；同名特工分開設定。</p>
-    <h3>我方武器</h3>${renderBattleWeapons("my")}
-    ${d.enemySkipped?"":`<h3>敵方武器</h3>${renderBattleWeapons("enemy")}`}
-    <button onclick="battleSetupBack()">上一步</button> <button onclick="battleSetupNext()">下一步 →</button></div>`;
   const ops=rosterOps(side),chosen=d[side];
   return `<div class="battle-setup"><h2>${d.step===1?"② 選擇我方出戰特工":"③ 選擇敵方出戰特工"}</h2>
   <p>${esc(TEAMS[rosterTeam(side)]?.name||"")} · 已選 ${chosen.length} 名。選擇的是本場快捷名單，不會修改原始資料。</p>
   ${d.step===2?`<label class="battle-skip"><input type="checkbox" ${d.enemySkipped?"checked":""} onchange="skipEnemyRoster()"> 暫不設定敵方特工（保留完整敵方規則查詢）</label>`:""}
   ${rosterRule(side)?`<div class="battle-xv26-tools"><small>${esc(rosterRule(side).note||"請自行選擇出戰特工，系統檢查基本編成條件。")}</small></div>`:""}
-  <div class="battle-picks">${ops.map(o=>draftVisualCard(side,o)).join("")}</div>
+  <div class="battle-compact-layout"><section><h3>可選特工</h3><div class="battle-compact-options">${ops.map(o=>draftVisualCard(side,o)).join("")}</div></section>${battleSelectedList(side)}</div>${battlePickerPanel()}
   ${rosterError(side)?`<p class="battle-validation">${esc(rosterError(side))}</p>`:""}
-  <p class="battle-note">即時檢查已建模的編成人數、隊長、職位及重複限制。武器選擇、裝甲關鍵字及未建模的特殊條件仍須核對正式規則。</p>
-  <button onclick="battleSetupBack()">上一步</button> <button onclick="battleSetupNext()">下一步 →</button></div>`;
+  <p class="battle-note">點擊特工開啟配置，確認後加入隊伍。點擊已加入名單可修改武器或移除特工。XV26 融合砲最多 2 把。</p>
+  <button onclick="battleSetupBack()">上一步</button> <button onclick="battleSetupNext()">下一步 →</button> <button onclick="cancelBattleSetup()">取消設定</button></div>`;
 }
 function showRosterSide(side){
   const teamId=rosterTeam(side),t=TEAMS[teamId],ids=battleRoster?.[side];
   if(ids===null)return `<section><h3>${side==="my"?"我方":"敵方"} · ${esc(t.name)}</h3><p>未設定出戰名單，可使用上方完整小隊查詢。</p></section>`;
   return `<section><h3>${side==="my"?"我方":"敵方"} · ${esc(t.name)}</h3><div class="battle-roster-cards">${ids.map((id,index)=>{
     const o=t.operatives.find(x=>x.id===id);
-    const selected=battleRoster?.weapons?.[side]?.[String(index)];
-    const shown=Array.isArray(selected)?{...o,weapons:o.weapons.filter((_,i)=>selected.includes(i))}:o;
+    const occurrence=ids.slice(0,index).filter(x=>x===id).length;
+    const selected=battleRoster?.weapons?.[side]?.[`${id}#${occurrence}`]??battleRoster?.weapons?.[side]?.[String(index)];
+    const shown=o&&Array.isArray(selected)?{...o,weapons:(o.weapons||[]).filter((_,i)=>selected.includes(i))}:o;
     return o?`<details class="battle-operative-fold"><summary>${o.image?`<img src="${esc(o.image)}" alt="" loading="lazy">`:""}<span class="battle-operative-title"><b>${esc(o.name)}</b><small>${esc(o.stats||"")}</small></span><span class="battle-fold-hint">展開數據卡</span></summary><div class="battle-operative-body">${opCard(shown)}</div></details>`:`<p>找不到特工資料：${esc(id)}</p>`;
   }).join("")}</div></section>`;
 }
