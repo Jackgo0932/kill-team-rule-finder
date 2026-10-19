@@ -943,3 +943,61 @@ linear-gradient(110deg,rgba(230,92,43,.18),transparent 42%),linear-gradient(180d
 .matchup-pickers.reference-picker{display:block}
 .matchup-pickers.reference-picker .matchup-team{width:100%;max-width:none}
 .matchup-pickers.reference-picker .team-select{width:100%;max-width:none;font-size:14px}
+
+/* Match setup equipment picker */
+.battle-equipment-options{display:grid;gap:9px;max-height:480px;overflow:auto;padding:3px}
+.battle-equipment-entry{border:1px solid var(--border,#8885);border-radius:10px;padding:10px;display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.battle-equipment-entry>b{flex:1;min-width:120px}.battle-equipment-entry>small{opacity:.7}
+.battle-equipment-sub{flex-basis:100%;padding:8px 0 0 10px;display:grid;gap:7px}
+.battle-equipment-sub>div{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.battle-equipment-sub button{min-width:32px}
+
+/* v2.10.5 — streamlined pre-match equipment selection */
+.battle-equipment-side{min-width:0}
+.battle-equipment-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.battle-equipment-heading h3{margin:0}
+.battle-equipment-counter{white-space:nowrap;border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-variant-numeric:tabular-nums;font-size:13px}
+.battle-equipment-counter.full{border-color:var(--accent);color:var(--accent)}
+.battle-equipment-progress{height:5px;border-radius:8px;background:var(--panel2);overflow:hidden;margin:10px 0}
+.battle-equipment-progress span{display:block;height:100%;background:var(--accent);transition:width .15s}
+.battle-equipment-help{font-size:12px;color:var(--muted);margin:8px 0 12px}
+.battle-equipment-help strong{display:block;margin-top:5px;color:var(--text)}
+.battle-equipment-filters{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.battle-equipment-filter{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:999px;padding:7px 11px;font-size:12px;cursor:pointer}
+.battle-equipment-filter.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.battle-equipment-options{max-height:540px;gap:8px;padding:2px 3px 5px}
+.battle-equipment-entry{display:block;padding:0;overflow:hidden;border-color:var(--line);background:var(--panel)}
+.battle-equipment-entry.is-selected{border-color:var(--accent)}
+.battle-equipment-select{display:flex;align-items:center;gap:10px;width:100%;padding:13px 11px;text-align:left;background:transparent;color:var(--text);border:0;cursor:pointer}
+.battle-equipment-select:disabled{opacity:.45;cursor:default}
+.battle-equipment-check{width:25px;height:25px;flex:none;display:grid;place-items:center;border-radius:7px;background:var(--panel2);font-size:18px}
+.is-selected .battle-equipment-check{background:var(--accent);color:#fff}
+.battle-equipment-card-title{font-weight:700;flex:1;min-width:0}
+.battle-equipment-type{font-size:11px;white-space:nowrap;color:var(--muted)}
+.battle-equipment-sub{padding:10px 12px;border-top:1px solid var(--line);display:grid;gap:7px}
+.battle-equipment-subtitle{display:flex;justify-content:space-between;gap:8px;font-size:12px}
+.battle-equipment-subtitle .is-pending{color:var(--text)}
+.battle-equipment-option-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px}
+.battle-equipment-stepper{display:flex;align-items:center;gap:7px}
+.battle-equipment-stepper button{width:34px;height:32px;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:7px;font-size:17px;cursor:pointer}
+.battle-equipment-stepper button:disabled{opacity:.3;cursor:default}
+.battle-equipment-stepper b{min-width:15px;text-align:center;font-variant-numeric:tabular-nums}
+.battle-equipment-detail{border-top:1px solid var(--line);padding:8px 12px;font-size:12px;color:var(--muted)}
+.battle-equipment-detail summary{cursor:pointer;user-select:none}
+.battle-equipment-detail>div{padding:9px 0 3px;line-height:1.65;white-space:pre-wrap;color:var(--text)}
+.battle-equipment-empty{padding:18px 10px;color:var(--muted);font-size:13px;text-align:center}
+@media(max-width:560px){.battle-equipment-options{max-height:none}.battle-equipment-select{min-height:50px}}
+
+/* v2.10.6: equipment configuration dialog */
+.battle-equipment-keyword{font-weight:700;color:var(--text);text-decoration:underline dotted;text-underline-offset:3px}
+.battle-equipment-configure{display:block;width:calc(100% - 24px);margin:0 12px 9px;padding:10px 12px;border:1px solid var(--accent);border-radius:8px;background:var(--panel2);color:var(--text);text-align:left;cursor:pointer}
+.battle-equipment-dialog-backdrop{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:16px}
+.battle-equipment-dialog{width:min(100%,440px);max-height:90dvh;overflow:auto;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 14px 45px rgba(0,0,0,.35)}
+.battle-equipment-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.battle-equipment-dialog-head h3{margin:0}
+.battle-equipment-dialog-head button{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 11px;cursor:pointer}
+.battle-equipment-dialog>p{color:var(--muted);font-size:13px}
+.battle-equipment-dialog-rows{display:grid;gap:10px;margin:16px 0}
+.battle-equipment-dialog-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.battle-equipment-dialog-actions{display:flex;justify-content:flex-end;margin-top:18px}
+.battle-equipment-dialog-actions button{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:11px 16px;cursor:pointer}

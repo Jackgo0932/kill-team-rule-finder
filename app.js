@@ -1317,6 +1317,7 @@ function beginBattleSetup(){
   battleDraftTeams={my:battleRoster?.myTeam||S.myTeam,enemy:battleRoster?.enemyTeam||S.enemyTeam};
   battleDraft={my:initialDraft("my"),enemy:initialDraft("enemy"),enemySkipped:false,step:0};
   battleWeaponDraft={my:{},enemy:{}};battleMarkDraft={my:{},enemy:{}};battleChapterDraft={my:{primary:"",secondary:""},enemy:{primary:"",secondary:""}};battlePicker=null;
+  battleEquipmentDraft={my:[],enemy:[]};battleEquipmentOptionsDraft={my:{},enemy:{}};battleEquipmentFilters={my:"all",enemy:"all"};
   S.view="match";render();
 }
 function toggleDraftOperative(side,id){
@@ -1333,7 +1334,8 @@ function battleSetupNext(){
    const error=battleWeaponValidationError();
    if(error){alert(error);return;}
   }
-  if(battleDraft.step<3)battleDraft.step++;
+  if(battleDraft.step===3){const err=battleEquipmentError();if(err){alert(err);return;}}
+  if(battleDraft.step<4)battleDraft.step++;
   render();
 }
 function battleSetupBack(){if(battleDraft){battleDraft.step=Math.max(0,battleDraft.step-1);render()}}
@@ -1341,6 +1343,7 @@ function cancelBattleSetup(){
  if(!battleDraft)return;
  battleDraft=null;battleDraftTeams=null;battlePicker=null;
  battleWeaponDraft={my:{},enemy:{}};battleMarkDraft={my:{},enemy:{}};battleChapterDraft={my:{primary:"",secondary:""},enemy:{primary:"",secondary:""}};
+ battleEquipmentDraft=null;battleEquipmentOptionsDraft=null;
  render();
 }
 function changeBattleSetupTeam(side,id){
@@ -1619,7 +1622,7 @@ function battleSetupSummarySide(side){
  return `<section class="battle-review-side"><h3>${side==="my"?"我方":"敵方"} · ${esc(team?.name||"")}</h3><p>共 ${ids.length} 名${rosterTeam(side)==="xv26"?` · 融合砲 ${xv26FusionCount(side)}/2`:""}</p><ul>${cards}</ul></section>`;
 }
 function finishBattleSetup(){
-  if(!battleDraft||!battleDraft.my.length||rosterError("my")||(!battleDraft.enemySkipped&&rosterError("enemy")))return;
+  if(!battleDraft||battleDraft.step!==4||!battleDraft.my.length||rosterError("my")||(!battleDraft.enemySkipped&&rosterError("enemy")))return;
   for(const side of ["my","enemy"]){
    if(rosterTeam(side)!=="leg"||(side==="enemy"&&battleDraft.enemySkipped))continue;
    for(let i=0;i<battleDraft[side].length;i++){
@@ -1630,6 +1633,7 @@ function finishBattleSetup(){
   }
   const weaponError=battleWeaponValidationError();
   if(weaponError){alert(weaponError);return;}
+  const equipmentError=battleEquipmentError();if(equipmentError){alert(equipmentError);return;}
   for(const side of ["my","enemy"]){const error=chapterTacticsError(side);if(error){alert(error);return;}}
   if(!confirm("開始對戰並重置本局 TP、VP、CP 與戰鬥紀錄？"))return;
   for(const side of ["my","enemy"]){
@@ -1642,18 +1646,159 @@ function finishBattleSetup(){
     }
    });
   }
-  battleRoster={myTeam:battleDraftTeams.my,enemyTeam:battleDraftTeams.enemy,my:[...battleDraft.my],enemy:battleDraft.enemySkipped?null:[...battleDraft.enemy],weapons:JSON.parse(JSON.stringify(battleWeaponDraft)),marks:JSON.parse(JSON.stringify(battleMarkDraft)),chapterTactics:JSON.parse(JSON.stringify(battleChapterDraft))};
+  battleRoster={myTeam:battleDraftTeams.my,enemyTeam:battleDraftTeams.enemy,my:[...battleDraft.my],enemy:battleDraft.enemySkipped?null:[...battleDraft.enemy],weapons:JSON.parse(JSON.stringify(battleWeaponDraft)),marks:JSON.parse(JSON.stringify(battleMarkDraft)),chapterTactics:JSON.parse(JSON.stringify(battleChapterDraft)),equipment:JSON.parse(JSON.stringify(battleEquipmentDraft)),equipmentOptions:JSON.parse(JSON.stringify(battleEquipmentOptionsDraft))};
   localStorage.setItem(ROSTER_KEY,JSON.stringify(battleRoster));
-  battleDraft=null;battleDraftTeams=null;
+  // Keep the existing match-equipment tab and rule-page chips in sync with the confirmed match.
+  for(const side of ["my","enemy"]){
+    const teamId=battleDraftTeams[side];
+    if(side==="enemy"&&battleDraft.enemySkipped){
+      S.equipmentSelections[side][teamId]=[];
+      S.equipmentOptionSelections[side][teamId]={};
+    }else{
+      S.equipmentSelections[side][teamId]=[...battleEquipmentDraft[side]];
+      S.equipmentOptionSelections[side][teamId]=JSON.parse(JSON.stringify(battleEquipmentOptionsDraft[side]));
+    }
+  }
+  saveEquipmentSelections();saveEquipmentOptionSelections();
+  battleDraft=null;battleDraftTeams=null;battleEquipmentDraft=null;battleEquipmentOptionsDraft=null;
   S.matchTracker={tp:1,initiative:"my",sides:{my:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]},enemy:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]}},log:[]};
   saveMatchTracker();S.matchTab="roster";render();
+}
+// Equipment is chosen as part of the match setup, not on the general reference page.
+let battleEquipmentDraft=null,battleEquipmentOptionsDraft=null,battleEquipmentFilters={my:"all",enemy:"all"};
+function battleEquipmentEntries(side){
+ const team=TEAMS[rosterTeam(side)];
+ return [...(team?.equipment||[]).map(x=>({key:`e:${x[0]}`,kind:"e",id:x[0],name:x[1],desc:x[2]})),
+         ...UNIVERSAL_EQUIPMENT.map(x=>({key:`ue:${x[0]}`,kind:"ue",id:x[0],name:x[1],desc:x[4]}))];
+}
+function battleEquipmentConfig(side,entry){
+ return EQUIPMENT_SELECTION_CONFIG[`${rosterTeam(side)}:${entry.key}`]||EQUIPMENT_SELECTION_CONFIG[entry.key]||null;
+}
+function battleEquipmentError(){
+ for(const side of ["my","enemy"]){
+  if(side==="enemy"&&battleDraft.enemySkipped)continue;
+  const list=battleEquipmentDraft?.[side]||[];
+  if(list.length>4)return `${side==="my"?"我方":"敵方"}最多可選擇四項裝備。`;
+  const available=new Map(battleEquipmentEntries(side).map(e=>[e.key,e]));
+  for(const key of list){
+   const entry=available.get(key);
+   if(!entry)return `裝備 ${key} 不屬於所選小隊。`;
+   const cfg=battleEquipmentConfig(side,entry);
+   if(cfg){
+    const counts=battleEquipmentOptionsDraft?.[side]?.[key]||{};
+    const total=equipmentOptionTotal(counts);
+    if(total!==cfg.maxTotal)return `${side==="my"?"我方":"敵方"}「${entry.name}」必須完成 ${cfg.maxTotal} 個裝備內選項。`;
+    if(Object.entries(counts).some(([name,qty])=>!cfg.options.includes(name)||!Number.isInteger(qty)||qty<0))return `「${entry.name}」的選項無效。`;
+   }
+  }
+ }
+ return "";
+}
+// Equipment options are edited in a dedicated dialog, not inline below a card.
+let battleEquipmentDialog=null;
+function battleEquipmentDescription(text){
+ return esc(String(text||"請參照裝備規則說明。"))
+   .replace(/\[\[(?:(?:wp:)?[a-z0-9-]+)\|([^\]]+)\]\]/g,(_,label)=>`<span class="battle-equipment-keyword">${label}</span>`)
+   .replace(/\n/g,"<br>");
+}
+function battleEquipmentDialogMarkup(){
+ const d=battleEquipmentDialog;if(!d)return "";
+ const entry=battleEquipmentEntries(d.side).find(e=>e.key===d.key),cfg=entry&&battleEquipmentConfig(d.side,entry);
+ if(!entry||!cfg)return "";
+ const counts=battleEquipmentOptionsDraft[d.side][d.key]||{},total=equipmentOptionTotal(counts);
+ const rows=cfg.options.map((option,index)=>{
+  const qty=Number(counts[option]||0);
+  return `<div class="battle-equipment-dialog-row"><span>${esc(option)}</span><div class="battle-equipment-stepper"><button type="button" aria-label="減少 ${esc(option)}" onclick="changeBattleEquipmentOption('${d.side}','${d.key}',${index},-1)" ${qty?"":"disabled"}>−</button><b>${qty}</b><button type="button" aria-label="增加 ${esc(option)}" onclick="changeBattleEquipmentOption('${d.side}','${d.key}',${index},1)" ${total>=cfg.maxTotal?"disabled":""}>＋</button></div></div>`;
+ }).join("");
+ return `<div class="battle-equipment-dialog-backdrop" onclick="closeBattleEquipmentDialog()"><section class="battle-equipment-dialog" role="dialog" aria-modal="true" aria-label="設定 ${esc(entry.name)}" onclick="event.stopPropagation()"><div class="battle-equipment-dialog-head"><h3>${esc(entry.name)}</h3><button type="button" onclick="closeBattleEquipmentDialog()" aria-label="關閉視窗">✕</button></div><p>請選擇 ${cfg.maxTotal} 個裝備選項（已選 ${total} / ${cfg.maxTotal}）。</p><div class="battle-equipment-dialog-rows">${rows}</div><div class="battle-equipment-dialog-actions"><button type="button" onclick="closeBattleEquipmentDialog()">${total===cfg.maxTotal?"完成":"返回裝備清單"}</button></div></section></div>`;
+}
+function refreshBattleEquipmentDialog(){
+ const root=document.getElementById("battleEquipmentDialogRoot");
+ if(root)root.innerHTML=battleEquipmentDialogMarkup();
+}
+function openBattleEquipmentDialog(side,key){
+ if(!battleDraft||battleDraft.step!==3||!battleEquipmentDraft?.[side]?.includes(key))return;
+ const entry=battleEquipmentEntries(side).find(e=>e.key===key);
+ if(!entry||!battleEquipmentConfig(side,entry))return;
+ battleEquipmentDialog={side,key};refreshBattleEquipmentDialog();
+}
+function refreshBattleEquipmentSetup(){
+ const scrollY=window.scrollY;
+ const positions=[...document.querySelectorAll(".battle-equipment-options")].map(el=>el.scrollTop);
+ render();
+ document.querySelectorAll(".battle-equipment-options").forEach((el,i)=>{el.scrollTop=positions[i]||0});
+ window.scrollTo(0,scrollY);
+}
+function closeBattleEquipmentDialog(){
+ battleEquipmentDialog=null;
+ const root=document.getElementById("battleEquipmentDialogRoot");if(root)root.innerHTML="";
+ // Render once after closing so counters and the review validation refresh.
+ refreshBattleEquipmentSetup();
+}
+function toggleBattleEquipment(side,key){
+ if(!battleDraft||battleDraft.step!==3||!(["my","enemy"].includes(side)))return;
+ if(side==="enemy"&&battleDraft.enemySkipped)return;
+ const entry=battleEquipmentEntries(side).find(e=>e.key===key);if(!entry)return;
+ const list=battleEquipmentDraft[side],idx=list.indexOf(key);
+ if(idx>=0){list.splice(idx,1);delete battleEquipmentOptionsDraft[side][key]}
+ else if(list.length<4){list.push(key)}
+ refreshBattleEquipmentSetup();
+ if(idx<0&&battleEquipmentConfig(side,entry))openBattleEquipmentDialog(side,key);
+}
+function changeBattleEquipmentOption(side,key,index,delta){
+ if(!battleDraft||battleDraft.step!==3||!battleEquipmentDraft[side]?.includes(key))return;
+ const entry=battleEquipmentEntries(side).find(e=>e.key===key),cfg=entry&&battleEquipmentConfig(side,entry);
+ if(!cfg||!Number.isInteger(index)||index<0||index>=cfg.options.length)return;
+ const option=cfg.options[index],store=battleEquipmentOptionsDraft[side],counts=store[key]||(store[key]={});
+ const current=Number(counts[option]||0),total=equipmentOptionTotal(counts);
+ if(delta>0&&total>=cfg.maxTotal)return;
+ if(cfg.maxTotal===1){Object.keys(counts).forEach(k=>delete counts[k]);if(!current&&delta>0)counts[option]=1}
+ else{const next=Math.max(0,current+(delta>0?1:-1));if(next)counts[option]=next;else delete counts[option]}
+ refreshBattleEquipmentDialog();
+}
+function setBattleEquipmentFilter(side,filter){
+ if(!battleDraft||battleDraft.step!==3||!["my","enemy"].includes(side)||!["all","e","ue","selected"].includes(filter))return;
+ battleEquipmentFilters[side]=filter;render();
+}
+function battleEquipmentSide(side){
+ if(side==="enemy"&&battleDraft.enemySkipped)return `<section class="battle-review-side"><h3>敵方裝備</h3><p>已略過敵方編隊與裝備設定。</p></section>`;
+ const chosen=battleEquipmentDraft[side],entries=battleEquipmentEntries(side),filter=battleEquipmentFilters[side]||"all";
+ const filtered=entries.filter(e=>filter==="all"||(filter==="selected"?chosen.includes(e.key):e.kind===filter));
+ const incomplete=chosen.filter(key=>{const e=entries.find(x=>x.key===key),cfg=e&&battleEquipmentConfig(side,e);return cfg&&equipmentOptionTotal(battleEquipmentOptionsDraft[side][key]||{})!==cfg.maxTotal;});
+ const tabs=[["all","全部"],["e","陣營"],["ue","通用"],["selected",`已選 ${chosen.length}`]];
+ return `<section class="battle-review-side battle-equipment-side"><div class="battle-equipment-heading"><h3>${side==="my"?"我方":"敵方"}裝備 · ${esc(TEAMS[rosterTeam(side)]?.name||"")}</h3><strong class="battle-equipment-counter ${chosen.length===4?"full":""}">${chosen.length} / 4</strong></div>
+ <div class="battle-equipment-progress" aria-label="已選 ${chosen.length} 項，最多四項"><span style="width:${chosen.length*25}%"></span></div>
+ <p class="battle-equipment-help">最多四項，可少選；點選卡片加入或移除。${incomplete.length?`<strong>還有 ${incomplete.length} 項內部選項未完成。</strong>`:""}</p>
+ <div class="battle-equipment-filters" role="group" aria-label="${side==="my"?"我方":"敵方"}裝備篩選">${tabs.map(([id,label])=>`<button type="button" class="battle-equipment-filter ${filter===id?"active":""}" aria-pressed="${filter===id}" onclick="setBattleEquipmentFilter('${side}','${id}')">${label}</button>`).join("")}</div>
+ <div class="battle-equipment-options">${filtered.length?filtered.map(e=>{
+ const active=chosen.includes(e.key),cfg=battleEquipmentConfig(side,e),counts=battleEquipmentOptionsDraft[side][e.key]||{},total=equipmentOptionTotal(counts);
+ const complete=!cfg||total===cfg.maxTotal;
+ return `<article class="battle-equipment-entry ${active?"is-selected":""}">
+ <div class="battle-equipment-card-top"><button type="button" class="battle-equipment-select" aria-pressed="${active}" onclick="toggleBattleEquipment('${side}','${e.key}')" ${!active&&chosen.length>=4?"disabled":""}><span class="battle-equipment-check">${active?"✓":"＋"}</span><span class="battle-equipment-card-title">${esc(e.name)}</span><span class="battle-equipment-type">${e.kind==="ue"?"通用":"陣營"}</span></button></div>
+ ${active&&cfg?`<button type="button" class="battle-equipment-configure" onclick="openBattleEquipmentDialog('${side}','${e.key}')">${complete?`✓ 已設定 ${total} / ${cfg.maxTotal} · 修改數量`:`設定數量 · ${total} / ${cfg.maxTotal}（待完成）`} ›</button>`:""}
+ <details class="battle-equipment-detail"><summary>查看裝備效果</summary><div>${battleEquipmentDescription(e.desc)}</div></details>
+ </article>`}).join(""):`<p class="battle-equipment-empty">${filter==="selected"?"尚未選擇裝備。請切換至全部、陣營或通用。":"此分類沒有可選裝備。"}</p>`}</div></section>`;
+}
+function battleEquipmentReview(side){
+ if(side==="enemy"&&battleDraft.enemySkipped)return "";
+ const names=new Map(battleEquipmentEntries(side).map(e=>[e.key,e.name]));
+ const rows=(battleEquipmentDraft?.[side]||[]).map(key=>{
+ const options=battleEquipmentOptionsDraft?.[side]?.[key]||{};
+ const suffix=Object.entries(options).filter(([,n])=>n>0).map(([name,n])=>`${name}${n>1?` ×${n}`:""}`).join("、");
+ return `<li>${esc(names.get(key)||key)}${suffix?`（${esc(suffix)}）`:""}</li>`;
+ }).join("");
+ return `<section class="battle-review-side"><h3>${side==="my"?"我方":"敵方"}裝備</h3><ul>${rows||"<li>未選擇裝備</li>"}</ul></section>`;
 }
 function renderBattleSetup(){
   const d=battleDraft,side=d.step===1?"my":"enemy";
   if(d.step===0)return `<div class="battle-setup"><h2>① 選擇本場雙方小隊</h2><p>在這裡決定雙方小隊。進入下一步後就鎖定；若要修改，請按「上一步」回來。</p><div class="battle-team-picker-grid">${battleTeamPicker("my")}${battleTeamPicker("enemy")}</div><button onclick="battleSetupNext()">確認小隊，下一步 →</button> <button onclick="cancelBattleSetup()">取消設定</button></div>`;
   if(d.step===3){
-    return `<div class="battle-setup"><h2>確認本場編隊</h2><p>已檢查基本編成條件。${[rosterTeam("my"),rosterTeam("enemy")].includes("xv26")?"XV26 已檢查主武器二選一及融合砲最多兩把。":""}${[rosterTeam("my"),rosterTeam("enemy")].includes("aod")?"死亡天使已檢查目前支援的仲裁者步槍及軍士近戰武器選擇。":""}尚未支援的武器及特殊限制仍須依「編成規則」核對。</p>
+    return `<div class="battle-setup"><h2>④ 選擇本場裝備</h2><p>每方最多四項；通用手雷等裝備需要完成內部選項。此步驟不會修改原本規則查詢頁的裝備清單。</p><div class="battle-review-grid">${battleEquipmentSide("my")}${battleEquipmentSide("enemy")}</div><div id="battleEquipmentDialogRoot"></div>${battleEquipmentError()?`<p class="battle-validation">${esc(battleEquipmentError())}</p>`:""}<button onclick="battleSetupBack()">上一步</button> <button onclick="battleSetupNext()" ${battleEquipmentError()?"disabled":""}>下一步 →</button> <button onclick="cancelBattleSetup()">取消設定</button></div>`;
+  }
+  if(d.step===4){
+    return `<div class="battle-setup"><h2>⑤ 確認本場編隊與裝備</h2><p>已檢查基本編成條件。${[rosterTeam("my"),rosterTeam("enemy")].includes("xv26")?"XV26 已檢查主武器二選一及融合砲最多兩把。":""}${[rosterTeam("my"),rosterTeam("enemy")].includes("aod")?"死亡天使已檢查目前支援的仲裁者步槍及軍士近戰武器選擇。":""}尚未支援的武器及特殊限制仍須依「編成規則」核對。</p>
     <div class="battle-review-grid">${battleSetupSummarySide("my")}${battleSetupSummarySide("enemy")}</div>
+    <div class="battle-review-grid">${battleEquipmentReview("my")}${battleEquipmentReview("enemy")}</div>
     <div class="battle-review-grid">${chapterTacticsPicker("my")}${chapterTacticsPicker("enemy")}</div>
     <p class="battle-review-note">請確認雙方特工及已設定的武器。尚未支援配置的職位會顯示預設武器資料，請自行核對合法性。</p>
     <button onclick="battleSetupBack()">返回修改</button> <button onclick="finishBattleSetup()" ${chapterTacticsError("my")||chapterTacticsError("enemy")?'disabled title="請先完成戰團戰術選擇"':''}>確認並開始對戰</button> <button onclick="cancelBattleSetup()">取消設定</button></div>`;
