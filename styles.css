@@ -984,7 +984,7 @@ linear-gradient(110deg,rgba(230,92,43,.18),transparent 42%),linear-gradient(180d
 .battle-equipment-stepper b{min-width:15px;text-align:center;font-variant-numeric:tabular-nums}
 .battle-equipment-detail{border-top:1px solid var(--line);padding:8px 12px;font-size:12px;color:var(--muted)}
 .battle-equipment-detail summary{cursor:pointer;user-select:none}
-.battle-equipment-detail>div{padding:9px 0 3px;line-height:1.65;white-space:pre-wrap;color:var(--text)}
+.battle-equipment-detail>div{padding:9px 0 3px;line-height:1.65;white-space:normal;color:var(--text)}
 .battle-equipment-empty{padding:18px 10px;color:var(--muted);font-size:13px;text-align:center}
 @media(max-width:560px){.battle-equipment-options{max-height:none}.battle-equipment-select{min-height:50px}}
 
@@ -1001,3 +1001,94 @@ linear-gradient(110deg,rgba(230,92,43,.18),transparent 42%),linear-gradient(180d
 .battle-equipment-dialog-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
 .battle-equipment-dialog-actions{display:flex;justify-content:flex-end;margin-top:18px}
 .battle-equipment-dialog-actions button{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:11px 16px;cursor:pointer}
+
+/* Equipment keyword explanations (pre-battle picker) */
+button.battle-equipment-keyword{display:inline;appearance:none;background:transparent;border:0;padding:0;font:inherit;font-weight:700;color:var(--text);text-decoration:underline dotted;text-underline-offset:3px;cursor:pointer}button.battle-equipment-keyword[aria-expanded="true"]{text-decoration:underline solid}.battle-equipment-keyword-explanation{margin:.6rem 0;padding:.7rem .85rem;border:1px solid var(--border, #8885);border-radius:9px;background:var(--surface, #8881)}.battle-equipment-keyword-explanation p{margin:.35rem 0;white-space:pre-wrap}.battle-equipment-keyword-close{font:inherit;cursor:pointer}
+
+/* v2.10.8: keyword help sits below the description instead of inside its text flow. */
+.battle-equipment-detail>div{min-width:0}
+.battle-equipment-effect{line-height:1.65;overflow-wrap:anywhere}
+.battle-equipment-keyword-explanation{display:block;box-sizing:border-box;width:100%;clear:both;margin:10px 0 2px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);text-align:left;line-height:1.6}
+.battle-equipment-keyword-explanation strong{display:block;margin:0 0 5px;font-size:14px}
+.battle-equipment-keyword-explanation p{margin:0 0 9px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.battle-equipment-keyword-close{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:7px;padding:5px 12px;background:var(--panel);color:var(--text)}
+.battle-equipment-dialog-actions{gap:10px;flex-wrap:wrap}
+.battle-equipment-dialog-actions button:disabled{opacity:.45;cursor:not-allowed}
+.battle-equipment-dialog-actions .battle-equipment-cancel{background:var(--panel2);border:1px solid var(--line);color:var(--text)}
+
+/* v2.10.9: reuse the dictionary's term-link and inline/prose-inline presentation. */
+button.battle-equipment-keyword.term-link{display:inline;appearance:none;background:transparent;border:0;border-bottom:1px dotted var(--accent);border-radius:0;padding:0;font:inherit;color:var(--accent);text-decoration:none;cursor:pointer}
+button.battle-equipment-keyword.term-link:hover,button.battle-equipment-keyword.term-link.open{border-bottom-style:solid;text-decoration:none}
+.battle-equipment-detail>.battle-equipment-keyword-explanation.inline{display:block;width:100%;box-sizing:border-box;clear:both;margin:8px 0 2px;padding:9px 10px;border:0;border-left:3px solid var(--accent);border-radius:8px;background:#171a1d;color:var(--text);font-size:13px;line-height:1.5;white-space:normal;text-align:left}
+.battle-equipment-keyword-explanation .term-source{margin-bottom:4px}
+.battle-equipment-keyword-explanation .weapon-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.battle-equipment-keyword-explanation .chips{display:flex;flex-wrap:wrap;gap:6px}
+
+/* v2.10.11: range shown alongside weapon-rule chips */
+.equipment-range-chip{display:inline-flex;align-items:center;cursor:default;user-select:text}
+
+/* v2.10.13 — sectioned utility grenade text, shared by dictionary and picker */
+.grenade-column{padding:12px 14px}
+.grenade-head{align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.grenade-head span{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px 8px;white-space:nowrap}
+.grenade-sections{display:flex;flex-direction:column;gap:0;min-width:0}
+.grenade-section{padding:9px 0;border-top:1px solid var(--line);min-width:0}
+.grenade-section-label{font-weight:700;font-size:.9em;color:var(--accent);margin-bottom:5px}
+.grenade-section-text{line-height:1.6;overflow-wrap:anywhere}
+.grenade-section-text .body{margin:0;line-height:inherit;white-space:normal}
+.battle-equipment-detail .grenade-column{font-size:13px}
+.battle-equipment-detail .grenade-section-text{white-space:normal}
+
+/* v2.10.14 — shared dictionary HTML must not preserve template indentation as visible blank lines. */
+.battle-equipment-detail>div{white-space:normal}
+.battle-equipment-detail .grenade-columns,.battle-equipment-detail .grenade-column,.battle-equipment-detail .grenade-sections,.battle-equipment-detail .grenade-section{white-space:normal}
+.battle-equipment-detail .grenade-column{height:auto;min-height:0}
+
+/* v2.10.17: identical inline explanation spacing across all equipment sections */
+.battle-equipment-detail .battle-equipment-keyword-explanation.inline{
+ display:block;width:100%;box-sizing:border-box;clear:both;margin:8px 0 2px;
+ padding:9px 10px;border:0;border-left:3px solid var(--accent);
+ border-radius:8px;background:#171a1d;color:var(--text);
+ font-size:13px;line-height:1.5;white-space:normal;text-align:left;
+}
+
+/* v2.10.19: inline keyword explanations for ability and ploy prose */
+.reference-local-explanation{margin:8px 0 4px;line-height:1.55}
+
+/* v2.10.20 — local weapon-profile expansion in abilities and ploys. */
+.reference-local-profile{display:block;min-width:0}
+.reference-local-profile .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.reference-local-profile button.chip{cursor:pointer}
+.reference-local-rule-explanation{margin-top:9px;white-space:normal}
+
+/* v2.10.21 — nested weapon-profile rules must look like normal weapon chips.
+   .term-link is for inline prose only, never a replacement for chip styling. */
+.reference-local-profile .chips button.chip.term-link{
+ display:inline-flex;align-items:center;justify-content:center;
+ margin:0;padding:5px 9px;border:1px solid #454d55;
+ border-radius:999px;background:#2b3137;color:#eee;
+ font-size:12px;font-weight:400;line-height:1.35;
+ text-decoration:none;white-space:normal;cursor:pointer;
+}
+.reference-local-profile .chips button.chip.term-link:hover,
+.reference-local-profile .chips button.chip.term-link.open{
+ border-color:var(--accent);background:#4b2a1f;
+}
+
+/* v2.10.22: dictionary weapon chips expand within their own weapon card. */
+.dictionary-local-rule-explanation{display:block;clear:both;margin-top:9px;white-space:normal}
+
+/* v2.10.23 — dictionary equipment uses the existing inline explanation styling. */
+.equipment-card .reference-local-explanation{display:block;clear:both;margin:8px 0 6px;white-space:normal}
+
+/* v2.10.25: flow explanation source badge should fit its label, not stretch. */
+.flow-inline .term-source{display:inline-flex;align-items:center;width:max-content;max-width:100%;box-sizing:border-box;vertical-align:middle;line-height:1.35;margin:0 0 6px 0;padding:2px 8px;letter-spacing:0;white-space:nowrap}
+.flow-step-explain{min-width:0}
+
+/* v2.10.26: keep a readable gap between the inline flow badge and explanation. */
+.flow-inline .term-source{margin:0 9px 3px 0}
+
+/* v2.10.30: inline match equipment rule panel */
+.match-equipment-rule-panel{margin:8px 0 14px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card,#1b1d20)}
+.match-equipment-rule-panel h4{margin:0 0 10px;font-size:1rem}
+.match-equipment-rule-panel .equipment-grenade-weapons{margin-top:10px}

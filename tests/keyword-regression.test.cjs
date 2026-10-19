@@ -1,0 +1,130 @@
+// Cross-page keyword regression checks. Run: node tests/keyword-regression.test.cjs
+// Lightweight contract tests, not a replacement for actual browser E2E testing.
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const path=require('node:path');
+const code=fs.readFileSync(path.join(__dirname,'..','app.js'),'utf8');
+let count=0;
+function check(name,fn){fn();console.log('PASS',name);count++;}
+function functionSource(name){
+ const start=code.indexOf('function '+name+'(');
+ assert(start>=0,'Missing function '+name);
+ const brace=code.indexOf('{',start);
+ let depth=0,quote=null,escape=false,template=false;
+ // Locate next top-level function declaration instead of parsing JS braces in templates.
+ const next=code.slice(start+9).search(/\nfunction [A-Za-z_$][\w$]*\(/);
+ return next<0?code.slice(start):code.slice(start,start+9+next);
+}
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const KW={piercing:{name:'穿刺',en:'Piercing',text:'穿刺規則'},poison:{name:'毒素',en:'Poison',text:'毒素規則'}};
+const ctx={KW,window:{KT_WEAPON_PROFILES:{}},esc,document:{createElement:()=>({className:'',innerHTML:'',remove(){this.removed=true}})},console};
+vm.createContext(ctx);
+for(const name of ['localizeBattleEquipmentKeywords','toggleBattleEquipmentKeyword','toggleDictionaryWeaponRule','toggleFlowKeyword','toggleReferenceKeyword'])
+ vm.runInContext(functionSource(name),ctx);
+function fakeButton(id,section,container){
+ const b={dataset:{keywordId:id},attributes:{'aria-expanded':'false'},classList:{add(){},remove(){}},
+ getAttribute(k){return this.attributes[k]},setAttribute(k,v){this.attributes[k]=v},
+ closest(q){if(q.includes('battle-equipment-entry'))return container;if(q.includes('grenade-section-text'))return section;return null}};
+ return b;
+}
+check('battle equipment converts dictionary keyword handler',()=>{
+ const html='<button class="term-link" onclick="openRule(\'dictionary:piercing\')">穿刺</button>';
+ const result=ctx.localizeBattleEquipmentKeywords(html);
+ assert.match(result,/onclick="toggleBattleEquipmentKeyword\(this\)"/);
+ assert.match(result,/data-keyword-id="piercing"/);
+ assert.doesNotMatch(result,/onclick="openRule/);
+});
+check('unknown keyword does not become broken local handler',()=>{
+ const html='<button onclick="openRule(\'dictionary:unknown\')">?</button>';
+ assert.equal(ctx.localizeBattleEquipmentKeywords(html),html);
+});
+check('battle equipment explanation stays in grenade section',()=>{
+ const section={children:[],append(p){this.children.push(p)}};
+ const container={querySelector(){return null},querySelectorAll(){return [button]}};
+ const button=fakeButton('piercing',section,container);
+ ctx.toggleBattleEquipmentKeyword(button);
+ assert.equal(section.children.length,1);
+ assert.match(section.children[0].innerHTML,/穿刺/);
+ assert.equal(button.getAttribute('aria-expanded'),'true');
+});
+check('battle equipment explanation closes on second click',()=>{
+ const section={children:[],append(p){this.children.push(p)}};
+ let panel=null;
+ const container={querySelector(){return panel},querySelectorAll(){return [button]}};
+ const button=fakeButton('piercing',section,container);
+ ctx.toggleBattleEquipmentKeyword(button);
+ panel=section.children[0];
+ ctx.toggleBattleEquipmentKeyword(button);
+ assert.equal(panel.removed,true);
+ assert.equal(button.getAttribute('aria-expanded'),'false');
+});
+check('battle equipment click does not call full render',()=>{
+ assert.doesNotMatch(functionSource('toggleBattleEquipmentKeyword'),/\brender\s*\(/);
+ assert.doesNotMatch(functionSource('toggleBattleEquipmentKeyword'),/\bopenRule\s*\(/);
+});
+check('dictionary weapon chips use local handlers',()=>{
+ assert.match(functionSource('chip'),/toggleDictionaryWeaponRule\(this\)/);
+ assert.doesNotMatch(functionSource('toggleDictionaryWeaponRule'),/\brender\s*\(/);
+});
+check('dictionary weapon rule scope stays inside weapon',()=>{
+ assert.match(functionSource('toggleDictionaryWeaponRule'),/closest\("\.weapon,/);
+ assert.match(functionSource('toggleDictionaryWeaponRule'),/weapon\.append\(panel\)/);
+});
+check('reference keywords use local handlers',()=>{
+ assert.match(functionSource('markedProse'),/toggleReferenceKeyword\(this\)/);
+ assert.doesNotMatch(functionSource('toggleReferenceKeyword'),/\brender\s*\(/);
+});
+check('reference weapon profile supports nested rule explanation',()=>{
+ const s=functionSource('toggleReferenceKeyword');
+ assert.match(s,/reference-local-profile/);
+ assert.match(s,/reference-local-rule-explanation/);
+});
+check('flow term and core rule links use local handlers',()=>{
+ assert.match(functionSource('flowTerm'),/toggleFlowKeyword\(this\)/);
+ assert.match(functionSource('flowRule'),/toggleFlowKeyword\(this\)/);
+});
+check('flow keyword explanation is placed after its paragraph',()=>{
+ const s=functionSource('toggleFlowKeyword');
+ assert.match(s,/target\.insertAdjacentElement\("afterend",panel\)/);
+ assert.doesNotMatch(s,/\brender\s*\(/);
+});
+check('flow label spacing remains defined',()=>{
+ const css=fs.readFileSync(path.join(__dirname,'..','styles.css'),'utf8');
+ assert.match(css,/\.flow-step-explain[\s\S]*?\.term-source|\.flow-inline[\s\S]*?\.term-source/);
+});
+check('dictionary equipment is read-only',()=>{
+ const section=code.slice(code.indexOf('function items(){'),code.indexOf('function ',code.indexOf('function items(){')+10));
+ assert.doesNotMatch(section,/equipmentSelectButton\(/);
+ assert.doesNotMatch(section,/equipmentSelectionBlock\(/);
+ assert.match(section,/sharedEquipmentDescription\(/);
+});
+check('match equipment uses confirmed battle roster selections',()=>{
+ const source=functionSource('matchEquipmentSide');
+ assert.match(source,/battleRoster\?\.equipment\?\.\[side\]/);
+ assert.doesNotMatch(source,/equipmentBucket\(/);
+});
+check('explosive grenade range is an interactive chip',()=>{
+ assert.match(functionSource('explosiveGrenadeCards'),/data-keyword-id="range"/);
+ assert.match(functionSource('toggleDictionaryWeaponRule'),/id==="range"/);
+});
+check('confirmed match equipment opens local details instead of navigating',()=>{
+ const fn=functionSource('openMatchEquipment');
+ assert.match(fn,/sharedEquipmentDescription\(/);
+ assert.match(fn,/insertAdjacentElement\("afterend",panel\)/);
+ assert.doesNotMatch(fn,/S\.view=|\brender\(/);
+});
+check('legacy equipment selection code is removed',()=>{
+ for(const name of ['equipmentBucket','toggleEquipment','equipmentSelectButton','equipmentSummary',
+   'removeEquipment','equipmentOptionPicker','setSingleEquipmentOption','equipmentSelectionBlock']){
+  assert.doesNotMatch(code,new RegExp('function\\s+'+name+'\\s*\\('));
+ }
+ assert.doesNotMatch(code,/ktEquipmentSelections|ktEquipmentOptionSelections/);
+});
+check('match equipment configuration and totals remain available',()=>{
+ assert.match(code,/const EQUIPMENT_SELECTION_CONFIG=/);
+ assert.match(code,/function equipmentOptionTotal\(/);
+ assert.match(code,/function equipmentNameByKey\(/);
+ assert.match(code,/function matchEquipmentSide\(/);
+});
+console.log(`\n${count} keyword regression checks passed`);

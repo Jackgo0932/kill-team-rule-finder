@@ -661,3 +661,28 @@ Tac Ops 亦包含部分容易誤判的規則補充與官方更新後的互動說
 ## Disclaimer
 
 Warhammer 40,000、Kill Team 及相關名稱、規則與美術資產屬其各自權利人所有。本專案為非官方玩家製作的規則速查工具，與 Games Workshop 無關。
+
+
+## v2.10.27 關鍵字跨頁面回歸測試
+執行 `node tests/keyword-regression.test.cjs`，檢查戰前裝備、字典武器標籤、特工能力／計謀引用與戰鬥流程關鍵字的事件路由、局部展開位置與收合行為（12 項）。
+這是輕量級程式契約測試，不等於真實瀏覽器端到端測試；視覺排版、捲動位置及手機觸控仍需人工驗收。
+本版不改動 app.js 的執行邏輯及 CSS。
+
+
+## v2.10.28 真實瀏覽器互動測試（新增腳本）
+執行 `python tests/browser-interactions.py`（需安裝 `playwright` 與 Chromium；可透過 `KT_CHROMIUM_PATH` 指定瀏覽器執行檔）。測試頁面載入、流程關鍵字開合與膠囊寬度/間距、武器規則標籤開合、JS 錯誤。瀏覽器腳本會在本機啟動暫時的 HTTP 伺服器。
+本環境對 Chromium 的本機 URL 導航回報 `ERR_BLOCKED_BY_ADMINISTRATOR`，因此腳本尚未通過實際瀏覽器執行；保留 12 項既有程式回歸測試通過的結果。本版不改動執行中的 app.js 與 styles.css。
+
+
+## v2.10.29 舊裝備選擇入口移除
+查字典頁面保留通用／陣營裝備規則、搜尋、收藏及關鍵字說明，但不再顯示「＋選擇／✓已選」和裝備內數量設定。請透過「本局對戰 → 開始設定對戰 → ④ 選擇本場裝備」進行選擇。
+本局對戰的「雙方裝備」改直接讀取已確認的 `battleRoster.equipment` 與 `equipmentOptions`，避免依賴舊字典選擇清單。
+保留舊版 localStorage 資料以避免破壞既有紀錄；沒有刪除使用者資料。
+`node tests/keyword-regression.test.cjs` 提升為 14 項，瀏覽器測試增加舊裝備選擇按鈕不存在的 DOM 檢查。
+
+
+## v2.10.31 移除未使用的舊裝備選擇程式
+移除舊查字典選裝備狀態、選擇按鈕、數量選擇器及建立對戰時的雙向同步程式。
+保留 `equipmentNameByKey`、`equipmentOptionTotal`、`EQUIPMENT_SELECTION_CONFIG`，供目前戰前選裝備及本局對戰使用。
+不刪除瀏覽器內既有的 `ktEquipmentSelections` / `ktEquipmentOptionSelections` 儲存資料（僅不再讀寫）。
+新增兩項回歸檢查，總計 18 項。沒有修改目前已驗證的畫面樣式。

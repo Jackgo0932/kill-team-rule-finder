@@ -20,8 +20,6 @@ const S={
   open:new Set(),
   flowOpen:new Set(),
   fav:new Set(JSON.parse(localStorage.getItem("ktFav")||"[]")),
-  equipmentSelections:JSON.parse(localStorage.getItem("ktEquipmentSelections")||'{"my":{},"enemy":{}}'),
-  equipmentOptionSelections:JSON.parse(localStorage.getItem("ktEquipmentOptionSelections")||'{"my":{},"enemy":{}}'),
   recentViewed:JSON.parse(localStorage.getItem("ktRecentViewed")||"[]"),
   matchTracker:JSON.parse(localStorage.getItem("ktMatchTracker")||'null')||{
     tp:1, initiative:"my",
@@ -33,37 +31,6 @@ const S={
 };
 
 
-function equipmentBucket(side=S.side,teamId=(side==="enemy"?S.enemyTeam:S.myTeam)){
-  if(!S.equipmentSelections[side]) S.equipmentSelections[side]={};
-  if(!Array.isArray(S.equipmentSelections[side][teamId])) S.equipmentSelections[side][teamId]=[];
-  return S.equipmentSelections[side][teamId];
-}
-function saveEquipmentSelections(){
-  localStorage.setItem("ktEquipmentSelections",JSON.stringify(S.equipmentSelections));
-}
-function equipmentKey(kind,id){return `${kind}:${id}`}
-function isEquipmentSelected(kind,id){
-  return equipmentBucket().includes(equipmentKey(kind,id));
-}
-function toggleEquipment(kind,id){
-  const key=equipmentKey(kind,id),bucket=equipmentBucket();
-  const at=bucket.indexOf(key);
-  if(at>=0){
-    bucket.splice(at,1);
-    const optionStore=equipmentOptionStore();
-    delete optionStore[key];
-    saveEquipmentOptionSelections();
-  }
-  else{
-    bucket.push(key);
-  }
-  saveEquipmentSelections();
-  render();
-}
-function equipmentSelectButton(kind,id){
-  const selected=isEquipmentSelected(kind,id);
-  return `<button class="equipment-pick ${selected?"on":""}" onclick="toggleEquipment('${kind}','${id}')" aria-pressed="${selected?"true":"false"}">${selected?"✓ 已選":"＋ 選擇"}</button>`;
-}
 function equipmentNameByKey(teamId,key){
   const [kind,id]=key.split(":");
   if(kind==="ue"){
@@ -74,123 +41,9 @@ function equipmentNameByKey(teamId,key){
   const x=(t?.equipment||[]).find(x=>x[0]===id);
   return x?x[1]:id;
 }
-function equipmentSummary(side){
-  const teamId=side==="enemy"?S.enemyTeam:S.myTeam;
-  const bucket=equipmentBucket(side,teamId);
-  const items=bucket.map(key=>`<button class="equipment-summary-chip" onclick="removeEquipment('${side}','${teamId}','${key}')">${esc(equipmentNameByKey(teamId,key))}${equipmentOptionSummary(side,teamId,key)}<span>×</span></button>`).join("");
-  return `<div class="equipment-summary ${S.side===side?"active":""}">
-    <div class="equipment-summary-head"><b>${side==="my"?"我方":"敵方"}裝備</b><span>已選 ${bucket.length}</span></div>
-    <div class="equipment-summary-items">${items||`<span class="equipment-summary-empty">尚未選擇</span>`}</div>
-  </div>`;
-}
-function removeEquipment(side,teamId,key){
-  const bucket=equipmentBucket(side,teamId);
-  const at=bucket.indexOf(key);
-  if(at>=0) bucket.splice(at,1);
-  const optionStore=equipmentOptionStore(side,teamId);
-  delete optionStore[key];
-  saveEquipmentSelections();
-  saveEquipmentOptionSelections();
-  render();
-}
-
-
-function equipmentOptionStore(side=S.side,teamId=(side==="enemy"?S.enemyTeam:S.myTeam)){
-  if(!S.equipmentOptionSelections[side]) S.equipmentOptionSelections[side]={};
-  if(!S.equipmentOptionSelections[side][teamId]) S.equipmentOptionSelections[side][teamId]={};
-  return S.equipmentOptionSelections[side][teamId];
-}
-function saveEquipmentOptionSelections(){
-  localStorage.setItem("ktEquipmentOptionSelections",JSON.stringify(S.equipmentOptionSelections));
-}
-function equipmentOptionKey(kind,id){return `${kind}:${id}`}
-function selectedEquipmentOptions(kind,id){
-  const store=equipmentOptionStore();
-  const key=equipmentOptionKey(kind,id);
-  const raw=store[key];
-  // v2.2.9.3 used an array. Migrate it in place to { option: quantity }.
-  if(Array.isArray(raw)){
-    const counts={};
-    raw.forEach(option=>counts[option]=(counts[option]||0)+1);
-    store[key]=counts;
-    saveEquipmentOptionSelections();
-  }else if(!raw || typeof raw!=="object"){
-    store[key]={};
-  }
-  return store[key];
-}
 function equipmentOptionTotal(counts){
   return Object.values(counts||{}).reduce((sum,n)=>sum+(Number(n)||0),0);
 }
-function changeEquipmentOption(kind,id,option,delta,maxTotal=2){
-  const counts=selectedEquipmentOptions(kind,id);
-  const current=Number(counts[option]||0);
-  const total=equipmentOptionTotal(counts);
-  if(delta>0 && total>=maxTotal){
-    const note=document.querySelector("#equipmentLimitNote");
-    if(note){
-      note.textContent=`這項裝備合計最多選擇 ${maxTotal} 個。`;
-      note.classList.add("show");
-      setTimeout(()=>note.classList.remove("show"),2200);
-    }
-    return;
-  }
-  const next=Math.max(0,current+delta);
-  if(next) counts[option]=next;
-  else delete counts[option];
-  saveEquipmentOptionSelections();
-  render();
-}
-function equipmentOptionPicker(kind,id,options,maxTotal=2){
-  const counts=selectedEquipmentOptions(kind,id);
-  const total=equipmentOptionTotal(counts);
-  if(maxTotal===1){
-    return `<div class="equipment-option-picker">
-      <div class="equipment-option-picker-head"><b>裝備內選擇</b><span>${total}/1</span></div>
-      <div class="equipment-option-single-list">${options.map(option=>{
-        const selected=Number(counts[option]||0)>0;
-        return `<button class="equipment-option-single ${selected?"on":""}" onclick="setSingleEquipmentOption('${kind}','${id}','${option}')">${selected?"✓ ":""}${esc(option)}</button>`;
-      }).join("")}</div>
-    </div>`;
-  }
-  return `<div class="equipment-option-picker">
-    <div class="equipment-option-picker-head"><b>裝備內選擇</b><span>${total}/${maxTotal}</span></div>
-    <div class="equipment-option-qty-list">${options.map(option=>{
-      const qty=Number(counts[option]||0);
-      return `<div class="equipment-option-qty">
-        <span>${esc(option)}</span>
-        <div class="equipment-option-stepper">
-          <button onclick="changeEquipmentOption('${kind}','${id}','${option}',-1,${maxTotal})" ${qty<=0?"disabled":""}>−</button>
-          <b>${qty}</b>
-          <button onclick="changeEquipmentOption('${kind}','${id}','${option}',1,${maxTotal})" ${total>=maxTotal?"disabled":""}>＋</button>
-        </div>
-      </div>`;
-    }).join("")}</div>
-  </div>`;
-}
-function setSingleEquipmentOption(kind,id,option){
-  const counts=selectedEquipmentOptions(kind,id);
-  const already=Number(counts[option]||0)>0;
-  Object.keys(counts).forEach(k=>delete counts[k]);
-  if(!already) counts[option]=1;
-  saveEquipmentOptionSelections();
-  render();
-}
-function equipmentOptionSummary(side,teamId,key){
-  const store=equipmentOptionStore(side,teamId);
-  let selected=store[key];
-  if(Array.isArray(selected)){
-    const counts={};
-    selected.forEach(option=>counts[option]=(counts[option]||0)+1);
-    selected=store[key]=counts;
-    saveEquipmentOptionSelections();
-  }
-  if(!selected || typeof selected!=="object") return "";
-  const labels=Object.entries(selected).filter(([,qty])=>Number(qty)>0).map(([option,qty])=>Number(qty)>1?`${option} ×${qty}`:option);
-  return labels.length?` <small>(${labels.map(esc).join("＋")})</small>`:"";
-}
-
-
 const EQUIPMENT_SELECTION_CONFIG={
   "ue:utility-grenades":{
     maxTotal:2,
@@ -205,18 +58,6 @@ const EQUIPMENT_SELECTION_CONFIG={
     options:["WAAAGH!","毀滅"]
   }
 };
-function equipmentSelectionConfig(kind,id){
-  const genericKey=equipmentOptionKey(kind,id);
-  const teamKey=`${S.team}:${genericKey}`;
-  return EQUIPMENT_SELECTION_CONFIG[teamKey]||EQUIPMENT_SELECTION_CONFIG[genericKey]||null;
-}
-function equipmentSelectionBlock(kind,id){
-  if(!isEquipmentSelected(kind,id)) return "";
-  const cfg=equipmentSelectionConfig(kind,id);
-  return cfg?equipmentOptionPicker(kind,id,cfg.options,cfg.maxTotal):"";
-}
-
-
 const INITIATIVE_CARDS=["重擲","+1/-1","+2/-2","+3/-3"];
 function ensureMatchTracker(){
   const m=S.matchTracker||(S.matchTracker={});
@@ -458,19 +299,32 @@ const factionRuleStar=id=>isFactionWeaponRule(id)?`<span class="faction-rule-sta
 function chip(rule,instance){
   const id=ruleId(rule),k=KW[id];
   if(!k)return "";
-  const key=S.team+":"+instance,o=S.open.has(key);
-  return `<button class="chip ${o?"open":""}" onclick="openRule('${instance}')">${factionRuleStar(id)}${esc(ruleLabel(rule))} · ${esc(ruleEn(rule))}</button>`;
+  // Weapon rule chips use the same local explanation interaction in all
+  // dictionary cards, including profiles nested inside another explanation.
+  return `<button type="button" class="chip dictionary-local-chip" data-keyword-id="${esc(id)}" aria-expanded="false" onclick="toggleDictionaryWeaponRule(this)">${factionRuleStar(id)}${esc(ruleLabel(rule))} · ${esc(ruleEn(rule))}</button>`;
 }
 function chipExplain(rules,instances){
-  for(let i=0;i<rules.length;i++){
-    if(S.open.has(S.team+":"+instances[i])){
-      const k=KW[ruleId(rules[i])];
-      // Chip 顯示該武器的實際值；展開說明則維持通用規則模板（x），
-      // 避免出現「範圍 8\"：……x 距離內」這種混合顯示。
-      if(k)return `<div class="inline"><b>${esc(k.name)}</b>${k.en?` <span class="meta term-en">${esc(k.en)}</span>`:""}：${esc(k.text)}</div>`;
-    }
-  }
+  // Local chip explanations are inserted on demand; no render-time state.
   return "";
+}
+function toggleDictionaryWeaponRule(button){
+  const weapon=button.closest(".weapon, .weapon-profile-inline, .reference-local-profile");
+  if(!weapon)return;
+  const id=button.dataset.keywordId||"";
+  const rule=id==="range"?{name:"範圍（Range）",en:"Range",text:"這項武器只能以指定距離內的有效目標為射擊對象。距離以武器資料標示的吋數為準。"}:KW[id];
+  if(!rule)return;
+  const old=weapon.querySelector(":scope > .dictionary-local-rule-explanation");
+  const wasOpen=button.getAttribute("aria-expanded")==="true";
+  weapon.querySelectorAll(".dictionary-local-chip").forEach(chip=>{
+    chip.setAttribute("aria-expanded","false");chip.classList.remove("open");
+  });
+  if(old)old.remove();
+  if(wasOpen)return;
+  const panel=document.createElement("div");
+  panel.className="inline prose-inline dictionary-local-rule-explanation";
+  panel.innerHTML=`<div class="term-source">武器規則</div><b>${esc(rule.name)}</b>${rule.en?` <span class="meta term-en">${esc(rule.en)}</span>`:""}：${esc(rule.text)}`;
+  weapon.append(panel);
+  button.setAttribute("aria-expanded","true");button.classList.add("open");
 }
 
 function markedProse(text,scope){
@@ -486,7 +340,10 @@ function markedProse(text,scope){
       if(profile){
         const instance=`weapon-profile:${scope}:${n++}:${id}`;
         const open=S.open.has(S.team+":"+instance);
-        out+=`<button class="term-link weapon-profile-link ${open?"open":""}" onclick="openRule('${instance}')">${esc(label)}</button>`;
+        const local=/^(ability|ploy|ploy2|rule|dictionary):/.test(scope);
+        out+=local
+          ? `<button type="button" class="term-link weapon-profile-link reference-local-keyword" data-keyword-id="wp:${esc(id)}" aria-expanded="false" onclick="toggleReferenceKeyword(this)">${esc(label)}</button>`
+          : `<button class="term-link weapon-profile-link ${open?"open":""}" onclick="openRule('${instance}')">${esc(label)}</button>`;
         refs.push({kind:"weapon-profile",id,instance});
       }else out+=esc(label);
     }else{
@@ -494,7 +351,13 @@ function markedProse(text,scope){
       if(k){
         const instance=`term:${scope}:${n++}:${id}`;
         const open=S.open.has(S.team+":"+instance);
-        out+=`<button class="term-link ${open?"open":""}" onclick="openRule('${instance}')">${esc(label)}</button>`;
+        // Abilities and ploys can expand ordinary keywords locally, without
+        // replacing the entire reference page. Weapon profiles retain their
+        // existing nested-rule interaction.
+        const local=/^(ability|ploy|ploy2|rule|dictionary):/.test(scope);
+        out+=local
+          ? `<button type="button" class="term-link reference-local-keyword" data-keyword-id="${esc(id)}" aria-expanded="false" onclick="toggleReferenceKeyword(this)">${esc(label)}</button>`
+          : `<button class="term-link ${open?"open":""}" onclick="openRule('${instance}')">${esc(label)}</button>`;
         refs.push({kind:"weapon-rule",id,instance});
       }else out+=esc(label);
     }
@@ -504,7 +367,9 @@ function markedProse(text,scope){
   // Preserve authored line breaks in rule prose after escaping/link expansion.
   out=out.replace(/\n/g,"<br>");
   let explain="";
-  const selectedRef=refs.find(ref=>ref.kind!=="weapon-profile"&&S.open.has(S.team+":"+ref.instance))
+  const localScope=/^(ability|ploy|ploy2|rule|dictionary):/.test(scope);
+  const selectedRef=localScope?null:
+    refs.find(ref=>ref.kind!=="weapon-profile"&&S.open.has(S.team+":"+ref.instance))
     ||refs.find(ref=>S.open.has(S.team+":"+ref.instance));
   for(const ref of selectedRef?[selectedRef]:[]){
     if(ref.kind==="weapon-profile"){
@@ -538,15 +403,94 @@ function ruleOptionGrid(options,scope="rule-option"){
   }).join("")}</div>`;
 }
 
+// Present existing grenade prose as labeled sections; no new data model.
+function utilityGrenadeSections(text,scope){
+ const parts=String(text||"").split(/【([^】]+)】/);
+ if(parts.length<3)return markedProse(text,scope);
+ let html=parts[0].trim()?`<div class="grenade-section-text">${markedProse(parts[0].trim(),`${scope}:intro`)}</div>`:"";
+ for(let i=1;i+1<parts.length;i+=2){
+  const label=parts[i],body=parts[i+1].trim();
+  html+=`<div class="grenade-section"><div class="grenade-section-label">${esc(label)}</div><div class="grenade-section-text">${markedProse(body,`${scope}:section:${i}`)}</div></div>`;
+ }
+ return `<div class="grenade-sections">${html}</div>`;
+}
 function utilityGrenadeColumns(){
   const opts=window.KT_UTILITY_GRENADE_OPTIONS||[];
   return `<div class="grenade-columns">${opts.map((g,i)=>`
     <section class="grenade-column">
       <div class="grenade-head"><b>${esc(g[0])}</b><span>${esc(g[1])}</span></div>
-      ${markedProse(g[2],`utility-grenade:${i}`)}
+      ${utilityGrenadeSections(g[2],`utility-grenade:${i}`)}
     </section>`).join("")}</div>`;
 }
 
+// Shared explosive-grenade weapon profiles for dictionary and pre-battle equipment.
+// The profiles are sourced from the existing official-data option entries; do not
+// duplicate stats or rules in the UI.
+function explosiveGrenadeProfiles(){
+ const entries=(window.KT_CHOICE_OPTIONS||{})["all:equipment:explosive-grenades"]||[];
+ return entries.map((entry,index)=>{
+  const source=String(entry[1]||"");
+  const field=name=>{const match=source.match(new RegExp(name+"\\s*([0-9]+(?:\\/[0-9]+)?\\+?)"));return match?match[1]:"—";};
+  const rules=[...source.matchAll(/\[\[([a-z0-9-]+)\|([^\]]+)\]\]/g)].map(m=>[m[1],m[2]]);
+  return {index,name:entry[0],atk:field("攻擊"),hit:field("命中"),dmg:field("傷害"),rules,range:'6"'};
+ });
+}
+function explosiveGrenadeCards(scope="dictionary"){
+ const dictionary=scope==="dictionary";
+ return `<div class="equipment-grenade-weapons">${explosiveGrenadeProfiles().map(p=>{
+  const instances=p.rules.map((r,i)=>`explosive-grenade:${p.index}:k:${i}:${ruleId(r)}`);
+  const ruleButtons=p.rules.map((r,i)=>{
+   if(dictionary)return chip(r,instances[i]);
+   const id=ruleId(r),k=KW[id];
+   return k?`<button type="button" class="chip battle-equipment-keyword" data-keyword-id="${esc(id)}" aria-expanded="false" onclick="toggleBattleEquipmentKeyword(this)">${esc(ruleLabel(r))}${ruleEn(r)?` · ${esc(ruleEn(r))}`:""}</button>`:"";
+  }).join("");
+  return `<div class="weapon equipment-weapon weapon-ranged"><div class="weapon-head"><span class="weapon-name"><span class="weapon-type ranged">遠程</span>${esc(p.name)}</span><span class="stats">攻擊 ${esc(p.atk)} · 命中 ${esc(p.hit)} · 傷害 ${esc(p.dmg)}</span></div><div class="chips"><button type="button" class="chip equipment-range-chip dictionary-local-chip" data-keyword-id="range" aria-expanded="false" onclick="toggleDictionaryWeaponRule(this)">範圍 ${esc(p.range)}</button>${ruleButtons}</div>${dictionary?chipExplain(p.rules,instances):""}</div>`;
+ }).join("")}</div>`;
+}
+// One equipment-description renderer shared by dictionary and match setup.
+// Uses the existing team/universal data, choice options, weapon profiles and CSS.
+function localizeBattleEquipmentKeywords(html){
+ // Replace dictionary full-page handlers with local handlers in battle setup.
+ // Match actual HTML attributes; do not escape regex tokens twice.
+ return html.replace(/<button\b([^>]*?)\bonclick="openRule\('([^']+)'\)"([^>]*)>/g,(full,before,instance,after)=>{
+  const rawId=instance.split(":").pop();
+  const profile=instance.startsWith("weapon-profile:");
+  const id=profile?"wp:"+rawId:rawId;
+  if(!(profile?(window.KT_WEAPON_PROFILES||{})[rawId]:KW[rawId]))return full;
+  const attrs=before+after;
+  const classes=attrs.match(/\bclass="([^"]*)"/);
+  const updated=classes?attrs.replace(/\bclass="[^"]*"/,`class="${classes[1]} battle-equipment-keyword"`):`${attrs} class="battle-equipment-keyword"`;
+  return `<button${updated} data-keyword-id="${esc(id)}" aria-expanded="false" onclick="toggleBattleEquipmentKeyword(this)">`;
+ });
+}
+function sharedEquipmentDescription(kind,id,teamId,scope){
+ const dictionaryMarkup=()=>{
+ if(kind==="ue"){
+  const x=UNIVERSAL_EQUIPMENT.find(v=>v[0]===id);
+  if(!x)return "";
+  return markedProse(x[4],`${scope}:universal:${id}`)
+   +(id==="utility-grenades"?utilityGrenadeColumns():"")
+   +(id==="explosive-grenades"?explosiveGrenadeCards("dictionary"):"");
+ }
+ const t=TEAMS[teamId],x=t?.equipment?.find(v=>v[0]===id);
+ if(!x)return "";
+ const choices=choiceOptionsFor(teamId,"equipment",id);
+ if(choices){
+  const intro=x[2].split("選擇：")[0].trim();
+  return `<div class="body">${esc(intro)} 選擇一個效果：</div>${choiceOptionList(choices,`${scope}:equipment-choice:${id}`)}`;
+ }
+ if(teamId==="pm"&&id==="grenades"){
+  const profile=(window.KT_WEAPON_PROFILES||{})["pm-plague-grenade"];
+  if(profile){
+   const instances=(profile.rules||[]).map((rule,i)=>`${scope}:equipwp:${id}:k:${i}:${ruleId(rule)}`);
+   return `<div class="weapon equipment-weapon weapon-ranged"><div class="weapon-head"><span class="weapon-name"><span class="weapon-type ranged">${esc(profile.type||"遠程")}</span>${esc(profile.name)}${profile.en?` <span class="meta term-en">${esc(profile.en)}</span>`:""}</span><span class="stats">攻擊 ${esc(profile.atk)} · 命中 ${esc(profile.hit)} · 傷害 ${esc(profile.dmg)}</span></div><div class="chips">${(profile.rules||[]).map((rule,i)=>chip(rule,instances[i])).join("")}</div>${chipExplain(profile.rules||[],instances)}<div class="equipment-weapon-note">整場戰鬥不能使用超過兩次。</div></div>`;
+  }
+ }
+ return markedProse(x[2],`${scope}:equip:${id}`);
+ };
+ const markup=dictionaryMarkup();
+ return scope.startsWith("battle:")?localizeBattleEquipmentKeywords(markup):markup;
+}
 function choiceOptionList(options,scope="choice"){
   return `<div class="choice-option-list">${(options||[]).map((o,i)=>`
     <section class="choice-option-row">
@@ -633,7 +577,7 @@ function items(){
   const TAC_ARCHETYPES={"pm":["seek","security"],"aod":["seek","security"],"wk":["security","seek"],"mw":["recon","seek"],"leg":["security","seek"],"dw":["seek","security"],"ci":["security","seek"],"cc":["recon","security"],"ks":["security","seek"],"rav":["infiltration","seek"],"xv26":["recon","infiltration"]};
   const allowedTac=S.view==="team"?(TAC_ARCHETYPES[S.team]||[]):["recon","security","seek","infiltration"];
   TAC_OPS.filter(x=>allowedTac.includes(x[0])).forEach(x=>a.push({kind:"Tac Ops",id:"to:"+x[3],s:x,html:`<div class="card">${star("to:"+x[3])}<h3>${esc(x[4])} <span class="meta">${esc(x[5])}</span></h3><div class="meta">${esc(x[1])} · Tac Op</div><div class="body"><b>揭示：</b>${esc(x[6])}<br><br>${x[7]!=="—"?`<b>規則／行動：</b>${esc(x[7])}<br><br>`:""}<b>得分：</b>${esc(x[8])}${x[9]?`<div class="rule-supplement"><b>規則補充</b><br>${esc(x[9])}</div>`:""}</div></div>`}));
-  UNIVERSAL_EQUIPMENT.forEach(x=>a.push({kind:"通用裝備",id:"ue:"+x[0],s:x,html:`<div class="card equipment-card">${star("ue:"+x[0])}<div class="equipment-card-head"><h3>${esc((x[3]?x[3]+" ":"")+x[1])}</h3>${equipmentSelectButton("ue",x[0])}</div><div class="meta">${esc(x[2])} · 通用裝備</div>${equipmentSelectionBlock("ue",x[0])}<div class="body">${esc(x[4]).replace(/\n/g,"<br>")}</div>${x[0]==="utility-grenades"?utilityGrenadeColumns():""}${x[0]==="explosive-grenades"?choiceOptionList((window.KT_CHOICE_OPTIONS||{})["all:equipment:explosive-grenades"],"explosive-grenades"):""}</div>`}));
+  UNIVERSAL_EQUIPMENT.forEach(x=>a.push({kind:"通用裝備",id:"ue:"+x[0],s:x,html:`<div class="card equipment-card">${star("ue:"+x[0])}<div class="equipment-card-head"><h3>${esc((x[3]?x[3]+" ":"")+x[1])}</h3></div><div class="meta">${esc(x[2])} · 通用裝備</div>${sharedEquipmentDescription("ue",x[0],S.team,"dictionary")}</div>`}));
   t.rules.forEach(x=>{
     const body=(x[0]==="chapter-tactics" && t.chapterTactics)
       ? `<div class="body"><div class="chapter-tactics-intro">選擇殺戮小隊時，為己方死亡天使特工選擇一個首要和次要戰團戰術在戰鬥中生效；多次選擇相同戰團戰術不會疊加。</div>${ruleOptionGrid(t.chapterTactics,"chapter-tactics")}</div>`
@@ -646,30 +590,8 @@ function items(){
   });
   if(t.ploys2) t.ploys2.forEach(x=>{const opts=choiceOptionsFor(S.team,"ploy2",x[0]);a.push({kind:"交戰計謀",id:"p2:"+x[0],s:x,html:`<div class="card">${star("p2:"+x[0])}<h3>${esc(x[1])}</h3><div class="meta">${esc(t.name)} · ${esc(x[2])}</div>${opts?`<div class="body">在一名己方瘟疫戰士特工的激活或反應期間、其執行一次行動之前或之後使用。選擇一個效果：</div>${choiceOptionList(opts,`ploy2-choice:${x[0]}`)}`:markedProse(x[3],`ploy2:${x[0]}`)}</div>`})});
   t.equipment.forEach(x=>{
-    const equipmentChoices=choiceOptionsFor(S.team,"equipment",x[0]);
-    let content=markedProse(x[2],`equip:${x[0]}`);
-    if(equipmentChoices){
-      const intro=x[2].split("選擇：")[0].trim();
-      content=`<div class="body">${esc(intro)} 選擇一個效果：</div>${choiceOptionList(equipmentChoices,`equipment-choice:${x[0]}`)}`;
-    }
-    // 像「疫病手雷」這種裝備本身就是一個完整武器資料，
-    // 直接用武器卡呈現，不再把攻擊／命中／傷害寫成一段敘述。
-    if(S.team==="pm" && x[0]==="grenades"){
-      const p=(window.KT_WEAPON_PROFILES||{})["pm-plague-grenade"];
-      if(p){
-        const instances=(p.rules||[]).map((rule,ki)=>`equipwp:${x[0]}:k:${ki}:${ruleId(rule)}`);
-        content=`<div class="weapon equipment-weapon weapon-ranged">
-          <div class="weapon-head">
-            <span class="weapon-name"><span class="weapon-type ranged">${esc(p.type||"遠程")}</span>${esc(p.name)}${p.en?` <span class="meta term-en">${esc(p.en)}</span>`:""}</span>
-            <span class="stats">攻擊 ${esc(p.atk)} · 命中 ${esc(p.hit)} · 傷害 ${esc(p.dmg)}</span>
-          </div>
-          <div class="chips">${(p.rules||[]).map((rule,ki)=>chip(rule,instances[ki])).join("")}</div>
-          ${chipExplain(p.rules||[],instances)}
-          <div class="equipment-weapon-note">整場戰鬥不能使用超過兩次。</div>
-        </div>`;
-      }
-    }
-    a.push({kind:"陣營裝備",id:"e:"+x[0],s:x,html:`<div class="card equipment-card">${star("e:"+x[0])}<div class="equipment-card-head"><h3>${esc(x[1])}</h3>${equipmentSelectButton("e",x[0])}</div><div class="meta">${esc(t.name)} · 陣營裝備</div>${equipmentSelectionBlock("e",x[0])}${content}</div>`});
+    const content=sharedEquipmentDescription("e",x[0],S.team,"dictionary");
+    a.push({kind:"陣營裝備",id:"e:"+x[0],s:x,html:`<div class="card equipment-card">${star("e:"+x[0])}<div class="equipment-card-head"><h3>${esc(x[1])}</h3></div><div class="meta">${esc(t.name)} · 陣營裝備</div>${content}</div>`});
   });
   t.operatives.forEach(o=>a.push({kind:"特工",id:"op:"+o.id,s:o,html:opCard(o)}));
   return a;
@@ -685,7 +607,7 @@ function flowRule(id,label){
   const instance=`flow-rule:${id}:${FLOW_RULE_SEQ++}`;
   const open=S.open.has(S.team+":"+instance);
   FLOW_RULE_REFS.push({id,instance});
-  return `<button class="flow-rule-link ${open?"open":""}" onclick="openRule('${instance}')">${esc(label||r[1])}</button>`;
+  return `<button class="flow-rule-link ${open?"open":""}" type="button" data-flow-kind="rule" data-flow-id="${esc(id)}" aria-expanded="false" onclick="toggleFlowKeyword(this)">${esc(label||r[1])}</button>`;
 }
 
 const FLOW_TERMS={
@@ -713,7 +635,34 @@ function flowTerm(id,label){
   const instance=`flow-term:${id}:${FLOW_TERM_SEQ++}`;
   const open=S.open.has(S.team+":"+instance);
   FLOW_TERM_REFS.push({id,instance});
-  return `<button class="flow-rule-link flow-keyword ${open?"open":""}" onclick="openRule('${instance}')">${esc(label||t[0])}</button>`;
+  return `<button class="flow-rule-link flow-keyword ${open?"open":""}" type="button" data-flow-kind="term" data-flow-id="${esc(id)}" aria-expanded="false" onclick="toggleFlowKeyword(this)">${esc(label||t[0])}</button>`;
+}
+function toggleFlowKeyword(button){
+  // Flow glossary uses the same QUICK and FLOW_TERMS data as before, but
+  // updates only its own step, preserving scroll and open accordion cards.
+  const step=button.closest(".flow-step");
+  if(!step)return;
+  const wasOpen=button.getAttribute("aria-expanded")==="true";
+  step.querySelectorAll("[data-flow-kind]").forEach(b=>{
+    b.setAttribute("aria-expanded","false");b.classList.remove("open");
+  });
+  step.querySelectorAll(".flow-step-explain").forEach(n=>n.remove());
+  if(wasOpen)return;
+  const id=button.dataset.flowId,kind=button.dataset.flowKind;
+  let html="";
+  if(kind==="term"){
+    const t=FLOW_TERMS[id];if(!t)return;
+    html=`<span class="term-source">流程關鍵字</span><b>${esc(t[0])}</b>：${esc(t[1])}`;
+  }else{
+    const r=CORE_BY_ID()[id];if(!r)return;
+    html=`<span class="term-source">核心規則</span><b>${esc(r[1])}</b>${r[3]?` <span class="meta term-en">${esc(r[3])}</span>`:""}：${esc(r[2])}`;
+  }
+  button.setAttribute("aria-expanded","true");button.classList.add("open");
+  const panel=document.createElement("div");
+  panel.className="inline flow-inline flow-step-explain";
+  panel.innerHTML=html;
+  const target=button.closest("p")||button.parentElement;
+  target.insertAdjacentElement("afterend",panel);
 }
 function flowTermExplain(refs){
   for(const ref of refs){
@@ -835,24 +784,35 @@ function toggleFlow(id){
 }
 
 function openMatchEquipment(side,key){
-  const [kind,id]=key.split(":");
-  setActiveSide(side,{resetOpen:false});
-  S.view="team";S.tab="裝備";S.subtab=kind==="ue"?"通用裝備":"陣營裝備";S.q="";
-  document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("on",b.dataset.view==="team"));
-  render();
-  requestAnimationFrame(()=>{
-    const cards=[...document.querySelectorAll(".equipment-card")];
-    const name=equipmentNameByKey(S.team,key);
-    const card=cards.find(c=>c.querySelector("h3")?.textContent.includes(name));
-    card?.scrollIntoView({behavior:"smooth",block:"center"});
-  });
+ const teamId=trackerTeamId(side);
+ const [kind,id]=key.split(":");
+ const host=document.querySelector(`.match-equipment-side[data-side="${side}"]`);
+ if(!host)return;
+ const old=host.querySelector(".match-equipment-rule-panel");
+ const wasOpen=old?.dataset.key===key;
+ old?.remove();
+ host.querySelectorAll(".match-equipment-item").forEach(b=>b.setAttribute("aria-expanded","false"));
+ if(wasOpen)return;
+ const button=[...host.querySelectorAll(".match-equipment-item")].find(b=>b.dataset.key===key);
+ const panel=document.createElement("div");
+ panel.className="match-equipment-rule-panel battle-equipment-detail battle-equipment-entry";
+ panel.dataset.key=key;
+ panel.innerHTML=`<h4>${esc(equipmentNameByKey(teamId,key))}</h4><div>${localizeBattleEquipmentKeywords(sharedEquipmentDescription(kind,id,teamId,`battle:${side}`))}</div>`;
+ if(button){button.insertAdjacentElement("afterend",panel);button.setAttribute("aria-expanded","true");}
+ else host.querySelector(".match-equipment-items")?.append(panel);
+}
+function matchEquipmentOptionSummary(side,key){
+ const counts=battleRoster?.equipmentOptions?.[side]?.[key]||{};
+ const selected=Object.entries(counts).filter(([,qty])=>Number(qty)>0)
+  .map(([name,qty])=>`${name} ×${qty}`);
+ return selected.length?` <small>（${esc(selected.join("、"))}）</small>`:"";
 }
 function matchEquipmentSide(side){
   const teamId=trackerTeamId(side);
   const t=TEAMS[teamId];
-  const bucket=equipmentBucket(side,teamId);
-  const items=bucket.map(key=>`<button class="match-equipment-item" onclick="openMatchEquipment('${side}','${key}')"><span>${esc(equipmentNameByKey(teamId,key))}${equipmentOptionSummary(side,teamId,key)}</span><small>查看規則 ›</small></button>`).join("");
-  return `<section class="match-equipment-side"><h3>${trackerSideName(side)} · ${esc(t?.name||"")}</h3><small>已選 ${bucket.length} 件裝備</small><div class="match-equipment-items">${items||'<div class="match-equipment-empty">尚未選擇裝備</div>'}</div></section>`;
+  const bucket=battleRoster?.equipment?.[side]||[];
+  const items=bucket.map(key=>`<button class="match-equipment-item" data-key="${esc(key)}" aria-expanded="false" onclick="openMatchEquipment('${side}','${key}')"><span>${esc(equipmentNameByKey(teamId,key))}${matchEquipmentOptionSummary(side,key)}</span><small>查看規則 ›</small></button>`).join("");
+  return `<section class="match-equipment-side" data-side="${side}"><h3>${trackerSideName(side)} · ${esc(t?.name||"")}</h3><small>已選 ${bucket.length} 件裝備</small><div class="match-equipment-items">${items||'<div class="match-equipment-empty">尚未選擇裝備</div>'}</div></section>`;
 }
 function setMatchTab(tab){
   if(!["roster","log","equipment","public"].includes(tab))return;
@@ -1648,18 +1608,6 @@ function finishBattleSetup(){
   }
   battleRoster={myTeam:battleDraftTeams.my,enemyTeam:battleDraftTeams.enemy,my:[...battleDraft.my],enemy:battleDraft.enemySkipped?null:[...battleDraft.enemy],weapons:JSON.parse(JSON.stringify(battleWeaponDraft)),marks:JSON.parse(JSON.stringify(battleMarkDraft)),chapterTactics:JSON.parse(JSON.stringify(battleChapterDraft)),equipment:JSON.parse(JSON.stringify(battleEquipmentDraft)),equipmentOptions:JSON.parse(JSON.stringify(battleEquipmentOptionsDraft))};
   localStorage.setItem(ROSTER_KEY,JSON.stringify(battleRoster));
-  // Keep the existing match-equipment tab and rule-page chips in sync with the confirmed match.
-  for(const side of ["my","enemy"]){
-    const teamId=battleDraftTeams[side];
-    if(side==="enemy"&&battleDraft.enemySkipped){
-      S.equipmentSelections[side][teamId]=[];
-      S.equipmentOptionSelections[side][teamId]={};
-    }else{
-      S.equipmentSelections[side][teamId]=[...battleEquipmentDraft[side]];
-      S.equipmentOptionSelections[side][teamId]=JSON.parse(JSON.stringify(battleEquipmentOptionsDraft[side]));
-    }
-  }
-  saveEquipmentSelections();saveEquipmentOptionSelections();
   battleDraft=null;battleDraftTeams=null;battleEquipmentDraft=null;battleEquipmentOptionsDraft=null;
   S.matchTracker={tp:1,initiative:"my",sides:{my:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]},enemy:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]}},log:[]};
   saveMatchTracker();S.matchTab="roster";render();
@@ -1696,31 +1644,114 @@ function battleEquipmentError(){
 }
 // Equipment options are edited in a dedicated dialog, not inline below a card.
 let battleEquipmentDialog=null;
+// Inline keyword explanations in the pre-battle equipment list.
+// Updating only the local explanation avoids re-rendering the equipment list or losing scroll.
+// Reference keyword expansion for abilities and ploys. Keep the existing
+// dictionary source and styling; never rerender the entire page on click.
+function toggleReferenceKeyword(button){
+ // The existing dictionary is the only source of rule and weapon-profile data.
+ // Keep reference expansion local, including rules nested inside a profile.
+ const id=button.dataset.keywordId||"";
+ const isProfile=id.startsWith("wp:");
+ const nested=button.closest(".reference-local-profile");
+ const body=button.closest(".body");
+ // Dictionary equipment may use grenade sections and choice rows rather than
+ // a .body wrapper. Locate the smallest meaningful section for insertion.
+ const equipmentSection=button.closest(".grenade-section-text, .rule-option-effect, .choice-option-row, .grenade-column, .equipment-card");
+ if(!nested&&!body&&!equipmentSection)return;
+ const anchor=body||equipmentSection;
+ const container=nested||(button.closest(".card")||anchor);
+ const old=container.querySelector(nested?".reference-local-rule-explanation":".reference-local-explanation");
+ const wasOpen=button.getAttribute("aria-expanded")==="true";
+ container.querySelectorAll(nested?".reference-local-profile .reference-local-keyword":".reference-local-keyword").forEach(b=>{
+  if(nested||!b.closest(".reference-local-profile")){
+   b.setAttribute("aria-expanded","false");b.classList.remove("open");
+  }
+ });
+ if(old)old.remove();
+ if(wasOpen)return;
+ const info=isProfile?(window.KT_WEAPON_PROFILES||{})[id.slice(3)]:KW[id];
+ if(!info)return;
+ const panel=document.createElement("div");
+ panel.className="inline prose-inline "+(nested?"reference-local-rule-explanation":"reference-local-explanation");
+ if(isProfile){
+  const chips=(info.rules||[]).map(rule=>{
+   const rid=ruleId(rule),label=ruleLabel(rule);
+   return KW[rid]
+    ? `<button type="button" class="chip term-link reference-local-keyword" data-keyword-id="${esc(rid)}" aria-expanded="false" onclick="toggleReferenceKeyword(this)">${esc(label)}</button>`
+    : `<span class="chip">${esc(label)}</span>`;
+  }).join("");
+  panel.innerHTML=`<div class="reference-local-profile"><div class="term-source">武器資料</div><div class="weapon-head"><span class="weapon-name">${esc(info.name||button.textContent)}${info.en?` <span class="meta term-en">${esc(info.en)}</span>`:""}</span><span class="stats">攻擊 ${esc(info.atk??"—")} · 命中 ${esc(info.hit??"—")} · 傷害 ${esc(info.dmg??"—")}</span></div>${chips?`<div class="chips">${chips}</div>`:""}</div>`;
+ }else{
+  panel.innerHTML=`<div class="term-source">武器規則</div><b>${esc(info.name)}</b>${info.en?` <span class="meta term-en">${esc(info.en)}</span>`:""}：${esc(info.text)}`;
+ }
+ if(nested)nested.append(panel);
+ else if(anchor.classList.contains("equipment-card"))anchor.append(panel);
+ else anchor.insertAdjacentElement("afterend",panel);
+ button.setAttribute("aria-expanded","true");button.classList.add("open");
+}
+function toggleBattleEquipmentKeyword(button){
+ // All equipment descriptions use the same source markup as the dictionary.
+ // Only the click interaction is local: one open explanation per equipment
+ // entry, inserted immediately after the containing paragraph/section.
+ const container=button.closest(".battle-equipment-entry");
+ if(!container)return;
+ const section=button.closest(".grenade-section-text, .rule-option-effect, .choice-option-row, .weapon, .body")
+  ||button.closest(".battle-equipment-detail");
+ if(!section)return;
+ const previous=container.querySelector(".battle-equipment-keyword-explanation");
+ const wasOpen=button.getAttribute("aria-expanded")==="true";
+ container.querySelectorAll(".battle-equipment-keyword[aria-expanded]").forEach(b=>{
+  b.setAttribute("aria-expanded","false");b.classList.remove("open");
+ });
+ if(previous)previous.remove();
+ if(wasOpen)return;
+ const id=button.dataset.keywordId||"",isProfile=id.startsWith("wp:");
+ const info=isProfile?(window.KT_WEAPON_PROFILES||{})[id.slice(3)]:KW[id];
+ if(!info)return;
+ button.setAttribute("aria-expanded","true");button.classList.add("open");
+ const panel=document.createElement("div");
+ panel.className="inline prose-inline battle-equipment-keyword-explanation";
+ if(isProfile){
+  const rules=(info.rules||[]).map(rule=>`<span class="chip">${esc(ruleLabel(rule))}${ruleEn(rule)?` · ${esc(ruleEn(rule))}`:""}</span>`).join("");
+  panel.innerHTML=`<div class="term-source">武器資料</div><div class="weapon-head"><span class="weapon-name">${esc(info.name||button.textContent)}${info.en?` <span class="meta term-en">${esc(info.en)}</span>`:""}</span><span class="stats">攻擊 ${esc(info.atk??"—")} · 命中 ${esc(info.hit??"—")} · 傷害 ${esc(info.dmg??"—")}</span></div>${rules?`<div class="chips">${rules}</div>`:""}`;
+ }else{
+  panel.innerHTML=`<div class="term-source">武器規則</div><b>${esc(info.name||button.textContent)}</b>${info.en?` <span class="meta term-en">${esc(info.en)}</span>`:""}：${esc(info.text||"目前沒有此關鍵字的詳細說明")}`;
+ }
+ section.append(panel);
+}
 function battleEquipmentDescription(text){
- return esc(String(text||"請參照裝備規則說明。"))
-   .replace(/\[\[(?:(?:wp:)?[a-z0-9-]+)\|([^\]]+)\]\]/g,(_,label)=>`<span class="battle-equipment-keyword">${label}</span>`)
-   .replace(/\n/g,"<br>");
+ const source=String(text||"請參照裝備規則說明。");
+ let result="",last=0,match;
+ const pattern=/\[\[((?:wp:)?[a-z0-9-]+)\|([^\]]+)\]\]/g;
+ while((match=pattern.exec(source))){
+  result+=esc(source.slice(last,match.index));
+  const id=match[1],label=match[2],known=id.startsWith("wp:")?!!(window.KT_WEAPON_PROFILES||{})[id.slice(3)]:!!KW[id];
+  result+=known?`<button type="button" class="term-link battle-equipment-keyword" data-keyword-id="${esc(id)}" aria-expanded="false" onclick="toggleBattleEquipmentKeyword(this)">${esc(label)}</button>`:esc(label);
+  last=pattern.lastIndex;
+ }
+ return `<div class="battle-equipment-effect">${(result+esc(source.slice(last))).replace(/\n/g,"<br>")}</div>`;
 }
 function battleEquipmentDialogMarkup(){
  const d=battleEquipmentDialog;if(!d)return "";
  const entry=battleEquipmentEntries(d.side).find(e=>e.key===d.key),cfg=entry&&battleEquipmentConfig(d.side,entry);
  if(!entry||!cfg)return "";
- const counts=battleEquipmentOptionsDraft[d.side][d.key]||{},total=equipmentOptionTotal(counts);
+ const counts=d.counts||{},total=equipmentOptionTotal(counts);
  const rows=cfg.options.map((option,index)=>{
   const qty=Number(counts[option]||0);
   return `<div class="battle-equipment-dialog-row"><span>${esc(option)}</span><div class="battle-equipment-stepper"><button type="button" aria-label="減少 ${esc(option)}" onclick="changeBattleEquipmentOption('${d.side}','${d.key}',${index},-1)" ${qty?"":"disabled"}>−</button><b>${qty}</b><button type="button" aria-label="增加 ${esc(option)}" onclick="changeBattleEquipmentOption('${d.side}','${d.key}',${index},1)" ${total>=cfg.maxTotal?"disabled":""}>＋</button></div></div>`;
  }).join("");
- return `<div class="battle-equipment-dialog-backdrop" onclick="closeBattleEquipmentDialog()"><section class="battle-equipment-dialog" role="dialog" aria-modal="true" aria-label="設定 ${esc(entry.name)}" onclick="event.stopPropagation()"><div class="battle-equipment-dialog-head"><h3>${esc(entry.name)}</h3><button type="button" onclick="closeBattleEquipmentDialog()" aria-label="關閉視窗">✕</button></div><p>請選擇 ${cfg.maxTotal} 個裝備選項（已選 ${total} / ${cfg.maxTotal}）。</p><div class="battle-equipment-dialog-rows">${rows}</div><div class="battle-equipment-dialog-actions"><button type="button" onclick="closeBattleEquipmentDialog()">${total===cfg.maxTotal?"完成":"返回裝備清單"}</button></div></section></div>`;
+ return `<div class="battle-equipment-dialog-backdrop" onclick="closeBattleEquipmentDialog()"><section class="battle-equipment-dialog" role="dialog" aria-modal="true" aria-label="設定 ${esc(entry.name)}" onclick="event.stopPropagation()"><div class="battle-equipment-dialog-head"><h3>${esc(entry.name)}</h3><button type="button" onclick="closeBattleEquipmentDialog()" aria-label="關閉視窗">✕</button></div><p>請選擇 ${cfg.maxTotal} 個裝備選項（已選 ${total} / ${cfg.maxTotal}）。</p><div class="battle-equipment-dialog-rows">${rows}</div><div class="battle-equipment-dialog-actions"><button type="button" class="battle-equipment-cancel" onclick="closeBattleEquipmentDialog()">取消</button><button type="button" onclick="confirmBattleEquipmentDialog()" ${total===cfg.maxTotal?"":"disabled"}>確認選擇</button></div></section></div>`;
 }
 function refreshBattleEquipmentDialog(){
  const root=document.getElementById("battleEquipmentDialogRoot");
  if(root)root.innerHTML=battleEquipmentDialogMarkup();
 }
 function openBattleEquipmentDialog(side,key){
- if(!battleDraft||battleDraft.step!==3||!battleEquipmentDraft?.[side]?.includes(key))return;
+ if(!battleDraft||battleDraft.step!==3)return;
  const entry=battleEquipmentEntries(side).find(e=>e.key===key);
  if(!entry||!battleEquipmentConfig(side,entry))return;
- battleEquipmentDialog={side,key};refreshBattleEquipmentDialog();
+ battleEquipmentDialog={side,key,counts:{...(battleEquipmentOptionsDraft?.[side]?.[key]||{})}};refreshBattleEquipmentDialog();
 }
 function refreshBattleEquipmentSetup(){
  const scrollY=window.scrollY;
@@ -1732,8 +1763,18 @@ function refreshBattleEquipmentSetup(){
 function closeBattleEquipmentDialog(){
  battleEquipmentDialog=null;
  const root=document.getElementById("battleEquipmentDialogRoot");if(root)root.innerHTML="";
- // Render once after closing so counters and the review validation refresh.
- refreshBattleEquipmentSetup();
+}
+function confirmBattleEquipmentDialog(){
+ const d=battleEquipmentDialog;if(!d)return;
+ const entry=battleEquipmentEntries(d.side).find(e=>e.key===d.key),cfg=entry&&battleEquipmentConfig(d.side,entry);
+ if(!cfg||equipmentOptionTotal(d.counts)!==cfg.maxTotal)return;
+ const list=battleEquipmentDraft[d.side];
+ if(!list.includes(d.key)){
+  if(list.length>=4)return;
+  list.push(d.key);
+ }
+ battleEquipmentOptionsDraft[d.side][d.key]={...d.counts};
+ closeBattleEquipmentDialog();refreshBattleEquipmentSetup();
 }
 function toggleBattleEquipment(side,key){
  if(!battleDraft||battleDraft.step!==3||!(["my","enemy"].includes(side)))return;
@@ -1741,15 +1782,17 @@ function toggleBattleEquipment(side,key){
  const entry=battleEquipmentEntries(side).find(e=>e.key===key);if(!entry)return;
  const list=battleEquipmentDraft[side],idx=list.indexOf(key);
  if(idx>=0){list.splice(idx,1);delete battleEquipmentOptionsDraft[side][key]}
- else if(list.length<4){list.push(key)}
+ else if(list.length<4){
+  if(battleEquipmentConfig(side,entry)){openBattleEquipmentDialog(side,key);return;}
+  list.push(key);
+ }
  refreshBattleEquipmentSetup();
- if(idx<0&&battleEquipmentConfig(side,entry))openBattleEquipmentDialog(side,key);
 }
 function changeBattleEquipmentOption(side,key,index,delta){
- if(!battleDraft||battleDraft.step!==3||!battleEquipmentDraft[side]?.includes(key))return;
+ if(!battleDraft||battleDraft.step!==3||!battleEquipmentDialog||battleEquipmentDialog.side!==side||battleEquipmentDialog.key!==key)return;
  const entry=battleEquipmentEntries(side).find(e=>e.key===key),cfg=entry&&battleEquipmentConfig(side,entry);
  if(!cfg||!Number.isInteger(index)||index<0||index>=cfg.options.length)return;
- const option=cfg.options[index],store=battleEquipmentOptionsDraft[side],counts=store[key]||(store[key]={});
+ const option=cfg.options[index],counts=battleEquipmentDialog.counts;
  const current=Number(counts[option]||0),total=equipmentOptionTotal(counts);
  if(delta>0&&total>=cfg.maxTotal)return;
  if(cfg.maxTotal===1){Object.keys(counts).forEach(k=>delete counts[k]);if(!current&&delta>0)counts[option]=1}
@@ -1776,7 +1819,7 @@ function battleEquipmentSide(side){
  return `<article class="battle-equipment-entry ${active?"is-selected":""}">
  <div class="battle-equipment-card-top"><button type="button" class="battle-equipment-select" aria-pressed="${active}" onclick="toggleBattleEquipment('${side}','${e.key}')" ${!active&&chosen.length>=4?"disabled":""}><span class="battle-equipment-check">${active?"✓":"＋"}</span><span class="battle-equipment-card-title">${esc(e.name)}</span><span class="battle-equipment-type">${e.kind==="ue"?"通用":"陣營"}</span></button></div>
  ${active&&cfg?`<button type="button" class="battle-equipment-configure" onclick="openBattleEquipmentDialog('${side}','${e.key}')">${complete?`✓ 已設定 ${total} / ${cfg.maxTotal} · 修改數量`:`設定數量 · ${total} / ${cfg.maxTotal}（待完成）`} ›</button>`:""}
- <details class="battle-equipment-detail"><summary>查看裝備效果</summary><div>${battleEquipmentDescription(e.desc)}</div></details>
+ <details class="battle-equipment-detail"><summary>查看裝備效果</summary><div>${sharedEquipmentDescription(e.kind,e.id,rosterTeam(side),`battle:${side}`)}</div></details>
  </article>`}).join(""):`<p class="battle-equipment-empty">${filter==="selected"?"尚未選擇裝備。請切換至全部、陣營或通用。":"此分類沒有可選裝備。"}</p>`}</div></section>`;
 }
 function battleEquipmentReview(side){
@@ -1908,8 +1951,13 @@ function subtab(t){S.subtab=t;S.open.clear();render()}
 function openRule(instance){
   // Every explanation uses one shared selection state. A weapon profile is
   // the only permitted parent; at most one nested rule may be expanded.
-  const expanded=[...document.querySelectorAll("#content details.battle-operative-fold")]
+  // Re-rendering used to destroy native <details> open state (including
+  // equipment descriptions), making keyword clicks appear to collapse them.
+  const openDetails=[...document.querySelectorAll("#content details")]
     .map((node,index)=>node.open?index:-1).filter(index=>index>=0);
+  const contentNode=document.querySelector("#content");
+  const contentScroll=contentNode?.scrollTop||0;
+  const pageScroll=window.scrollY;
   const key=S.team+":"+instance;
   const wasOpen=S.open.has(key);
   const isProfile=instance.startsWith("weapon-profile:");
@@ -1922,8 +1970,10 @@ function openRule(instance){
     if(!wasOpen)S.open.add(key);
   }
   render();
-  const cards=document.querySelectorAll("#content details.battle-operative-fold");
-  expanded.forEach(index=>{if(cards[index])cards[index].open=true;});
+  const details=document.querySelectorAll("#content details");
+  openDetails.forEach(index=>{if(details[index])details[index].open=true;});
+  if(contentNode)contentNode.scrollTop=contentScroll;
+  window.scrollTo({top:pageScroll,behavior:"instant"});
 }
 function fav(id){const k=S.team+":"+id;S.fav.has(k)?S.fav.delete(k):S.fav.add(k);localStorage.setItem("ktFav",JSON.stringify([...S.fav]));render()}
 
