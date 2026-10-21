@@ -15,6 +15,7 @@ const S={
   tab:"全部",
   view:"all",
   matchTab:"roster",
+  globalFocusId:null,
   q:"",
   subtab:"全部",
   open:new Set(),
@@ -213,7 +214,7 @@ function itemSource(item){
 function searchRank(item,q){
   const needle=normalizeSearch(q); if(!needle)return 0;
   const title=normalizeSearch(itemTitle(item));
-  const source=normalizeSearch(itemSource(item));
+  const source=normalizeSearch(item._teamName?`${item._teamName} · ${item.kind}`:itemSource(item));
   const raw=normalizeSearch(JSON.stringify(item.s));
   if(title===needle)return 400;
   if(title.startsWith(needle))return 320;
@@ -1622,11 +1623,15 @@ function battleEquipmentEntries(side){
 function battleEquipmentConfig(side,entry){
  return EQUIPMENT_SELECTION_CONFIG[`${rosterTeam(side)}:${entry.key}`]||EQUIPMENT_SELECTION_CONFIG[entry.key]||null;
 }
+function battleEquipmentLimit(side){
+ // Deathwatch Watch Sergeant: Adaptive Armoury grants one additional equipment option.
+ return rosterTeam(side)==="dw"&&(battleDraft?.[side]||[]).includes("watch-sergeant")?5:4;
+}
 function battleEquipmentError(){
  for(const side of ["my","enemy"]){
   if(side==="enemy"&&battleDraft.enemySkipped)continue;
   const list=battleEquipmentDraft?.[side]||[];
-  if(list.length>4)return `${side==="my"?"我方":"敵方"}最多可選擇四項裝備。`;
+  if(list.length>battleEquipmentLimit(side))return `${side==="my"?"我方":"敵方"}最多可選擇 ${battleEquipmentLimit(side)} 項裝備。`;
   const available=new Map(battleEquipmentEntries(side).map(e=>[e.key,e]));
   for(const key of list){
    const entry=available.get(key);
@@ -1770,7 +1775,7 @@ function confirmBattleEquipmentDialog(){
  if(!cfg||equipmentOptionTotal(d.counts)!==cfg.maxTotal)return;
  const list=battleEquipmentDraft[d.side];
  if(!list.includes(d.key)){
-  if(list.length>=4)return;
+  if(list.length>=battleEquipmentLimit(d.side))return;
   list.push(d.key);
  }
  battleEquipmentOptionsDraft[d.side][d.key]={...d.counts};
@@ -1782,7 +1787,7 @@ function toggleBattleEquipment(side,key){
  const entry=battleEquipmentEntries(side).find(e=>e.key===key);if(!entry)return;
  const list=battleEquipmentDraft[side],idx=list.indexOf(key);
  if(idx>=0){list.splice(idx,1);delete battleEquipmentOptionsDraft[side][key]}
- else if(list.length<4){
+ else if(list.length<battleEquipmentLimit(side)){
   if(battleEquipmentConfig(side,entry)){openBattleEquipmentDialog(side,key);return;}
   list.push(key);
  }
@@ -1805,19 +1810,19 @@ function setBattleEquipmentFilter(side,filter){
 }
 function battleEquipmentSide(side){
  if(side==="enemy"&&battleDraft.enemySkipped)return `<section class="battle-review-side"><h3>敵方裝備</h3><p>已略過敵方編隊與裝備設定。</p></section>`;
- const chosen=battleEquipmentDraft[side],entries=battleEquipmentEntries(side),filter=battleEquipmentFilters[side]||"all";
+ const chosen=battleEquipmentDraft[side],limit=battleEquipmentLimit(side),entries=battleEquipmentEntries(side),filter=battleEquipmentFilters[side]||"all";
  const filtered=entries.filter(e=>filter==="all"||(filter==="selected"?chosen.includes(e.key):e.kind===filter));
  const incomplete=chosen.filter(key=>{const e=entries.find(x=>x.key===key),cfg=e&&battleEquipmentConfig(side,e);return cfg&&equipmentOptionTotal(battleEquipmentOptionsDraft[side][key]||{})!==cfg.maxTotal;});
  const tabs=[["all","全部"],["e","陣營"],["ue","通用"],["selected",`已選 ${chosen.length}`]];
- return `<section class="battle-review-side battle-equipment-side"><div class="battle-equipment-heading"><h3>${side==="my"?"我方":"敵方"}裝備 · ${esc(TEAMS[rosterTeam(side)]?.name||"")}</h3><strong class="battle-equipment-counter ${chosen.length===4?"full":""}">${chosen.length} / 4</strong></div>
- <div class="battle-equipment-progress" aria-label="已選 ${chosen.length} 項，最多四項"><span style="width:${chosen.length*25}%"></span></div>
- <p class="battle-equipment-help">最多四項，可少選；點選卡片加入或移除。${incomplete.length?`<strong>還有 ${incomplete.length} 項內部選項未完成。</strong>`:""}</p>
+ return `<section class="battle-review-side battle-equipment-side"><div class="battle-equipment-heading"><h3>${side==="my"?"我方":"敵方"}裝備 · ${esc(TEAMS[rosterTeam(side)]?.name||"")}</h3><strong class="battle-equipment-counter ${chosen.length===limit?"full":""}">${chosen.length} / ${limit}</strong></div>
+ <div class="battle-equipment-progress" aria-label="已選 ${chosen.length} 項，最多 ${limit} 項"><span style="width:${chosen.length/limit*100}%"></span></div>
+ <p class="battle-equipment-help">最多 ${limit} 項，可少選；點選卡片加入或移除。${limit===5?"守望軍士「適應性軍火庫」：額外 +1 項裝備。":""}${incomplete.length?`<strong>還有 ${incomplete.length} 項內部選項未完成。</strong>`:""}</p>
  <div class="battle-equipment-filters" role="group" aria-label="${side==="my"?"我方":"敵方"}裝備篩選">${tabs.map(([id,label])=>`<button type="button" class="battle-equipment-filter ${filter===id?"active":""}" aria-pressed="${filter===id}" onclick="setBattleEquipmentFilter('${side}','${id}')">${label}</button>`).join("")}</div>
  <div class="battle-equipment-options">${filtered.length?filtered.map(e=>{
  const active=chosen.includes(e.key),cfg=battleEquipmentConfig(side,e),counts=battleEquipmentOptionsDraft[side][e.key]||{},total=equipmentOptionTotal(counts);
  const complete=!cfg||total===cfg.maxTotal;
  return `<article class="battle-equipment-entry ${active?"is-selected":""}">
- <div class="battle-equipment-card-top"><button type="button" class="battle-equipment-select" aria-pressed="${active}" onclick="toggleBattleEquipment('${side}','${e.key}')" ${!active&&chosen.length>=4?"disabled":""}><span class="battle-equipment-check">${active?"✓":"＋"}</span><span class="battle-equipment-card-title">${esc(e.name)}</span><span class="battle-equipment-type">${e.kind==="ue"?"通用":"陣營"}</span></button></div>
+ <div class="battle-equipment-card-top"><button type="button" class="battle-equipment-select" aria-pressed="${active}" onclick="toggleBattleEquipment('${side}','${e.key}')" ${!active&&chosen.length>=limit?"disabled":""}><span class="battle-equipment-check">${active?"✓":"＋"}</span><span class="battle-equipment-card-title">${esc(e.name)}</span><span class="battle-equipment-type">${e.kind==="ue"?"通用":"陣營"}</span></button></div>
  ${active&&cfg?`<button type="button" class="battle-equipment-configure" onclick="openBattleEquipmentDialog('${side}','${e.key}')">${complete?`✓ 已設定 ${total} / ${cfg.maxTotal} · 修改數量`:`設定數量 · ${total} / ${cfg.maxTotal}（待完成）`} ›</button>`:""}
  <details class="battle-equipment-detail"><summary>查看裝備效果</summary><div>${sharedEquipmentDescription(e.kind,e.id,rosterTeam(side),`battle:${side}`)}</div></details>
  </article>`}).join(""):`<p class="battle-equipment-empty">${filter==="selected"?"尚未選擇裝備。請切換至全部、陣營或通用。":"此分類沒有可選裝備。"}</p>`}</div></section>`;
@@ -1836,7 +1841,7 @@ function renderBattleSetup(){
   const d=battleDraft,side=d.step===1?"my":"enemy";
   if(d.step===0)return `<div class="battle-setup"><h2>① 選擇本場雙方小隊</h2><p>在這裡決定雙方小隊。進入下一步後就鎖定；若要修改，請按「上一步」回來。</p><div class="battle-team-picker-grid">${battleTeamPicker("my")}${battleTeamPicker("enemy")}</div><button onclick="battleSetupNext()">確認小隊，下一步 →</button> <button onclick="cancelBattleSetup()">取消設定</button></div>`;
   if(d.step===3){
-    return `<div class="battle-setup"><h2>④ 選擇本場裝備</h2><p>每方最多四項；通用手雷等裝備需要完成內部選項。此步驟不會修改原本規則查詢頁的裝備清單。</p><div class="battle-review-grid">${battleEquipmentSide("my")}${battleEquipmentSide("enemy")}</div><div id="battleEquipmentDialogRoot"></div>${battleEquipmentError()?`<p class="battle-validation">${esc(battleEquipmentError())}</p>`:""}<button onclick="battleSetupBack()">上一步</button> <button onclick="battleSetupNext()" ${battleEquipmentError()?"disabled":""}>下一步 →</button> <button onclick="cancelBattleSetup()">取消設定</button></div>`;
+    return `<div class="battle-setup"><h2>④ 選擇本場裝備</h2><p>每方一般最多四項；死亡守望編隊包含守望軍士時可選五項。通用手雷等裝備需要完成內部選項。此步驟不會修改原本規則查詢頁的裝備清單。</p><div class="battle-review-grid">${battleEquipmentSide("my")}${battleEquipmentSide("enemy")}</div><div id="battleEquipmentDialogRoot"></div>${battleEquipmentError()?`<p class="battle-validation">${esc(battleEquipmentError())}</p>`:""}<button onclick="battleSetupBack()">上一步</button> <button onclick="battleSetupNext()" ${battleEquipmentError()?"disabled":""}>下一步 →</button> <button onclick="cancelBattleSetup()">取消設定</button></div>`;
   }
   if(d.step===4){
     return `<div class="battle-setup"><h2>⑤ 確認本場編隊與裝備</h2><p>已檢查基本編成條件。${[rosterTeam("my"),rosterTeam("enemy")].includes("xv26")?"XV26 已檢查主武器二選一及融合砲最多兩把。":""}${[rosterTeam("my"),rosterTeam("enemy")].includes("aod")?"死亡天使已檢查目前支援的仲裁者步槍及軍士近戰武器選擇。":""}尚未支援的武器及特殊限制仍須依「編成規則」核對。</p>
@@ -1895,11 +1900,74 @@ function renderMatchHub(){
   root.innerHTML=`<div class="match-hub"><div class="match-hub-head"><div><div class="flow-eyebrow">MATCH</div><h2>本局對戰</h2><p>戰鬥紀錄、雙方所選裝備與對戰公開資訊集中在這裡，桌邊不必再往上找。</p></div><div class="match-hub-status"><b>TP ${m.tp} · ${trackerSideName(m.initiative)}先手</b><span>我 ${m.sides.my.vp}VP / ${m.sides.my.cp}CP · 敵 ${m.sides.enemy.vp}VP / ${m.sides.enemy.cp}CP</span></div></div>${battleRoster?"":`<div class="battle-start-cta"><button onclick="beginBattleSetup()">開始新對戰・選擇出戰特工</button></div>`}${tabs}${body}</div>`;
 }
 
+function globalRuleItems(){
+ const original=S.team,all=[],shared=new Set();
+ try{
+  Object.keys(TEAMS).forEach(teamId=>{
+   S.team=teamId;
+   items().forEach(item=>{
+    const universal=["核心","武器規則","對戰流程","Crit Ops","Kill Op","地圖","通用裝備"].includes(item.kind);
+    const key=item.kind+":"+item.id;
+    if(universal&&shared.has(key))return;
+    if(universal)shared.add(key);
+    all.push({...item,_teamId:teamId,_teamName:TEAMS[teamId].name,_universal:universal});
+   });
+  });
+ }finally{S.team=original}
+ return all;
+}
+function openGlobalRule(teamId,kind,id){
+ S.team=teamId;
+ localStorage.setItem("ktTeam",teamId);
+ S.view="team";S.tab="全部";S.subtab="全部";S.globalFocusId=id;
+ S.q="";
+ const input=document.querySelector("#q");if(input)input.value="";
+ document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("on",b.dataset.view==="team"));
+ render();
+ const card=[...document.querySelectorAll("#content .card[data-result-id]")].find(x=>x.dataset.resultId===id);
+ card?.scrollIntoView({block:"center"});
+}
+function ruleSearchSnippet(data){
+ const values=Array.isArray(data)?data:(data&&typeof data==="object"?Object.values(data):[data]);
+ return String(values.filter(y=>typeof y==="string").slice(0,3).join(" · ")).slice(0,180);
+}
+function loadMoreGlobalRules(){S.globalResultLimit=(S.globalResultLimit||20)+20;render()}
+function renderGlobalRules(){
+ const groups=NAV_GROUPS.all,tabs=Object.keys(groups);
+ if(!tabs.includes(S.tab)){S.tab="全部";S.subtab="全部"}
+ const subs=groups[S.tab]||[];
+ if(S.subtab!=="全部"&&!subs.includes(S.subtab))S.subtab="全部";
+ document.querySelector("#tabs").innerHTML=
+  `<div class="main-tabs">${tabs.map(t=>`<button class="tab ${S.tab===t?"on":""}" onclick="tab('${t}')">${t}</button>`).join("")}</div>`+
+  (subs.length?`<div class="subtabs">${["全部",...subs].map(t=>`<button class="subtab ${S.subtab===t?"on":""}" onclick="subtab('${t}')">${t}</button>`).join("")}</div>`:"");
+ let results=globalRuleItems();
+ if(S.tab!=="全部"){
+  const active=S.subtab!=="全部"?[S.subtab]:groups[S.tab];
+  if(active.length)results=results.filter(x=>active.includes(x.kind));
+ }
+ if(S.q)results=results.map((x,i)=>({...x,_rank:searchRank(x,S.q),_order:i}))
+  .filter(x=>x._rank>=0).sort((a,b)=>b._rank-a._rank||a._order-b._order);
+ const total=results.length;
+ const limit=S.globalResultLimit||20;
+ const shown=results.slice(0,limit);
+ const rendered=shown.map(x=>{
+  const title=itemTitle(x),source=itemSource(x);
+  const attrs=` data-result-id="${esc(x.id)}" data-result-title="${esc(title)}" data-result-source="${esc(source)}" data-global-team="${esc(x._teamId)}"`;
+  return x.html.replace(/<div class="([^"]*\\bcard\\b[^"]*)"/,(_,classes)=>`<div class="${classes}"${attrs}`);
+ }).join("");
+ const more=total>shown.length?`<button type="button" class="global-load-more" onclick="loadMoreGlobalRules()">載入更多（目前 ${shown.length}／${total} 筆）</button>`:"";
+ document.querySelector("#content").innerHTML=`<div class="global-rule-search">
+ ${!S.q?'<div class="global-rule-hint">搜尋全部已收錄隊伍與共通規則；也可以透過上方分類篩選。下方顯示部分規則，輸入關鍵字可縮小範圍。</div>':""}
+ <div class="count">${total} 筆結果${S.q?' · 已依相關度排序':''}</div>
+ ${shown.length?`<div class="grid">${rendered}</div>${more}`:'<div class="empty">找不到符合的規則</div>'}
+ </div>`;
+ renderRecentViewed();
+}
 function render(){
   const isFlow=S.view==="flow";
   const isMatch=S.view==="match";
   document.querySelector(".sticky").classList.toggle("flow-hidden",isFlow||isMatch);
-  document.querySelector(".matchup").classList.toggle("flow-hidden",isMatch);
+  document.querySelector(".matchup").classList.toggle("flow-hidden",S.view!=="team");
   document.querySelector("#tabs").classList.toggle("flow-hidden",isFlow||isMatch);
   const myReferenceTeam=battleRoster?.myTeam||S.myTeam;
   const enemyReferenceTeam=battleRoster?.enemyTeam||S.enemyTeam;
@@ -1914,6 +1982,7 @@ function render(){
   document.querySelector("#navTeamName").textContent=team().name;
   if(isFlow){ renderFlow(); return; }
   if(isMatch){ renderMatchHub(); return; }
+  if(S.view==="all"){renderGlobalRules();return;}
   const groups=NAV_GROUPS[S.view==="team"?"team":"all"];
   const tabs=Object.keys(groups);
   if(!tabs.includes(S.tab)){S.tab="全部";S.subtab="全部";}
@@ -1923,7 +1992,7 @@ function render(){
     `<div class="main-tabs">${tabs.map(t=>`<button class="tab ${S.tab===t?"on":""}" onclick="tab('${t}')">${t}</button>`).join("")}</div>`+
     (subs.length?`<div class="subtabs">${["全部",...subs].map(t=>`<button class="subtab ${S.subtab===t?"on":""}" onclick="subtab('${t}')">${t}</button>`).join("")}</div>`:"");
   let a=items();
-  if(S.view==="team")a=a.filter(x=>["小隊資訊","陣營規則","戰略計謀","交戰計謀","Tac Ops","通用裝備","陣營裝備","特工"].includes(x.kind));
+  if(S.view==="team")a=a.filter(x=>["小隊資訊","陣營規則","戰略計謀","交戰計謀","Tac Ops","通用裝備","陣營裝備","特工"].includes(x.kind)||x.id===S.globalFocusId);
   if(S.view==="fav")a=a.filter(x=>S.fav.has(S.team+":"+x.id));
   if(S.tab!=="全部"){
     const kinds=groups[S.tab]||[];
@@ -1946,8 +2015,8 @@ function render(){
   renderRecentViewed();
 }
 
-function tab(t){S.tab=t;S.subtab="全部";S.open.clear();render()}
-function subtab(t){S.subtab=t;S.open.clear();render()}
+function tab(t){S.tab=t;S.subtab="全部";S.open.clear();S.globalResultLimit=20;render()}
+function subtab(t){S.subtab=t;S.open.clear();S.globalResultLimit=20;render()}
 function openRule(instance){
   // Every explanation uses one shared selection state. A weapon profile is
   // the only permitted parent; at most one nested rule may be expanded.
@@ -1987,7 +2056,13 @@ function setActiveSide(side,{resetOpen=true}={}){
 }
 
 function bindUI(){
-  document.querySelector("#q").addEventListener("input",e=>{S.q=e.target.value;render()});
+  document.querySelector("#q").addEventListener("input",e=>{S.q=e.target.value;S.globalResultLimit=20;render()});
+  document.querySelector("#content").addEventListener("click",e=>{
+    const globalCard=e.target.closest(".card[data-global-team]");
+    if(globalCard&&S.view==="all"){
+      S.team=globalCard.dataset.globalTeam;
+    }
+  },true);
   document.querySelector("#content").addEventListener("click",e=>{
     const card=e.target.closest(".card[data-result-id]");
     if(card) rememberViewed(card.dataset.resultId,card.dataset.resultTitle,card.dataset.resultSource);
@@ -2004,6 +2079,7 @@ function bindUI(){
     document.querySelectorAll(".nav").forEach(x=>x.classList.remove("on"));
     b.classList.add("on");
     S.view=b.dataset.view;
+    S.globalFocusId=null;
     S.tab="全部";
     S.subtab="全部";
     render();

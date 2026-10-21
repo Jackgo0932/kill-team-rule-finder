@@ -127,4 +127,32 @@ check('match equipment configuration and totals remain available',()=>{
  assert.match(code,/function equipmentNameByKey\(/);
  assert.match(code,/function matchEquipmentSide\(/);
 });
+check('global search scans all teams independently of selected team',()=>{
+ const fn=functionSource('globalRuleItems');
+ assert.match(fn,/Object\.keys\(TEAMS\)/);
+ assert.match(fn,/finally\{S\.team=original\}/);
+ assert.match(functionSource('renderGlobalRules'),/globalRuleItems\(\)/);
+});
+check('team picker is only visible on team rules view',()=>{
+ assert.match(functionSource('render'),/S\.view!=="team"/);
+ assert.match(functionSource('openGlobalRule'),/S\.view="team"/);
+});
+check('global search handles array, object, and missing descriptions',()=>{
+ vm.runInContext(functionSource('ruleSearchSnippet'),ctx);
+ assert.equal(ctx.ruleSearchSnippet(['A','B']),'A · B');
+ assert.equal(ctx.ruleSearchSnippet({zh:'擊殺行動',title:'Kill Op'}),'擊殺行動 · Kill Op');
+ assert.equal(ctx.ruleSearchSnippet(undefined),'');
+});
+check('global results reuse original two-column rule cards',()=>{
+ const fn=functionSource('renderGlobalRules');
+ assert.match(fn,/x\.html\.replace\(/);
+ assert.match(fn,/class="grid"/);
+ assert.match(fn,/data-global-team/);
+ assert.doesNotMatch(fn,/global-rule-result"/);
+});
+check('global results paginate without removing original card interactions',()=>{
+ assert.match(functionSource('renderGlobalRules'),/globalResultLimit\|\|20/);
+ assert.match(functionSource('loadMoreGlobalRules'),/\+20/);
+ assert.match(code,/globalCard\.dataset\.globalTeam/);
+});
 console.log(`\n${count} keyword regression checks passed`);

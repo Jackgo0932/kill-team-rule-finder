@@ -1092,3 +1092,16 @@ button.battle-equipment-keyword.term-link:hover,button.battle-equipment-keyword.
 .match-equipment-rule-panel{margin:8px 0 14px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card,#1b1d20)}
 .match-equipment-rule-panel h4{margin:0 0 10px;font-size:1rem}
 .match-equipment-rule-panel .equipment-grenade-weapons{margin-top:10px}
+
+/* v2.10.32 global cross-team rule search */
+.global-rule-search h2{margin:8px 0}.global-rule-search>p{color:var(--muted,#a0a0a0);line-height:1.6}
+.global-rule-results{display:grid;gap:10px;margin-top:12px}
+.global-rule-result{display:flex;flex-direction:column;align-items:stretch;gap:7px;width:100%;padding:14px;text-align:left;border:1px solid var(--line,#555);border-radius:12px;background:var(--card,#222);color:inherit;cursor:pointer}
+.global-rule-result-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.global-rule-result-head span,.global-rule-result small{color:var(--muted,#aaa)}
+.global-rule-result-action{font-size:.85rem;align-self:flex-end}
+.global-rule-result:hover,.global-rule-result:focus-visible{border-color:var(--accent,#a4c7e9)}
+
+/* v2.10.34 reuse the original two-column rule cards in global search */
+.global-rule-hint{color:var(--muted);margin:5px 0 15px;line-height:1.6}
+.global-load-more{display:block;margin:18px auto 8px;padding:11px 22px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:inherit;cursor:pointer}
