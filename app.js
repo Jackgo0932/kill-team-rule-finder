@@ -1527,7 +1527,7 @@ function chapterTacticsError(side){
  return "";
 }
 function chooseChapterTactic(side,slot,value){
- if(!battleDraft||battleDraft.step!==3||rosterTeam(side)!=="aod"||!["primary","secondary"].includes(slot))return;
+ if(!battleDraft||battleDraft.step!==4||rosterTeam(side)!=="aod"||!["primary","secondary"].includes(slot))return;
  if(value!==""&&!AOD_CHAPTER_TACTICS.includes(value))return;
  battleChapterDraft[side][slot]=value;
  render();
