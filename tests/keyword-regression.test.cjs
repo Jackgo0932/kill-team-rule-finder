@@ -155,4 +155,10 @@ check('global results paginate without removing original card interactions',()=>
  assert.match(functionSource('loadMoreGlobalRules'),/\+20/);
  assert.match(code,/globalCard\.dataset\.globalTeam/);
 });
+check('Angels of Death chapter tactics can be selected at review step',()=>{
+ const picker=functionSource('chooseChapterTactic');
+ assert.match(picker,/battleDraft\.step!==4/);
+ assert.match(picker,/battleChapterDraft\[side\]\[slot\]=value/);
+ assert.match(functionSource('renderBattleSetup'),/chapterTacticsPicker\("my"\)/);
+});
 console.log(`\n${count} keyword regression checks passed`);
