@@ -268,9 +268,10 @@ function loadData(){
     cc: window.KT_CANOPTEK_CIRCLE,
     ks: window.KT_KASRKIN,
     rav: window.KT_RAVENERS,
-    xv26: window.KT_XV26
+    xv26: window.KT_XV26,
+    gm: window.KT_GOREMONGERS
   };
-  if (!TEAMS.pm || !TEAMS.aod || !TEAMS.wk || !TEAMS.mw || !TEAMS.leg || !TEAMS.dw || !TEAMS.ci || !TEAMS.cc || !TEAMS.ks || !TEAMS.rav || !TEAMS.xv26) {
+  if (!TEAMS.pm || !TEAMS.aod || !TEAMS.wk || !TEAMS.mw || !TEAMS.leg || !TEAMS.dw || !TEAMS.ci || !TEAMS.cc || !TEAMS.ks || !TEAMS.rav || !TEAMS.xv26 || !TEAMS.gm) {
     throw new Error("Team data scripts did not load.");
   }
   KW = Object.fromEntries(KEYWORDS.map(x=>[x[0],{id:x[0],name:x[1],en:x[2],text:x[3]}]));
@@ -575,7 +576,7 @@ function items(){
     const rows=KILL_OP.table.map(r=>`<tr><td>${r[0]}</td>${r.slice(1).map(v=>`<td>${v}</td>`).join("")}</tr>`).join("");
     a.push({kind:"Kill Op",id:"ko:kill-op",s:KILL_OP,html:`<div class="card">${star("ko:kill-op")}<h3>${esc(KILL_OP.zh)} <span class="meta">${esc(KILL_OP.title)}</span></h3><div class="body">${esc(KILL_OP.body)}<div class="kill-table-wrap"><table class="kill-table"><thead><tr><th>敵方起始特工</th><th>等級 1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead><tbody>${rows}</tbody></table></div><div class="rule-supplement"><b>規則補充</b><br>${esc(KILL_OP.note)}</div></div></div>`});
   }
-  const TAC_ARCHETYPES={"pm":["seek","security"],"aod":["seek","security"],"wk":["security","seek"],"mw":["recon","seek"],"leg":["security","seek"],"dw":["seek","security"],"ci":["security","seek"],"cc":["recon","security"],"ks":["security","seek"],"rav":["infiltration","seek"],"xv26":["recon","infiltration"]};
+  const TAC_ARCHETYPES={"pm":["seek","security"],"aod":["seek","security"],"wk":["security","seek"],"mw":["recon","seek"],"leg":["security","seek"],"dw":["seek","security"],"ci":["security","seek"],"cc":["recon","security"],"ks":["security","seek"],"rav":["infiltration","seek"],"xv26":["recon","infiltration"],"gm":["recon","seek"]};
   const allowedTac=S.view==="team"?(TAC_ARCHETYPES[S.team]||[]):["recon","security","seek","infiltration"];
   TAC_OPS.filter(x=>allowedTac.includes(x[0])).forEach(x=>a.push({kind:"Tac Ops",id:"to:"+x[3],s:x,html:`<div class="card">${star("to:"+x[3])}<h3>${esc(x[4])} <span class="meta">${esc(x[5])}</span></h3><div class="meta">${esc(x[1])} · Tac Op</div><div class="body"><b>揭示：</b>${esc(x[6])}<br><br>${x[7]!=="—"?`<b>規則／行動：</b>${esc(x[7])}<br><br>`:""}<b>得分：</b>${esc(x[8])}${x[9]?`<div class="rule-supplement"><b>規則補充</b><br>${esc(x[9])}</div>`:""}</div></div>`}));
   UNIVERSAL_EQUIPMENT.forEach(x=>a.push({kind:"通用裝備",id:"ue:"+x[0],s:x,html:`<div class="card equipment-card">${star("ue:"+x[0])}<div class="equipment-card-head"><h3>${esc((x[3]?x[3]+" ":"")+x[1])}</h3></div><div class="meta">${esc(x[2])} · 通用裝備</div>${sharedEquipmentDescription("ue",x[0],S.team,"dictionary")}</div>`}));
@@ -842,6 +843,7 @@ function guardTeamChange(){
 function rosterOps(side){return TEAMS[rosterTeam(side)]?.operatives||[]}
 // Declarative composition rules. Weapon/loadout choices remain manual.
 const TEAM_ROSTER_RULES={
+ "gm":{fixed:{"blood-herald":1},slots:7,allowed:["aspirant","bloodtaker","impaler","inciter","skullclaimer","stalker"],repeat:["aspirant"],note:"固定 1 名鮮血使者，再选择 7 名特工；只有新進者可以重复。"},
  "xv26":{fixed:{shasvre:1,"marker-drone":1,"gun-drone":1},slots:4,allowed:["designator","infiltrator","liberator","lodestar","neutraliser"],repeat:["infiltrator"],note:"融合砲全隊最多 2 把，需自行核對武器配置。"},
  "rav":{fixed:{prime:1},slots:4,allowed:["felltalon","tremorscythe","venomspitter","warrior","wrecker"],repeat:["warrior"]},
  "ci":{fixed:{superior:1},slots:8,allowed:["abjuror","censor","cremator","denuncia","mortisanctus","reliquarius","warrior"],repeat:["cremator","warrior"],caps:{cremator:2}},

@@ -155,10 +155,33 @@ check('global results paginate without removing original card interactions',()=>
  assert.match(functionSource('loadMoreGlobalRules'),/\+20/);
  assert.match(code,/globalCard\.dataset\.globalTeam/);
 });
-check('Angels of Death chapter tactics can be selected at review step',()=>{
- const picker=functionSource('chooseChapterTactic');
- assert.match(picker,/battleDraft\.step!==4/);
- assert.match(picker,/battleChapterDraft\[side\]\[slot\]=value/);
+check('Angels of Death chapter tactics selection uses review step 4',()=>{
+ const fn=functionSource('chooseChapterTactic');
+ assert.match(fn,/battleDraft\.step!==4/);
+ assert.match(fn,/battleChapterDraft\[side\]\[slot\]=value/);
  assert.match(functionSource('renderBattleSetup'),/chapterTacticsPicker\("my"\)/);
+});
+check('Goremongers appear in ordinary team selector',()=>{
+ const html=require('fs').readFileSync(require('path').join(__dirname,'../index.html'),'utf8');
+ assert.ok(html.includes('<option value="gm">灑血狂</option>'));
+});
+check('Goremongers roster and Tac Ops archetypes are configured',()=>{
+ assert.ok(code.includes('"gm":{fixed:{"blood-herald":1},slots:7'));
+ assert.ok(code.includes('"gm":["recon","seek"]'));
+});
+check('Goremongers operatives have offline local portraits',()=>{
+ const fs=require('fs'),path=require('path');
+ const data=fs.readFileSync(path.join(__dirname,'../data/goremongers.js'),'utf8');
+ for(const id of ['blood-herald','aspirant','bloodtaker','impaler','inciter','skullclaimer','stalker']){
+  const rel='assets/goremongers/'+id+'.webp';
+  assert.ok(data.includes('"image": "'+rel+'"'),id);
+  assert.ok(fs.statSync(path.join(__dirname,'..',rel)).size>1000,id);
+ }
+});
+check('Goremongers UI is in Traditional Chinese',()=>{
+ const fs=require('fs'),path=require('path');
+ const data=fs.readFileSync(path.join(__dirname,'../data/goremongers.js'),'utf8');
+ assert.ok(data.includes('灑血狂鮮血使者'));
+ assert.ok(!data.includes('洒血狂'));
 });
 console.log(`\n${count} keyword regression checks passed`);

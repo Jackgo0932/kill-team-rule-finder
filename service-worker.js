@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-2.10.36-xv26-tacops";
+const CACHE = "kt-rule-finder-2.10.41-goremongers-local";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -28,6 +28,15 @@ const APP_SHELL = [
   "./data/kasrkin.js",
   "./data/raveners.js",
   "./data/xv26.js",
+  "./data/goremongers.js",
+  "./assets/goremongers/blood-herald.webp",
+  "./assets/goremongers/bloodtaker.webp",
+  "./assets/goremongers/impaler.webp",
+  "./assets/goremongers/inciter.webp",
+  "./assets/goremongers/skullclaimer.webp",
+  "./assets/goremongers/stalker.webp",
+  "./assets/goremongers/aspirant.webp",
+
   "./assets/xv26/shasvre.webp",
   "./assets/xv26/designator.webp",
   "./assets/xv26/infiltrator.webp",
