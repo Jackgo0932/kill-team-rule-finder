@@ -25,8 +25,8 @@ const S={
   matchTracker:JSON.parse(localStorage.getItem("ktMatchTracker")||'null')||{
     tp:1, initiative:"my",
     sides:{
-      my:{cp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]},
-      enemy:{cp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]}
+      my:{cp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[]},
+      enemy:{cp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[]}
     }, log:[]
   }
 };
@@ -72,6 +72,7 @@ function ensureMatchTracker(){
     if(!x.cards)x.cards={};
     INITIATIVE_CARDS.forEach(c=>x.cards[c]=Math.max(0,Number(x.cards[c])||0));
     if(!Array.isArray(x.usedPloys))x.usedPloys=[];
+    if(!Array.isArray(x.usedFirefightPloys))x.usedFirefightPloys=[];
   });
   if(!Array.isArray(m.log))m.log=[];
   m.log.forEach((e,i)=>{if(!e.id)e.id=`legacy-${i}-${e.tp||1}-${e.at||""}`});
@@ -128,44 +129,76 @@ function changeInitiativeCard(side,card,delta){
   trackerLog(delta>0?`${trackerSideName(side)}獲得先手卡：${card}`:`${trackerSideName(side)}使用先手卡：${card}`);
   saveMatchTracker();refreshMatchUI();
 }
-function toggleTrackerPloy(side,id){
+function toggleTrackerPloy(side,id,kind="戰略計謀"){
   const m=ensureMatchTracker(),x=m.sides[side],t=trackerTeam(side);
-  const ploy=(t?.ploys||[]).find(p=>p[0]===id&&p[2]==="戰略計謀");if(!ploy)return;
-  const at=x.usedPloys.indexOf(id);
-  if(at>=0)x.usedPloys.splice(at,1);
-  else{x.usedPloys.push(id);trackerLog(`${trackerSideName(side)}使用戰略計謀：${ploy[1]}`)}
+  if(!["戰略計謀","交戰計謀"].includes(kind))return;
+  const ploy=[...(t?.ploys||[]),...(t?.ploys2||[])].find(p=>p[0]===id&&p[2]===kind);
+  if(!ploy)return;
+  const bucket=kind==="交戰計謀"?x.usedFirefightPloys:x.usedPloys;
+  const at=bucket.indexOf(id);
+  if(at>=0)bucket.splice(at,1);
+  else{bucket.push(id);trackerLog(`${trackerSideName(side)}使用${kind}：${ploy[1]}`)}
   saveMatchTracker();refreshMatchUI();
 }
 function nextTurningPoint(){
   const m=ensureMatchTracker();if(m.tp>=4)return;
-  m.tp++;m.sides.my.usedPloys=[];m.sides.enemy.usedPloys=[];
-  trackerLog(`進入 TP${m.tp}（已清除上一 TP 的戰略計謀使用標記）`);
+  m.tp++;["my","enemy"].forEach(side=>{m.sides[side].usedPloys=[];m.sides[side].usedFirefightPloys=[];});
+  trackerLog(`進入 TP${m.tp}（已清除上一 TP 的戰略及交戰計謀使用標記）`);
   saveMatchTracker();refreshMatchUI();
 }
 function startNewMatch(){
   if(battleRoster){beginBattleSetup();return}
   if(!confirm("開始新對戰？將清除目前 TP、VP、CP、先手、先手卡、戰略計謀與戰鬥紀錄；雙方目前選擇的裝備會保留。"))return;
-  S.matchTracker={tp:1,initiative:"my",sides:{my:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]},enemy:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]}},log:[]};
+  S.matchTracker={tp:1,initiative:"my",sides:{my:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[]},enemy:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[]}},log:[]};
   saveMatchTracker();render();
 }
 function maybeStartNewMatchForTeamChange(){
   const m=ensureMatchTracker();
   const active=m.log.length||m.tp!==1||m.sides.my.cp||m.sides.enemy.cp||m.sides.my.vp||m.sides.enemy.vp;
   if(active&&confirm("已更換對戰小隊。要同時開始新對戰並清除上一局的 TP、VP、CP 與紀錄嗎？")){
-    S.matchTracker={tp:1,initiative:"my",sides:{my:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]},enemy:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]}},log:[]};
+    S.matchTracker={tp:1,initiative:"my",sides:{my:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[]},enemy:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[]}},log:[]};
     saveMatchTracker();
   }
+}
+function publicPloyDetail(button){
+ const host=button.closest(".tracker-ploy-entry");
+ if(!host)return;
+ const panel=host.querySelector(".tracker-ploy-effect");
+ const opening=panel.hidden;
+ panel.hidden=!opening;
+ button.setAttribute("aria-expanded",String(opening));
+ button.textContent=opening?"收起效果":"查看效果";
+}
+function trackerPloyRows(side,kind){
+ const t=trackerTeam(side),x=ensureMatchTracker().sides[side];
+ const all=[...(t?.ploys||[]),...(t?.ploys2||[])];
+ const rows=all.filter(p=>p[2]===kind);
+ return rows.map(p=>{
+  const strategic=kind==="戰略計謀";
+  const used=(strategic?x.usedPloys:x.usedFirefightPloys).includes(p[0]);
+  const opts=kind==="交戰計謀"?choiceOptionsFor(trackerTeamId(side),"ploy2",p[0]):null;
+  const body=opts
+   ? `<div class="body">在一名己方瘟疫戰士特工的激活或反應期間、其執行一次行動之前或之後使用。選擇一個效果：</div>${choiceOptionList(opts,`public-ploy2:${side}:${p[0]}`)}`
+   :markedProse(p[3],`public-ploy:${side}:${p[0]}`);
+  return `<div class="tracker-ploy-entry">
+   <div class="tracker-ploy-line">
+    <button type="button" class="tracker-ploy ${used?"used":""}" aria-pressed="${used}" onclick="toggleTrackerPloy('${side}','${esc(p[0])}','${kind}')">${used?"✓ ":""}${esc(p[1])}</button>
+    <button type="button" class="tracker-ploy-view" aria-expanded="false" onclick="publicPloyDetail(this)">查看效果</button>
+   </div>
+   <div class="tracker-ploy-effect" hidden>${body}</div>
+  </div>`;
+ }).join("")||'<span class="tracker-empty">此小隊沒有相關計謀資料</span>';
 }
 function trackerSidePanel(side){
   const m=ensureMatchTracker(),x=m.sides[side],t=trackerTeam(side);
   const cards=INITIATIVE_CARDS.map(c=>`<div class="tracker-card-row"><span>${esc(c)}</span><div class="tracker-stepper"><button onclick="changeInitiativeCard('${side}','${c}',-1)" ${x.cards[c]?"":"disabled"}>−</button><b>${x.cards[c]}</b><button onclick="changeInitiativeCard('${side}','${c}',1)">＋</button></div></div>`).join("");
-  const ploys=(t?.ploys||[]).filter(p=>p[2]==="戰略計謀").map(p=>`<button class="tracker-ploy ${x.usedPloys.includes(p[0])?"used":""}" onclick="toggleTrackerPloy('${side}','${p[0]}')">${x.usedPloys.includes(p[0])?"✓ ":""}${esc(p[1])}</button>`).join("");
   return `<section class="tracker-side ${m.initiative===side?"initiative":""}">
     <div class="tracker-side-head"><div><b>${trackerSideName(side)} · ${esc(t?.name||"")}</b><small>${m.initiative===side?"先手":"非先手"}</small></div><button class="tracker-init" onclick="setTrackerInitiative('${side}')">設為先手</button></div>
     <div class="tracker-cp tracker-vp"><span>VP</span><button onclick="changeTrackerVP('${side}',-1)" ${x.vp?"":"disabled"}>−</button><b>${x.vp}</b><button onclick="changeTrackerVP('${side}',1)">＋</button></div>
     <div class="tracker-cp"><span>CP</span><button onclick="changeTrackerCP('${side}',-1)" ${x.cp?"":"disabled"}>−</button><b>${x.cp}</b><button onclick="changeTrackerCP('${side}',1)">＋</button></div>
     <details class="tracker-detail" open><summary>先手卡</summary>${cards}</details>
-    <details class="tracker-detail" open><summary>本 TP 戰略計謀</summary><div class="tracker-ploys">${ploys||'<span class="tracker-empty">此小隊沒有戰略計謀資料</span>'}</div></details>
+    <details class="tracker-detail" open><summary>本 TP 戰略計謀</summary><div class="tracker-ploys">${trackerPloyRows(side,"戰略計謀")}</div></details>
+    <details class="tracker-detail" open><summary>交戰計謀</summary><div class="tracker-ploys">${trackerPloyRows(side,"交戰計謀")}</div></details>
   </section>`;
 }
 function renderMatchTracker(){
@@ -843,7 +876,7 @@ function guardTeamChange(){
 function rosterOps(side){return TEAMS[rosterTeam(side)]?.operatives||[]}
 // Declarative composition rules. Weapon/loadout choices remain manual.
 const TEAM_ROSTER_RULES={
- "gm":{fixed:{"blood-herald":1},slots:7,allowed:["aspirant","bloodtaker","impaler","inciter","skullclaimer","stalker"],repeat:["aspirant"],note:"固定 1 名鮮血使者，再选择 7 名特工；只有新進者可以重复。"},
+ "gm":{fixed:{"blood-herald":1},slots:7,allowed:["aspirant","bloodtaker","impaler","inciter","skullclaimer","stalker"],repeat:["aspirant"],note:"固定 1 名鮮血使者，再選擇 7 名特工；只有新進者可以重複。"},
  "xv26":{fixed:{shasvre:1,"marker-drone":1,"gun-drone":1},slots:4,allowed:["designator","infiltrator","liberator","lodestar","neutraliser"],repeat:["infiltrator"],note:"融合砲全隊最多 2 把，需自行核對武器配置。"},
  "rav":{fixed:{prime:1},slots:4,allowed:["felltalon","tremorscythe","venomspitter","warrior","wrecker"],repeat:["warrior"]},
  "ci":{fixed:{superior:1},slots:8,allowed:["abjuror","censor","cremator","denuncia","mortisanctus","reliquarius","warrior"],repeat:["cremator","warrior"],caps:{cremator:2}},
@@ -1612,7 +1645,7 @@ function finishBattleSetup(){
   battleRoster={myTeam:battleDraftTeams.my,enemyTeam:battleDraftTeams.enemy,my:[...battleDraft.my],enemy:battleDraft.enemySkipped?null:[...battleDraft.enemy],weapons:JSON.parse(JSON.stringify(battleWeaponDraft)),marks:JSON.parse(JSON.stringify(battleMarkDraft)),chapterTactics:JSON.parse(JSON.stringify(battleChapterDraft)),equipment:JSON.parse(JSON.stringify(battleEquipmentDraft)),equipmentOptions:JSON.parse(JSON.stringify(battleEquipmentOptionsDraft))};
   localStorage.setItem(ROSTER_KEY,JSON.stringify(battleRoster));
   battleDraft=null;battleDraftTeams=null;battleEquipmentDraft=null;battleEquipmentOptionsDraft=null;
-  S.matchTracker={tp:1,initiative:"my",sides:{my:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]},enemy:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[]}},log:[]};
+  S.matchTracker={tp:1,initiative:"my",sides:{my:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[]},enemy:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[]}},log:[]};
   saveMatchTracker();S.matchTab="roster";render();
 }
 // Equipment is chosen as part of the match setup, not on the general reference page.

@@ -1105,3 +1105,12 @@ button.battle-equipment-keyword.term-link:hover,button.battle-equipment-keyword.
 /* v2.10.34 reuse the original two-column rule cards in global search */
 .global-rule-hint{color:var(--muted);margin:5px 0 15px;line-height:1.6}
 .global-load-more{display:block;margin:18px auto 8px;padding:11px 22px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:inherit;cursor:pointer}
+
+/* v2.10.42: public strategic/firefight ploy reference details */
+.tracker-ploy-entry{width:100%;min-width:0}
+.tracker-ploy-line{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tracker-ploy-name{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:8px}
+.tracker-ploy-view{font-size:12px!important;padding:6px 9px!important}
+.tracker-ploy-effect{margin:7px 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;line-height:1.65;overflow-wrap:anywhere}
+.tracker-ploy-effect[hidden]{display:none!important}
+.tracker-ploy-effect .body{margin:0}

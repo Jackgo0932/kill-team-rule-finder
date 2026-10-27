@@ -1,4 +1,4 @@
-const CACHE = "kt-rule-finder-2.10.41-goremongers-local";
+const CACHE = "kt-rule-finder-2.10.44-goremongers-local";
 const APP_SHELL = [
   "./",
   "./index.html",

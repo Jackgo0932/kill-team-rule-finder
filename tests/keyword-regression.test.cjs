@@ -184,4 +184,37 @@ check('Goremongers UI is in Traditional Chinese',()=>{
  assert.ok(data.includes('灑血狂鮮血使者'));
  assert.ok(!data.includes('洒血狂'));
 });
+check('public info includes both strategic and firefight ploys',()=>{
+ const fn=functionSource('trackerSidePanel');
+ assert.ok(fn.includes('trackerPloyRows(side,"戰略計謀")'));
+ assert.ok(fn.includes('trackerPloyRows(side,"交戰計謀")'));
+});
+check('public ploy effects expand locally and preserve choice options',()=>{
+ const fn=functionSource('trackerPloyRows');
+ assert.ok(fn.includes('markedProse(p[3]'));
+ assert.ok(fn.includes('choiceOptionList(opts'));
+ assert.ok(fn.includes('publicPloyDetail(this)'));
+ const toggle=functionSource('publicPloyDetail');
+ assert.ok(!toggle.includes('render('));
+ assert.ok(toggle.includes('panel.hidden=!opening'));
+});
+check('firefight ploys use separate per-side tracking and toggle buttons',()=>{
+ const fn=functionSource('toggleTrackerPloy');
+ assert.match(fn,/usedFirefightPloys/);
+ assert.match(fn,/usedPloys/);
+ assert.match(functionSource('trackerPloyRows'),/toggleTrackerPloy/);
+ assert.match(functionSource('trackerPloyRows'),/aria-pressed/);
+});
+check('next turning point clears both ploy types for both sides',()=>{
+ const fn=functionSource('nextTurningPoint');
+ assert.match(fn,/usedFirefightPloys=\[\]/);
+ assert.match(fn,/usedPloys=\[\]/);
+ assert.match(fn,/\["my","enemy"\]/);
+});
+check('Celestian Benediction uses Traditional Chinese in both contexts',()=>{
+ const fs=require('fs'),path=require('path');
+ const ci=fs.readFileSync(path.join(__dirname,'../data/celestian_insidiants.js'),'utf8');
+ assert.doesNotMatch(ci,/祷/);
+ assert.equal((ci.match(/禱祝/g)||[]).length,2);
+});
 console.log(`\n${count} keyword regression checks passed`);
