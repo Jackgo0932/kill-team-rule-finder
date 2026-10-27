@@ -190,7 +190,9 @@ function trackerPloyRows(side,kind){
   </div>`;
  }).join("")||'<span class="tracker-empty">此小隊沒有相關計謀資料</span>';
 }
-function teamStrategicGambits(team){
+function teamStrategicGambits(team,side){
+ const selectedOps=battleRoster?.[side];
+ const selectedEquipment=battleRoster?.equipment?.[side];
  const rows=[];
  const isGambit=text=>/戰略計劃|戰略賭注|Strategic Gambit/i.test(text||"");
  const add=(id,name,body,source)=>{
@@ -199,13 +201,13 @@ function teamStrategicGambits(team){
   rows.push({id,name,body,source,onceBattle});
  };
  (team?.rules||[]).forEach(r=>add(`rule:${r[0]}`,r[1],r[2],"小隊規則"));
- (team?.operatives||[]).forEach(op=>(op.abilities||[]).forEach((a,i)=>add(`operative:${op.id}:${i}`,a[0],a[1],op.name)));
- (team?.equipment||[]).forEach(e=>add(`equipment:${e[0]}`,e[1],e[2],"小隊裝備"));
+ (team?.operatives||[]).filter(op=>Array.isArray(selectedOps)&&selectedOps.includes(op.id)).forEach(op=>(op.abilities||[]).forEach((a,i)=>add(`operative:${op.id}:${i}`,a[0],a[1],op.name)));
+ (team?.equipment||[]).filter(e=>Array.isArray(selectedEquipment)&&selectedEquipment.includes(`e:${e[0]}`)).forEach(e=>add(`equipment:${e[0]}`,e[1],e[2],"小隊裝備"));
  return rows;
 }
 function toggleStrategicGambit(side,id){
  const m=ensureMatchTracker(),x=m.sides[side];
- const gambit=teamStrategicGambits(trackerTeam(side)).find(g=>g.id===id);
+ const gambit=teamStrategicGambits(trackerTeam(side),side).find(g=>g.id===id);
  if(!gambit)return;
  const key=id+(gambit.onceBattle?":battle":":tp");
  const index=x.usedStrategicGambits.indexOf(key);
@@ -215,7 +217,7 @@ function toggleStrategicGambit(side,id){
 }
 function trackerStrategicGambitRows(side){
  const x=ensureMatchTracker().sides[side];
- const gambits=teamStrategicGambits(trackerTeam(side));
+ const gambits=teamStrategicGambits(trackerTeam(side),side);
  if(!gambits.length)return '<span class="tracker-empty">此小隊沒有已收錄的專屬戰略計劃</span>';
  return gambits.map(g=>{
   const key=g.id+(g.onceBattle?":battle":":tp");

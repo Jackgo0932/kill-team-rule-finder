@@ -245,4 +245,22 @@ check('public ploy keyword click does not re-render or collapse panel',()=>{
  assert.doesNotMatch(source,/\bopenRule\s*\(/);
  assert.doesNotMatch(source,/\bpublicPloyDetail\s*\(/);
 });
+check('strategic gambits filter operative and equipment sources by selected roster',()=>{
+ const source=functionSource('teamStrategicGambits');
+ assert.match(source,/selectedOps\.includes\(op\.id\)/);
+ assert.match(source,/selectedEquipment\.includes\(`e:\$\{e\[0\]\}`\)/);
+ assert.match(source,/team\?\.rules/);
+});
+check('public strategic gambits and usage toggles share the same side-aware filtering',()=>{
+ assert.match(functionSource('trackerStrategicGambitRows'),/teamStrategicGambits\(trackerTeam\(side\),side\)/);
+ assert.match(functionSource('toggleStrategicGambit'),/teamStrategicGambits\(trackerTeam\(side\),side\)/);
+});
+check('strategic gambit filtering works on real roster values',()=>{
+ const f=functionSource('teamStrategicGambits');
+ const mock={battleRoster:{my:['a'],equipment:{my:['e:flag']}},console};
+ vm.createContext(mock);vm.runInContext(f,mock);
+ const team={rules:[['r','Team','戰略計劃 team']],operatives:[{id:'a',name:'A',abilities:[['A','戰略計劃 A']]},{id:'b',name:'B',abilities:[['B','戰略計劃 B']]}],equipment:[['flag','Flag','戰略計劃 Flag'],['other','Other','戰略計劃 Other']]};
+ const rows=mock.teamStrategicGambits(team,'my');
+ assert.deepEqual(Array.from(rows,r=>r.name),['Team','A','Flag']);
+});
 console.log(`\n${count} keyword regression checks passed`);
