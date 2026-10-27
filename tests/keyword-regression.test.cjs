@@ -217,4 +217,32 @@ check('Celestian Benediction uses Traditional Chinese in both contexts',()=>{
  assert.doesNotMatch(ci,/祷/);
  assert.equal((ci.match(/禱祝/g)||[]).length,2);
 });
+check('strategic gambits include team rules and operative abilities',()=>{
+ const source=functionSource('teamStrategicGambits');
+ assert.match(source,/team\?\.rules/);
+ assert.match(source,/op\.abilities/);
+ assert.match(source,/戰略計劃/);
+});
+check('strategic gambit panel shows effects and source',()=>{
+ const source=functionSource('trackerStrategicGambitRows');
+ assert.match(source,/publicPloyDetail/);
+ assert.match(source,/markedProse\(g\.body/);
+ assert.match(source,/g\.source/);
+});
+check('strategic gambit TP reset preserves battle-limited usage',()=>{
+ const source=functionSource('nextTurningPoint');
+ assert.match(source,/usedStrategicGambits/);
+ assert.match(source,/endsWith\(":battle"\)/);
+});
+check('public ploy and gambit keyword scopes stay local',()=>{
+ const source=functionSource('markedProse');
+ for(const prefix of ['public-ploy','public-ploy2','public-gambit']) assert.match(source,new RegExp(prefix));
+ assert.match(functionSource('toggleReferenceKeyword'),/tracker-ploy-effect/);
+});
+check('public ploy keyword click does not re-render or collapse panel',()=>{
+ const source=functionSource('toggleReferenceKeyword');
+ assert.doesNotMatch(source,/\brender\s*\(/);
+ assert.doesNotMatch(source,/\bopenRule\s*\(/);
+ assert.doesNotMatch(source,/\bpublicPloyDetail\s*\(/);
+});
 console.log(`\n${count} keyword regression checks passed`);

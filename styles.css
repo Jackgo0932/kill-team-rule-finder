@@ -1114,3 +1114,5 @@ button.battle-equipment-keyword.term-link:hover,button.battle-equipment-keyword.
 .tracker-ploy-effect{margin:7px 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;line-height:1.65;overflow-wrap:anywhere}
 .tracker-ploy-effect[hidden]{display:none!important}
 .tracker-ploy-effect .body{margin:0}
+
+.tracker-gambit-source{display:block;opacity:.75;margin:3px 0 5px;font-size:12px}

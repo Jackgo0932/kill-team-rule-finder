@@ -25,8 +25,8 @@ const S={
   matchTracker:JSON.parse(localStorage.getItem("ktMatchTracker")||'null')||{
     tp:1, initiative:"my",
     sides:{
-      my:{cp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[]},
-      enemy:{cp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[]}
+      my:{cp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[],usedStrategicGambits:[]},
+      enemy:{cp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[],usedStrategicGambits:[]}
     }, log:[]
   }
 };
@@ -73,6 +73,7 @@ function ensureMatchTracker(){
     INITIATIVE_CARDS.forEach(c=>x.cards[c]=Math.max(0,Number(x.cards[c])||0));
     if(!Array.isArray(x.usedPloys))x.usedPloys=[];
     if(!Array.isArray(x.usedFirefightPloys))x.usedFirefightPloys=[];
+    if(!Array.isArray(x.usedStrategicGambits))x.usedStrategicGambits=[];
   });
   if(!Array.isArray(m.log))m.log=[];
   m.log.forEach((e,i)=>{if(!e.id)e.id=`legacy-${i}-${e.tp||1}-${e.at||""}`});
@@ -142,21 +143,21 @@ function toggleTrackerPloy(side,id,kind="戰略計謀"){
 }
 function nextTurningPoint(){
   const m=ensureMatchTracker();if(m.tp>=4)return;
-  m.tp++;["my","enemy"].forEach(side=>{m.sides[side].usedPloys=[];m.sides[side].usedFirefightPloys=[];});
-  trackerLog(`進入 TP${m.tp}（已清除上一 TP 的戰略及交戰計謀使用標記）`);
+  m.tp++;["my","enemy"].forEach(side=>{m.sides[side].usedPloys=[];m.sides[side].usedFirefightPloys=[];m.sides[side].usedStrategicGambits=m.sides[side].usedStrategicGambits.filter(id=>id.endsWith(":battle"));});
+  trackerLog(`進入 TP${m.tp}（已清除上一 TP 的戰略、交戰計謀及每 TP 戰略計劃使用標記）`);
   saveMatchTracker();refreshMatchUI();
 }
 function startNewMatch(){
   if(battleRoster){beginBattleSetup();return}
   if(!confirm("開始新對戰？將清除目前 TP、VP、CP、先手、先手卡、戰略計謀與戰鬥紀錄；雙方目前選擇的裝備會保留。"))return;
-  S.matchTracker={tp:1,initiative:"my",sides:{my:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[]},enemy:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[]}},log:[]};
+  S.matchTracker={tp:1,initiative:"my",sides:{my:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[],usedStrategicGambits:[]},enemy:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[],usedStrategicGambits:[]}},log:[]};
   saveMatchTracker();render();
 }
 function maybeStartNewMatchForTeamChange(){
   const m=ensureMatchTracker();
   const active=m.log.length||m.tp!==1||m.sides.my.cp||m.sides.enemy.cp||m.sides.my.vp||m.sides.enemy.vp;
   if(active&&confirm("已更換對戰小隊。要同時開始新對戰並清除上一局的 TP、VP、CP 與紀錄嗎？")){
-    S.matchTracker={tp:1,initiative:"my",sides:{my:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[]},enemy:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[]}},log:[]};
+    S.matchTracker={tp:1,initiative:"my",sides:{my:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[],usedStrategicGambits:[]},enemy:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[],usedStrategicGambits:[]}},log:[]};
     saveMatchTracker();
   }
 }
@@ -189,6 +190,43 @@ function trackerPloyRows(side,kind){
   </div>`;
  }).join("")||'<span class="tracker-empty">此小隊沒有相關計謀資料</span>';
 }
+function teamStrategicGambits(team){
+ const rows=[];
+ const isGambit=text=>/戰略計劃|戰略賭注|Strategic Gambit/i.test(text||"");
+ const add=(id,name,body,source)=>{
+  if(!isGambit(body))return;
+  const onceBattle=/每場戰鬥限一次|每場限一次|每局限一次/.test(body);
+  rows.push({id,name,body,source,onceBattle});
+ };
+ (team?.rules||[]).forEach(r=>add(`rule:${r[0]}`,r[1],r[2],"小隊規則"));
+ (team?.operatives||[]).forEach(op=>(op.abilities||[]).forEach((a,i)=>add(`operative:${op.id}:${i}`,a[0],a[1],op.name)));
+ (team?.equipment||[]).forEach(e=>add(`equipment:${e[0]}`,e[1],e[2],"小隊裝備"));
+ return rows;
+}
+function toggleStrategicGambit(side,id){
+ const m=ensureMatchTracker(),x=m.sides[side];
+ const gambit=teamStrategicGambits(trackerTeam(side)).find(g=>g.id===id);
+ if(!gambit)return;
+ const key=id+(gambit.onceBattle?":battle":":tp");
+ const index=x.usedStrategicGambits.indexOf(key);
+ if(index>=0)x.usedStrategicGambits.splice(index,1);
+ else{x.usedStrategicGambits.push(key);trackerLog(`${trackerSideName(side)}使用戰略計劃：${gambit.name}`)}
+ saveMatchTracker();refreshMatchUI();
+}
+function trackerStrategicGambitRows(side){
+ const x=ensureMatchTracker().sides[side];
+ const gambits=teamStrategicGambits(trackerTeam(side));
+ if(!gambits.length)return '<span class="tracker-empty">此小隊沒有已收錄的專屬戰略計劃</span>';
+ return gambits.map(g=>{
+  const key=g.id+(g.onceBattle?":battle":":tp");
+  const used=x.usedStrategicGambits.includes(key);
+  return `<div class="tracker-ploy-entry"><div class="tracker-ploy-line">
+   <button type="button" class="tracker-ploy ${used?"used":""}" aria-pressed="${used}" onclick="toggleStrategicGambit('${side}','${esc(g.id)}')">${used?"✓ ":""}${esc(g.name)}</button>
+   <button type="button" class="tracker-ploy-view" aria-expanded="false" onclick="publicPloyDetail(this)">查看效果</button>
+   </div><small class="tracker-gambit-source">${esc(g.source)} · ${g.onceBattle?"每場戰鬥使用標記":"本 TP 使用標記"}</small>
+   <div class="tracker-ploy-effect" hidden>${markedProse(g.body,`public-gambit:${side}:${g.id}`)}</div></div>`;
+ }).join("");
+}
 function trackerSidePanel(side){
   const m=ensureMatchTracker(),x=m.sides[side],t=trackerTeam(side);
   const cards=INITIATIVE_CARDS.map(c=>`<div class="tracker-card-row"><span>${esc(c)}</span><div class="tracker-stepper"><button onclick="changeInitiativeCard('${side}','${c}',-1)" ${x.cards[c]?"":"disabled"}>−</button><b>${x.cards[c]}</b><button onclick="changeInitiativeCard('${side}','${c}',1)">＋</button></div></div>`).join("");
@@ -198,6 +236,7 @@ function trackerSidePanel(side){
     <div class="tracker-cp"><span>CP</span><button onclick="changeTrackerCP('${side}',-1)" ${x.cp?"":"disabled"}>−</button><b>${x.cp}</b><button onclick="changeTrackerCP('${side}',1)">＋</button></div>
     <details class="tracker-detail" open><summary>先手卡</summary>${cards}</details>
     <details class="tracker-detail" open><summary>本 TP 戰略計謀</summary><div class="tracker-ploys">${trackerPloyRows(side,"戰略計謀")}</div></details>
+    <details class="tracker-detail" open><summary>小隊專屬戰略計劃</summary><div class="tracker-ploys">${trackerStrategicGambitRows(side)}</div></details>
     <details class="tracker-detail" open><summary>交戰計謀</summary><div class="tracker-ploys">${trackerPloyRows(side,"交戰計謀")}</div></details>
   </section>`;
 }
@@ -375,7 +414,7 @@ function markedProse(text,scope){
       if(profile){
         const instance=`weapon-profile:${scope}:${n++}:${id}`;
         const open=S.open.has(S.team+":"+instance);
-        const local=/^(ability|ploy|ploy2|rule|dictionary):/.test(scope);
+        const local=/^(ability|ploy|ploy2|rule|dictionary|public-ploy|public-ploy2|public-gambit):/.test(scope);
         out+=local
           ? `<button type="button" class="term-link weapon-profile-link reference-local-keyword" data-keyword-id="wp:${esc(id)}" aria-expanded="false" onclick="toggleReferenceKeyword(this)">${esc(label)}</button>`
           : `<button class="term-link weapon-profile-link ${open?"open":""}" onclick="openRule('${instance}')">${esc(label)}</button>`;
@@ -389,7 +428,7 @@ function markedProse(text,scope){
         // Abilities and ploys can expand ordinary keywords locally, without
         // replacing the entire reference page. Weapon profiles retain their
         // existing nested-rule interaction.
-        const local=/^(ability|ploy|ploy2|rule|dictionary):/.test(scope);
+        const local=/^(ability|ploy|ploy2|rule|dictionary|public-ploy|public-ploy2|public-gambit):/.test(scope);
         out+=local
           ? `<button type="button" class="term-link reference-local-keyword" data-keyword-id="${esc(id)}" aria-expanded="false" onclick="toggleReferenceKeyword(this)">${esc(label)}</button>`
           : `<button class="term-link ${open?"open":""}" onclick="openRule('${instance}')">${esc(label)}</button>`;
@@ -402,7 +441,7 @@ function markedProse(text,scope){
   // Preserve authored line breaks in rule prose after escaping/link expansion.
   out=out.replace(/\n/g,"<br>");
   let explain="";
-  const localScope=/^(ability|ploy|ploy2|rule|dictionary):/.test(scope);
+  const localScope=/^(ability|ploy|ploy2|rule|dictionary|public-ploy|public-ploy2|public-gambit):/.test(scope);
   const selectedRef=localScope?null:
     refs.find(ref=>ref.kind!=="weapon-profile"&&S.open.has(S.team+":"+ref.instance))
     ||refs.find(ref=>S.open.has(S.team+":"+ref.instance));
@@ -1645,7 +1684,7 @@ function finishBattleSetup(){
   battleRoster={myTeam:battleDraftTeams.my,enemyTeam:battleDraftTeams.enemy,my:[...battleDraft.my],enemy:battleDraft.enemySkipped?null:[...battleDraft.enemy],weapons:JSON.parse(JSON.stringify(battleWeaponDraft)),marks:JSON.parse(JSON.stringify(battleMarkDraft)),chapterTactics:JSON.parse(JSON.stringify(battleChapterDraft)),equipment:JSON.parse(JSON.stringify(battleEquipmentDraft)),equipmentOptions:JSON.parse(JSON.stringify(battleEquipmentOptionsDraft))};
   localStorage.setItem(ROSTER_KEY,JSON.stringify(battleRoster));
   battleDraft=null;battleDraftTeams=null;battleEquipmentDraft=null;battleEquipmentOptionsDraft=null;
-  S.matchTracker={tp:1,initiative:"my",sides:{my:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[]},enemy:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[]}},log:[]};
+  S.matchTracker={tp:1,initiative:"my",sides:{my:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[],usedStrategicGambits:[]},enemy:{cp:0,vp:0,cards:{"重擲":0,"+1/-1":0,"+2/-2":0,"+3/-3":0},usedPloys:[],usedFirefightPloys:[],usedStrategicGambits:[]}},log:[]};
   saveMatchTracker();S.matchTab="roster";render();
 }
 // Equipment is chosen as part of the match setup, not on the general reference page.
@@ -1694,13 +1733,13 @@ function toggleReferenceKeyword(button){
  const id=button.dataset.keywordId||"";
  const isProfile=id.startsWith("wp:");
  const nested=button.closest(".reference-local-profile");
- const body=button.closest(".body");
+ const body=button.closest(".body, .tracker-ploy-effect");
  // Dictionary equipment may use grenade sections and choice rows rather than
  // a .body wrapper. Locate the smallest meaningful section for insertion.
  const equipmentSection=button.closest(".grenade-section-text, .rule-option-effect, .choice-option-row, .grenade-column, .equipment-card");
  if(!nested&&!body&&!equipmentSection)return;
  const anchor=body||equipmentSection;
- const container=nested||(button.closest(".card")||anchor);
+ const container=nested||(button.closest(".tracker-ploy-effect, .card")||anchor);
  const old=container.querySelector(nested?".reference-local-rule-explanation":".reference-local-explanation");
  const wasOpen=button.getAttribute("aria-expanded")==="true";
  container.querySelectorAll(nested?".reference-local-profile .reference-local-keyword":".reference-local-keyword").forEach(b=>{
