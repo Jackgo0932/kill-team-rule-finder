@@ -264,3 +264,58 @@ check('strategic gambit filtering works on real roster values',()=>{
  assert.deepEqual(Array.from(rows,r=>r.name),['Team','A','Flag']);
 });
 console.log(`\n${count} keyword regression checks passed`);
+check('Hearthkyn Salvagers team is registered in browse and roster',()=>{
+ const index=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
+ assert.match(index,/value="hs">爐心打撈者/);
+ assert.match(index,/data\/hearthkyn_salvagers\.js/);
+ assert.match(code,/hs: window\.KT_HEARTHKYN_SALVAGERS/);
+ assert.match(code,/"hs":\{fixed:\{theyn:1\},slots:9/);
+});
+check('Hearthkyn English-source updates and full rule sections are present',()=>{
+ const source=fs.readFileSync(path.join(__dirname,'..','data/hearthkyn_salvagers.js'),'utf8');
+ const sandbox={window:{}};vm.runInNewContext(source,sandbox);
+ const t=sandbox.window.KT_HEARTHKYN_SALVAGERS;
+ assert.equal(t.ploys.length,8);assert.equal(t.equipment.length,4);
+ assert.equal(t.operatives.length,11);
+ const gunner=t.operatives.filter(x=>x.id==='gunner');assert.equal(gunner.length,1);assert.equal(gunner[0].weapons.length,8);assert.equal(t.operatives.find(x=>x.id==='jump-pack-warrior').stats.includes('8"'),true);
+ assert.match(t.operatives.find(x=>x.id==='theyn').abilities[1][1],/普通傷害/);
+ assert.match(t.operatives.find(x=>x.id==='kinlynk').abilities[0][1],/殺戮區內另一名/);
+ assert.match(t.operatives.find(x=>x.id==='kognitaar').abilities[0][1],/平衡/);
+ assert.match(t.operatives.find(x=>x.id==='lugger').abilities[0][1],/額外選擇一項裝備/);
+ for(const op of t.operatives)assert.ok(fs.existsSync(path.join(__dirname,'..',op.image)));
+});
+check('Hearthkyn Lugger unlocks fifth equipment option',()=>{
+ const fn=functionSource('battleEquipmentLimit');
+ assert.match(fn,/rosterTeam\(side\)==="hs"/);
+ assert.match(fn,/includes\("lugger"\)/);
+});
+check('Hearthkyn loadout picker persists selected weapon indices',()=>{
+ assert.match(functionSource('confirmBattlePicker'),/hsConfiguredWeapons\(op,picker\.ranged,picker\.meleeHs\)/);
+ assert.match(functionSource('battlePickerPreviewIndices'),/hsConfiguredWeapons\(op,picker\.ranged,picker\.meleeHs\)/);
+ assert.match(functionSource('battleWeaponSelection'),/hsConfiguredWeapons/);
+});
+check('Hearthkyn chosen loadout appears in roster and summary',()=>{
+ assert.match(functionSource('battlePickerPanel'),/hsPickerFields\(x.side,op,x\)/);
+ assert.match(functionSource('battleSelectedList'),/hsWeaponSummary/);
+ assert.match(functionSource('battleSetupSummarySide'),/hsWeaponSummary/);
+});
+
+check('Hearthkyn gunner single card supports three unique primary weapon choices',()=>{
+ const src=fs.readFileSync(path.join(__dirname,'..','data/hearthkyn_salvagers.js'),'utf8');
+ assert.match(src,/"id": "gunner"/);
+ assert.doesNotMatch(src,/"id": "gunner-beamer"/);
+ assert.match(code,/caps:\{gunner:3\}/);
+ assert.match(functionSource('confirmBattlePicker'),/hsGunnerAvailable\(side,picker.gunnerHs,index\)/);
+ assert.match(functionSource('battlePickerPreviewIndices'),/hsGunnerSelection\(op,picker.gunnerHs\)/);
+ assert.match(functionSource('hsPickerFields'),/hsGunnerOptions\(op\)/);
+});
+
+check('Hearthkyn Lugger first Strategy phase CP award is roster-gated and once per match',()=>{
+ const eligible=functionSource('hearthkynLuggerBonusEligible');
+ assert.match(eligible,/battleRoster\[side\]\.includes\("lugger"\)/);
+ const grant=functionSource('applyHearthkynLuggerCP');
+ assert.match(grant,/m\.tp!==1/);
+ assert.match(grant,/x\.hearthkynLuggerCPGranted/);
+ assert.match(grant,/x\.cp\+=1/);
+ assert.match(grant,/saveMatchTracker\(\)/);
+});

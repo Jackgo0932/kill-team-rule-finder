@@ -1130,3 +1130,5 @@ button.battle-equipment-keyword.term-link:hover,button.battle-equipment-keyword.
 .tracker-ploy-effect button.term-link.reference-local-keyword:not(.chip).open{
  border-bottom-style:solid!important;
 }
+
+.tracker-lugger-bonus{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0;padding:8px 10px;border:1px solid var(--line);border-radius:8px}.tracker-lugger-bonus span{flex:1;min-width:170px}.tracker-lugger-bonus button{white-space:nowrap}

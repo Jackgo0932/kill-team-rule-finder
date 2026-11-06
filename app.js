@@ -118,6 +118,17 @@ function changeTrackerCP(side,delta){
   if(x.cp!==old)trackerLog(`${trackerSideName(side)} CP ${delta>0?"+":""}${delta} → ${x.cp}`);
   saveMatchTracker();refreshMatchUI();
 }
+function hearthkynLuggerBonusEligible(side){
+ return !!(battleRoster&&trackerTeamId(side)==="hs"&&Array.isArray(battleRoster[side])&&battleRoster[side].includes("lugger"));
+}
+function applyHearthkynLuggerCP(side){
+ const m=ensureMatchTracker(),x=m.sides[side];
+ if(m.tp!==1||!hearthkynLuggerBonusEligible(side)||x.hearthkynLuggerCPGranted)return;
+ x.hearthkynLuggerCPGranted=true;
+ x.cp+=1;
+ trackerLog(`${trackerSideName(side)}爐心搬運士「裝備齊全」：首個戰略階段就緒步驟 +1 CP → ${x.cp}`);
+ saveMatchTracker();refreshMatchUI();
+}
 function setTrackerInitiative(side){
   const m=ensureMatchTracker();
   if(m.initiative!==side){m.initiative=side;trackerLog(`${trackerSideName(side)}取得先手`)}
@@ -236,6 +247,7 @@ function trackerSidePanel(side){
     <div class="tracker-side-head"><div><b>${trackerSideName(side)} · ${esc(t?.name||"")}</b><small>${m.initiative===side?"先手":"非先手"}</small></div><button class="tracker-init" onclick="setTrackerInitiative('${side}')">設為先手</button></div>
     <div class="tracker-cp tracker-vp"><span>VP</span><button onclick="changeTrackerVP('${side}',-1)" ${x.vp?"":"disabled"}>−</button><b>${x.vp}</b><button onclick="changeTrackerVP('${side}',1)">＋</button></div>
     <div class="tracker-cp"><span>CP</span><button onclick="changeTrackerCP('${side}',-1)" ${x.cp?"":"disabled"}>−</button><b>${x.cp}</b><button onclick="changeTrackerCP('${side}',1)">＋</button></div>
+    ${hearthkynLuggerBonusEligible(side)?`<div class="tracker-lugger-bonus"><span>搬運士 · 裝備齊全（首個戰略階段就緒步驟）</span><button type="button" onclick="applyHearthkynLuggerCP('${side}')" ${m.tp!==1||x.hearthkynLuggerCPGranted?"disabled":""}>${x.hearthkynLuggerCPGranted?"✓ 已領取 +1 CP":m.tp!==1?"已過 TP1，無法補領":"領取 +1 CP"}</button></div>`:""}
     <details class="tracker-detail" open><summary>先手卡</summary>${cards}</details>
     <details class="tracker-detail" open><summary>本 TP 戰略計謀</summary><div class="tracker-ploys">${trackerPloyRows(side,"戰略計謀")}</div></details>
     <details class="tracker-detail" open><summary>小隊專屬戰略計劃</summary><div class="tracker-ploys">${trackerStrategicGambitRows(side)}</div></details>
@@ -343,9 +355,10 @@ function loadData(){
     ks: window.KT_KASRKIN,
     rav: window.KT_RAVENERS,
     xv26: window.KT_XV26,
-    gm: window.KT_GOREMONGERS
+    gm: window.KT_GOREMONGERS,
+    hs: window.KT_HEARTHKYN_SALVAGERS
   };
-  if (!TEAMS.pm || !TEAMS.aod || !TEAMS.wk || !TEAMS.mw || !TEAMS.leg || !TEAMS.dw || !TEAMS.ci || !TEAMS.cc || !TEAMS.ks || !TEAMS.rav || !TEAMS.xv26 || !TEAMS.gm) {
+  if (!TEAMS.pm || !TEAMS.aod || !TEAMS.wk || !TEAMS.mw || !TEAMS.leg || !TEAMS.dw || !TEAMS.ci || !TEAMS.cc || !TEAMS.ks || !TEAMS.rav || !TEAMS.xv26 || !TEAMS.gm || !TEAMS.hs) {
     throw new Error("Team data scripts did not load.");
   }
   KW = Object.fromEntries(KEYWORDS.map(x=>[x[0],{id:x[0],name:x[1],en:x[2],text:x[3]}]));
@@ -650,7 +663,7 @@ function items(){
     const rows=KILL_OP.table.map(r=>`<tr><td>${r[0]}</td>${r.slice(1).map(v=>`<td>${v}</td>`).join("")}</tr>`).join("");
     a.push({kind:"Kill Op",id:"ko:kill-op",s:KILL_OP,html:`<div class="card">${star("ko:kill-op")}<h3>${esc(KILL_OP.zh)} <span class="meta">${esc(KILL_OP.title)}</span></h3><div class="body">${esc(KILL_OP.body)}<div class="kill-table-wrap"><table class="kill-table"><thead><tr><th>敵方起始特工</th><th>等級 1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead><tbody>${rows}</tbody></table></div><div class="rule-supplement"><b>規則補充</b><br>${esc(KILL_OP.note)}</div></div></div>`});
   }
-  const TAC_ARCHETYPES={"pm":["seek","security"],"aod":["seek","security"],"wk":["security","seek"],"mw":["recon","seek"],"leg":["security","seek"],"dw":["seek","security"],"ci":["security","seek"],"cc":["recon","security"],"ks":["security","seek"],"rav":["infiltration","seek"],"xv26":["recon","infiltration"],"gm":["recon","seek"]};
+  const TAC_ARCHETYPES={"pm":["seek","security"],"aod":["seek","security"],"wk":["security","seek"],"mw":["recon","seek"],"leg":["security","seek"],"dw":["seek","security"],"ci":["security","seek"],"cc":["recon","security"],"ks":["security","seek"],"rav":["infiltration","seek"],"xv26":["recon","infiltration"],"gm":["recon","seek"],"hs":["recon","security"]};
   const allowedTac=S.view==="team"?(TAC_ARCHETYPES[S.team]||[]):["recon","security","seek","infiltration"];
   TAC_OPS.filter(x=>allowedTac.includes(x[0])).forEach(x=>a.push({kind:"Tac Ops",id:"to:"+x[3],s:x,html:`<div class="card">${star("to:"+x[3])}<h3>${esc(x[4])} <span class="meta">${esc(x[5])}</span></h3><div class="meta">${esc(x[1])} · Tac Op</div><div class="body"><b>揭示：</b>${esc(x[6])}<br><br>${x[7]!=="—"?`<b>規則／行動：</b>${esc(x[7])}<br><br>`:""}<b>得分：</b>${esc(x[8])}${x[9]?`<div class="rule-supplement"><b>規則補充</b><br>${esc(x[9])}</div>`:""}</div></div>`}));
   UNIVERSAL_EQUIPMENT.forEach(x=>a.push({kind:"通用裝備",id:"ue:"+x[0],s:x,html:`<div class="card equipment-card">${star("ue:"+x[0])}<div class="equipment-card-head"><h3>${esc((x[3]?x[3]+" ":"")+x[1])}</h3></div><div class="meta">${esc(x[2])} · 通用裝備</div>${sharedEquipmentDescription("ue",x[0],S.team,"dictionary")}</div>`}));
@@ -917,6 +930,7 @@ function guardTeamChange(){
 function rosterOps(side){return TEAMS[rosterTeam(side)]?.operatives||[]}
 // Declarative composition rules. Weapon/loadout choices remain manual.
 const TEAM_ROSTER_RULES={
+ "hs":{fixed:{theyn:1},slots:9,allowed:["dozr","field-medic","grenadier","gunner","jump-pack-warrior","kinlynk","kognitaar","lokatr","lugger","warrior"],repeat:["warrior","gunner"],caps:{gunner:3},note:"固定 1 名頭領，再選擇 9 名特工；炮手最多 3 名且武器各不相同。其他專家不可重複，戰士可重複。頭領的遠程與近戰武器需於配置時確認。"},
  "gm":{fixed:{"blood-herald":1},slots:7,allowed:["aspirant","bloodtaker","impaler","inciter","skullclaimer","stalker"],repeat:["aspirant"],note:"固定 1 名鮮血使者，再選擇 7 名特工；只有新進者可以重複。"},
  "xv26":{fixed:{shasvre:1,"marker-drone":1,"gun-drone":1},slots:4,allowed:["designator","infiltrator","liberator","lodestar","neutraliser"],repeat:["infiltrator"],note:"融合砲全隊最多 2 把，需自行核對武器配置。"},
  "rav":{fixed:{prime:1},slots:4,allowed:["felltalon","tremorscythe","venomspitter","warrior","wrecker"],repeat:["warrior"]},
@@ -947,7 +961,7 @@ function rosterError(side){
  if(extras.some(id=>!r.allowed.includes(id)))return "存在不符合編成的職位。";
  for(const id of new Set(extras))if(!r.repeat.includes(id)&&selectedCount(extras,id)>1)return "不可重複編入："+id;
  for(const [id,n] of Object.entries(r.caps||{}))if(selectedCount(a,id)>n)return `${id} 最多 ${n} 名。`;
- for(const g of r.groupCaps||[])if(a.filter(id=>g.ids.includes(id)).length>g.max)return rosterTeam(side)==="dw"?`重裝型裝甲特工最多 ${g.max} 名。`:`砲手與神射手合計最多 ${g.max} 名。`;
+ for(const g of r.groupCaps||[])if(a.filter(id=>g.ids.includes(id)).length>g.max)return rosterTeam(side)==="dw"?`重裝型裝甲特工最多 ${g.max} 名。`:rosterTeam(side)==="hs"?`炮手最多 ${g.max} 名，且武器配置不能重複。`:`砲手與神射手合計最多 ${g.max} 名。`;
  return "";
 }
 function changeDraftCount(side,id,delta){
@@ -1107,7 +1121,9 @@ function openBattlePicker(side,id,index=-1){
  if(index<0&&!canDraftAdd(side,id))return;
  if(index>=0&&battleDraft[side][index]!==id)return;
  const selected=index>=0?battleWeaponSelection(side,index,op):null;
- battlePicker={side,id,index,primary:selected&&selected.some(i=>xv26PrimaryIndices(op,"fusion").includes(i))?"fusion":"rapid",
+ const hsChoice=index>=0?hsSelectedWeapons(side,index,op):hsConfiguredDefault(op);
+ const gunnerChoice=index>=0&&id==="gunner"?hsGunnerChosen(op,selected):hsGunnerOptions(op).find(x=>hsGunnerAvailable(side,x.key,index))?.key??0;
+ battlePicker={side,id,index,gunnerHs:gunnerChoice,ranged:hsChoice.ranged,meleeHs:hsChoice.melee,primary:selected&&selected.some(i=>xv26PrimaryIndices(op,"fusion").includes(i))?"fusion":"rapid",
  rifle:index>=0&&aodRifleConfigurable(side,op)?aodRifleKind(side,index,op):"auto",
  melee:index>=0&&aodSergeantConfigurable(side,op)?aodSergeantMeleeKind(side,index,op):AOD_INTERCESSOR_MELEE[0], assault:index>=0&&aodAssaultConfigurable(side,op)?aodAssaultKind(side,index,op):"heavy", assaultMelee:index>=0&&aodAssaultConfigurable(side,op)?aodAssaultMeleeKind(side,index,op):"鏈鋸劍", wk:wkSavedKind(side,op,selected),mark:index>=0?(battleMarkDraft[side][legMarkKey(side,index)]||"undivided"):"undivided",expandedRule:null};
  render();
@@ -1185,6 +1201,7 @@ function confirmBattlePicker(){
  const isFusion=xv26CanChoosePrimary(side,op)&&picker.primary==="fusion";
  const wasFusion=index>=0&&battleWeaponSelection(side,index,op).some(i=>xv26PrimaryIndices(op,"fusion").includes(i));
  if(isFusion&&!wasFusion&&xv26FusionCount(side)>=2){alert("XV26 全隊融合砲最多 2 把。");return;}
+ if(rosterTeam(side)==="hs"&&id==="gunner"&&!hsGunnerAvailable(side,picker.gunnerHs,index)){alert("炮手的主武器不能重複選擇。");return;}
  let target=index;
  if(target<0){battleDraft[side].push(id);target=battleDraft[side].length-1;}
  if(xv26CanChoosePrimary(side,op)){
@@ -1192,6 +1209,8 @@ function confirmBattlePicker(){
   battleWeaponDraft[side][battleWeaponKey(side,target)]=[...all.filter(i=>!exclude.has(i)),...xv26PrimaryIndices(op,picker.primary)];
  }
  if(wkOptions(side,op)){battleWeaponDraft[side][battleWeaponKey(side,target)]=wkIndices(side,op,picker.wk);}
+ if(rosterTeam(side)==="hs"&&op.id==="gunner")battleWeaponDraft[side][battleWeaponKey(side,target)]=hsGunnerSelection(op,picker.gunnerHs);
+ else if(hsConfigurable(side,op))battleWeaponDraft[side][battleWeaponKey(side,target)]=hsConfiguredWeapons(op,picker.ranged,picker.meleeHs);
  if(rosterTeam(side)==="leg")battleMarkDraft[side][legMarkKey(side,target)]=picker.mark||"undivided";
  if(aodAssaultConfigurable(side,op)){
   battleWeaponDraft[side][battleWeaponKey(side,target)]=configuredAodAssaultWeapons(op,picker.assault,picker.assaultMelee);
@@ -1215,6 +1234,8 @@ function removeBattleRosterEntry(side,index){
  battlePicker=null;render();
 }
 function battlePickerPreviewIndices(side,op,picker){
+ if(rosterTeam(side)==="hs"&&op.id==="gunner")return hsGunnerSelection(op,picker.gunnerHs);
+ if(hsConfigurable(side,op))return hsConfiguredWeapons(op,picker.ranged,picker.meleeHs);
  if(wkOptions(side,op))return wkIndices(side,op,picker.wk);
  if(aodAssaultConfigurable(side,op))return configuredAodAssaultWeapons(op,picker.assault,picker.assaultMelee);
  if(aodSergeantConfigurable(side,op))return configuredAodSergeantWeapons(op,picker.rifle,picker.melee).filter(i=>i>=0);
@@ -1293,6 +1314,7 @@ function battlePickerPanel(){
   return `<fieldset class="battle-config-weapons"><legend>選擇手槍</legend>${split.pistols.map(item=>`<label><input type="radio" name="battle-leg-pistol" value="${item.key}" ${pistol===item.key?"checked":""} onchange="chooseBattlePickerLeg('pistol','${item.key}')">${item.label}</label>`).join("")}</fieldset>
   <fieldset class="battle-config-weapons"><legend>選擇近戰武器</legend>${split.melees.map(item=>`<label><input type="radio" name="battle-leg-melee" value="${item.key}" ${melee===item.key?"checked":""} onchange="chooseBattlePickerLeg('melee','${item.key}')">${item.label}</label>`).join("")}</fieldset>`;
  })():wkOptions(x.side,op)?`<fieldset class="battle-config-weapons"><legend>選擇配備武器</legend>${wkOptions(x.side,op).map(item=>`<label><input type="radio" name="battle-wk-weapon" value="${item.key}" ${x.wk===item.key?"checked":""} onchange="chooseBattlePickerWk('${item.key}')">${item.label}</label>`).join("")}</fieldset>`:""}
+ ${hsPickerFields(x.side,op,x)}
  ${rosterTeam(x.side)==="leg"?`<fieldset class="battle-config-weapons"><legend>選擇混沌印記</legend>${LEG_MARKS.filter(([key])=>legMarkAllowed(op,key)).map(([key,label])=>`<label><input type="radio" name="battle-leg-mark" value="${key}" ${x.mark===key?"checked":""} onchange="chooseBattlePickerLegMark('${key}')">${label}</label>`).join("")}<small>每名特工可選不同印記；邪焰侍僧不可選恐虐。</small></fieldset>`:""}
  ${aodRifleConfigurable(x.side,op)?`<fieldset class="battle-config-weapons"><legend>選擇主武器</legend>
  ${AOD_RIFLE_OPTIONS.map(item=>`<label><input type="radio" name="battle-config-rifle" value="${item.key}" ${x.rifle===item.key?"checked":""} onchange="chooseBattlePickerRifle('${item.key}')">${item.label}</label>`).join("")}
@@ -1330,7 +1352,7 @@ function battleSelectedList(side){
   const chosen=battleWeaponSelection(side,index,op);
   const configurable=xv26CanChoosePrimary(side,op);
   const fusion=configurable&&chosen.some(i=>xv26PrimaryIndices(op,"fusion").includes(i));
-  const weapon=wkOptions(side,op)?wkOptions(side,op).find(o=>o.key===wkSavedKind(side,op,chosen))?.label:aodAssaultConfigurable(side,op)?`${({flamer:"噴火手槍",heavy:"重型爆矢手槍",plasma:"等離子手槍"})[aodAssaultKind(side,index,op)]} · ${aodAssaultMeleeKind(side,index,op)}`:configurable?(fusion?"融合砲":"速射砲"):aodRifleConfigurable(side,op)?`${AOD_RIFLE_OPTIONS.find(x=>x.key===aodRifleKind(side,index,op))?.label||"爆矢步槍"}${aodSergeantConfigurable(side,op)?" · "+aodSergeantMeleeKind(side,index,op):""}`:rosterTeam(side)==="rav"?"固定武器配置":"預設武器";
+  const weapon=hsConfigurable(side,op)?hsWeaponSummary(side,index,op):wkOptions(side,op)?wkOptions(side,op).find(o=>o.key===wkSavedKind(side,op,chosen))?.label:aodAssaultConfigurable(side,op)?`${({flamer:"噴火手槍",heavy:"重型爆矢手槍",plasma:"等離子手槍"})[aodAssaultKind(side,index,op)]} · ${aodAssaultMeleeKind(side,index,op)}`:configurable?(fusion?"融合砲":"速射砲"):aodRifleConfigurable(side,op)?`${AOD_RIFLE_OPTIONS.find(x=>x.key===aodRifleKind(side,index,op))?.label||"爆矢步槍"}${aodSergeantConfigurable(side,op)?" · "+aodSergeantMeleeKind(side,index,op):""}`:rosterTeam(side)==="rav"?"固定武器配置":"預設武器";
   const markLabel=rosterTeam(side)==="leg"?" · "+legMarkName(battleMarkDraft[side][legMarkKey(side,index)]||"undivided"):"";
   const isFixed=!!rule?.fixed?.[id];
   return `<button type="button" class="battle-selected-item" onclick="openBattlePicker('${side}','${id}',${index})">
@@ -1401,6 +1423,71 @@ function battleWeaponKey(side,index){
  const ids=battleDraft?.[side]||[],id=ids[index];
  return `${id}#${ids.slice(0,index).filter(x=>x===id).length}`;
 }
+// Hearthkyn: record one legal ranged profile and (where offered) one melee profile.
+// Gunner is one card; choose a primary weapon per operative, keeping rotary/missile modes together.
+function hsConfigurable(side,op){
+ return rosterTeam(side)==="hs"&&(["theyn","kinlynk","kognitaar","lokatr","lugger","warrior","gunner"].includes(op.id));
+}
+function hsWeaponGroups(op){
+ const groups={ranged:[],melee:[]};
+ (op.weapons||[]).forEach((w,i)=>{
+  const group=w[1]==="遠程"?"ranged":"melee";
+  groups[group].push({index:i,label:w[0]});
+ });
+ return groups;
+}
+function hsGunnerOptions(op){
+ if(op?.id!=="gunner")return [];
+ const choices=["艾塔－卡恩電漿射線炮","高能雷射自動步槍","高能雷射轉輪炮","L7 飛彈發射器","磁軌步槍"];
+ return choices.map((label,key)=>({key,label,indices:(op.weapons||[]).flatMap((w,i)=>w[1]==="遠程"&&w[0].startsWith(label)?[i]:[])}));
+}
+function hsGunnerSelection(op,key){
+ const option=hsGunnerOptions(op)[key]||hsGunnerOptions(op)[0];
+ return [...option.indices,...(op.weapons||[]).flatMap((w,i)=>w[1]==="近戰"?[i]:[])];
+}
+function hsGunnerChosen(op,indices){
+ return hsGunnerOptions(op).findIndex(x=>x.indices.some(i=>indices?.includes(i)));
+}
+function hsGunnerAvailable(side,key,skipIndex=-1){
+ return !(battleDraft?.[side]||[]).some((id,i)=>id==="gunner"&&i!==skipIndex&&hsGunnerChosen(rosterOps(side).find(o=>o.id==="gunner"),battleWeaponSelection(side,i,rosterOps(side).find(o=>o.id==="gunner")))===key);
+}
+function chooseBattlePickerHsGunner(key){
+ if(!battlePicker||battlePicker.id!=="gunner")return;
+ if(!hsGunnerAvailable(battlePicker.side,key,battlePicker.index))return;
+ battlePicker.gunnerHs=key;renderBattlePickerPreservingState();
+}
+function hsConfiguredWeapons(op,ranged,melee){
+ const g=hsWeaponGroups(op);
+ const ri=g.ranged.some(x=>x.index===ranged)?ranged:g.ranged[0]?.index;
+ const mi=g.melee.some(x=>x.index===melee)?melee:g.melee[0]?.index;
+ return [ri,mi].filter(i=>Number.isInteger(i));
+}
+function hsConfiguredDefault(op){const g=hsWeaponGroups(op);return {ranged:g.ranged[0]?.index,melee:g.melee[0]?.index};}
+function hsSelectedWeapons(side,index,op){
+ const saved=battleWeaponDraft[side][battleWeaponKey(side,index)];
+ const g=hsWeaponGroups(op);
+ return {ranged:g.ranged.find(x=>saved?.includes(x.index))?.index??g.ranged[0]?.index,
+  melee:g.melee.find(x=>saved?.includes(x.index))?.index??g.melee[0]?.index};
+}
+function chooseBattlePickerHs(group,index){
+ if(!battlePicker||!hsConfigurable(battlePicker.side,rosterOps(battlePicker.side).find(o=>o.id===battlePicker.id)))return;
+ const op=rosterOps(battlePicker.side).find(o=>o.id===battlePicker.id);
+ if(!hsWeaponGroups(op)[group]?.some(x=>x.index===index))return;
+ battlePicker[group==="melee"?"meleeHs":group]=index;renderBattlePickerPreservingState();
+}
+function hsPickerFields(side,op,picker){
+ if(!hsConfigurable(side,op))return "";
+ if(op.id==="gunner")return `<fieldset class="battle-config-weapons"><legend>選擇炮手主武器</legend>${hsGunnerOptions(op).map(x=>`<label><input type="radio" name="battle-hs-gunner" value="${x.key}" ${picker.gunnerHs===x.key?"checked":""} ${hsGunnerAvailable(side,x.key,picker.index)?"":"disabled"} onchange="chooseBattlePickerHsGunner(${x.key})">${esc(x.label)}</label>`).join("")}</fieldset>`;
+ const g=hsWeaponGroups(op);
+ return ["ranged","melee"].map(group=>{
+  const opts=g[group];if(opts.length<2)return "";
+  return `<fieldset class="battle-config-weapons"><legend>${group==="ranged"?"選擇遠程武器":"選擇近戰武器"}</legend>${opts.map(x=>`<label><input type="radio" name="battle-hs-${group}" value="${x.index}" ${picker[group==="melee"?"meleeHs":group]===x.index?"checked":""} onchange="chooseBattlePickerHs('${group}',${x.index})">${esc(x.label)}</label>`).join("")}</fieldset>`;
+ }).join("");
+}
+function hsWeaponSummary(side,index,op){
+ const indices=battleWeaponSelection(side,index,op);
+ return indices.map(i=>op.weapons?.[i]?.[0]).filter(Boolean).join(" · ");
+}
 function xv26PrimaryIndices(op,kind){
  const match=kind==="fusion"?"融合砲":"速射砲";
  return (op.weapons||[]).flatMap((w,i)=>String(w[0]).includes(match)?[i]:[]);
@@ -1469,6 +1556,8 @@ function battleWeaponSelection(side,index,op){
  const key=battleWeaponKey(side,index),saved=battleWeaponDraft[side][key];
  if(Array.isArray(saved))return saved;
  const all=(op.weapons||[]).map((_,i)=>i);
+ if(rosterTeam(side)==="hs"&&op.id==="gunner")return hsGunnerSelection(op,0);
+ if(hsConfigurable(side,op))return hsConfiguredWeapons(op,hsConfiguredDefault(op).ranged,hsConfiguredDefault(op).melee);
  if(wkOptions(side,op))return wkIndices(side,op,wkOptions(side,op)[0].key);
  if(aodAssaultConfigurable(side,op))return configuredAodAssaultWeapons(op,"heavy","鏈鋸劍");
  if(aodSergeantConfigurable(side,op))return configuredAodSergeantWeapons(op,"auto",AOD_INTERCESSOR_MELEE[0]);
@@ -1649,7 +1738,7 @@ function battleSetupSummarySide(side){
   const weapons=chosen.map(i=>op.weapons?.[i]?.[0]).filter(Boolean);
   const isXv=xv26CanChoosePrimary(side,op);
   const fusion=isXv&&chosen.some(i=>xv26PrimaryIndices(op,"fusion").includes(i));
-  const main=wkOptions(side,op)?`<strong>${esc(wkOptions(side,op).find(o=>o.key===wkSavedKind(side,op,chosen))?.label||"")}</strong>`:isXv?`<strong>${fusion?"融合砲":"速射砲"}</strong>`:
+  const main=hsConfigurable(side,op)?`<strong>${esc(hsWeaponSummary(side,index,op))}</strong>`:wkOptions(side,op)?`<strong>${esc(wkOptions(side,op).find(o=>o.key===wkSavedKind(side,op,chosen))?.label||"")}</strong>`:isXv?`<strong>${fusion?"融合砲":"速射砲"}</strong>`:
     aodAssaultConfigurable(side,op)?`<strong>${esc(({flamer:"噴火手槍",heavy:"重型爆矢手槍",plasma:"等離子手槍"})[aodAssaultKind(side,index,op)]+" · "+aodAssaultMeleeKind(side,index,op))}</strong>`:
     aodRifleConfigurable(side,op)?`<strong>${esc((AOD_RIFLE_OPTIONS.find(x=>x.key===aodRifleKind(side,index,op))?.label||"")+(aodSergeantConfigurable(side,op)?" · "+aodSergeantMeleeKind(side,index,op):""))}</strong>`:
     `<span>預設武器資料</span>`;
@@ -1701,7 +1790,7 @@ function battleEquipmentConfig(side,entry){
 }
 function battleEquipmentLimit(side){
  // Deathwatch Watch Sergeant: Adaptive Armoury grants one additional equipment option.
- return rosterTeam(side)==="dw"&&(battleDraft?.[side]||[]).includes("watch-sergeant")?5:4;
+ return (rosterTeam(side)==="dw"&&(battleDraft?.[side]||[]).includes("watch-sergeant")) || (rosterTeam(side)==="hs"&&(battleDraft?.[side]||[]).includes("lugger")) ? 5 : 4;
 }
 function battleEquipmentError(){
  for(const side of ["my","enemy"]){
